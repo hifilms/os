@@ -23,7 +23,7 @@ function createLockScreen() {
         
         <div class="lock-bottom">
             <div id="lock-input-container">
-                <input type="password" id="lock-input" placeholder="Enter Password" autocomplete="off">
+                <input type="password" id="lock-input" placeholder=" " autocomplete="off">
                 <i class="fas fa-eye toggle-pass" id="eye-icon" onclick="toggleLockPass()"></i>
             </div>
             <div class="lock-msg-area">
@@ -198,4 +198,5 @@ setInterval(trackAllAppActivity, 5000);
 
 // পেজ লোড হলে লক স্ক্রিন চেক
 window.addEventListener('DOMContentLoaded', createLockScreen);
+
 
