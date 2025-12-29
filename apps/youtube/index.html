@@ -9,7 +9,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-        .player-side { flex: 3; background: #000; height: 100vh; position: relative; }
+        .player-side { flex: 3; background: #000; height: calc(100vh - 65px); position: relative; }
         #api-player { width: 100%; height: 100%; border: none; }
 
         .sidebar { flex: 1; min-width: 300px; background: #080808; border-left: 1px solid #1a1a1a; display: flex; flex-direction: column; }
@@ -188,3 +188,4 @@ window.parent.postMessage('reset_lock', '*');
 </script>
 </body>
 </html>
+
