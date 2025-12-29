@@ -5,7 +5,7 @@
 
 let idleTime = 0;
 let wrongAttempts = 0; 
-let LOCK_LIMIT = 20; // লক হওয়ার সময় (সেকেন্ডে)
+let LOCK_LIMIT = 200; // লক হওয়ার সময় (সেকেন্ডে)
 
 // ১. লক স্ক্রিন তৈরি করার ফাংশন
 function createLockScreen() {
@@ -198,3 +198,4 @@ setInterval(trackAllAppActivity, 5000);
 
 // পেজ লোড হলে লক স্ক্রিন চেক
 window.addEventListener('DOMContentLoaded', createLockScreen);
+
