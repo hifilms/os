@@ -191,4 +191,37 @@ function updateUsername(name) {
 
 
 
+function toggleOSFullScreen() {
+    const container = document.getElementById('fs-icon-container');
+    const btn = document.getElementById('fullscreen-btn');
+    
+    const iconFull = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>`;
+    const iconExit = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6m0 0v6m0-6L3 21m17-7h-6m0 0v6m0-6l7 7m-7-11V4m0 6l7-7M10 10V4m0 6L3 3"></path></svg>`;
+
+    if (!document.fullscreenElement) {
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+        }
+        container.innerHTML = iconExit;
+        btn.title = "Exit Full Screen"; // মাউস রাখলে এখন এটি দেখাবে
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+        container.innerHTML = iconFull;
+        btn.title = "Full Screen"; // মাউস রাখলে আবার এটি দেখাবে
+    }
+}
+
+// Esc কিবোর্ড বাটন চাপলে টাইটেল ঠিক করার জন্য
+document.addEventListener('fullscreenchange', () => {
+    const container = document.getElementById('fs-icon-container');
+    const btn = document.getElementById('fullscreen-btn');
+    const iconFull = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>`;
+    
+    if (!document.fullscreenElement) {
+        container.innerHTML = iconFull;
+        btn.title = "Full Screen";
+    }
+});
 
