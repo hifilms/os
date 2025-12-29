@@ -17,6 +17,20 @@
     <footer id="taskbar">
         <div id="home-btn"></div>
         <div id="running-apps"></div>
+        <div id="os-controls" style="display: flex; gap: 10px; align-items: center; padding-right: 15px;">
+            <button id="fullscreen-btn" 
+                    onclick="toggleOSFullScreen()" 
+                    title="Full Screen" 
+                    style="background: none; border: none; color: #fff; cursor: pointer; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; transition: 0.2s; opacity: 0.8;" 
+                    onmouseover="this.style.opacity=1" 
+                    onmouseout="this.style.opacity=0.8">
+                <span id="fs-icon-container">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                    </svg>
+                </span>
+            </button>
+        </div>
         <div id="system-tray">
             <div class="datetime">
                 <span id="clock">00:00</span>
@@ -29,4 +43,5 @@
     <script src="db-manager.js"></script>
     <script src="lockscreen.js"></script>
 </body>
+
 </html>
