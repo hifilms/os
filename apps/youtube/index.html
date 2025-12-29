@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRO VIDEO HUB V2.5 - INDEX FIX</title>
+    <style>
+        :root { --bg: #000; --accent: #ff0000; --text: #eee; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
+
+        .player-side { flex: 3; background: #000; height: 100vh; position: relative; }
+        #api-player { width: 100%; height: 100%; border: none; }
+
+        .sidebar { flex: 1; min-width: 300px; background: #080808; border-left: 1px solid #1a1a1a; display: flex; flex-direction: column; }
+        .search-area { padding: 15px; background: #000; }
+        .search-wrapper { position: relative; display: flex; align-items: center; }
+        .search-icon { position: absolute; left: 10px; color: #555; }
+        .search-input { width: 100%; padding: 12px 10px 12px 35px; border-radius: 8px; border: 1px solid #222; background: #111; color: #fff; outline: none; font-size: 14px; }
+        .search-input:focus { border-color: var(--accent); }
+
+        #list-container { flex: 1; overflow-y: auto; padding: 10px; scrollbar-width: none; }
+        #list-container::-webkit-scrollbar { display: none; }
+
+        .v-card { display: flex; gap: 10px; margin-bottom: 12px; cursor: pointer; padding: 10px; border-radius: 10px; transition: 0.1s; background: rgba(255,255,255,0.02); border: 1px solid transparent; }
+        /* Active highlight only when playing from THIS specific list */
+        .v-card.active { background: #1a1a1a; border-left: 4px solid var(--accent); opacity: 1; }
+
+        .thumb-box { position: relative; flex-shrink: 0; width: 110px; height: 62px; background: #111; border-radius: 6px; }
+        .thumb-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+        .time { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.85); color: #fff; font-size: 10px; padding: 2px 5px; border-radius: 3px; }
+
+        .v-meta h5 { margin: 0; font-size: 13px; color: #ccc; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
+    </style>
+</head>
+<body>
+
+    <div class="player-side">
+        <div id="api-player"></div>
+    </div>
+
+    <div class="sidebar">
+        <div class="search-area">
+            <div class="search-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="sInput" class="search-input" placeholder="Search and Enter..." autocomplete="off"
+                       onkeypress="if(event.key==='Enter') runSearch()">
+            </div>
+        </div>
+        <div id="list-container"><div id="video-list"></div></div>
+    </div>
+
+<script>
+    let player;
+    let masterList = [];
+    let currentIdx = -1; // -1 means no active video in the CURRENT list
+    let firstLoad = true;
+    let bufferWatchdog;
+
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('api-player', {
+            height: '100%', width: '100%',
+            playerVars: { 'autoplay': 1, 'controls': 1, 'rel': 0, 'modestbranding': 1, 'vq': 'small' },
+            events: {
+                'onReady': () => runSearch("Trending Now"),
+                'onStateChange': onPlayerStateChange,
+                'onError': () => skipDeadVideo()
+            }
+        });
+    }
+
+    function onPlayerStateChange(event) {
+        clearTimeout(bufferWatchdog);
+        if (event.data == YT.PlayerState.ENDED) {
+            playVideo(currentIdx + 1);
+        }
+        if (event.data == YT.PlayerState.BUFFERING) {
+            bufferWatchdog = setTimeout(() => {
+                if (player.getPlayerState() === YT.PlayerState.BUFFERING) skipDeadVideo();
+            }, 5000); 
+        }
+    }
+
+    async function runSearch(qVal = null) {
+        const inputField = document.getElementById('sInput');
+        const query = qVal || inputField.value;
+        if(!query) return;
+        
+        // বক্স ক্লিয়ার করা
+        if(!qVal) inputField.value = ""; 
+
+        // গুরুত্বপূর্ণ ফিক্স: নতুন সার্চে ইনডেক্স পুরোপুরি রিসেট করা
+        currentIdx = -1; 
+
+        try {
+            const res = await fetch(`https://pipedapi.kavin.rocks/search?q=${encodeURIComponent(query)}&filter=videos`);
+            const data = await res.json();
+            masterList = data.items.filter(v => v.duration > 15);
+            
+            // লিস্ট রি-রেন্ডার করা (এখন সব হাইলাইট মুছে যাবে)
+            renderList();
+
+            // শুধুমাত্র প্রথমবার অ্যাপ চালু হলে ১ নম্বর ভিডিও অটো প্লে হবে
+            if(firstLoad && masterList.length > 0) {
+                playVideo(0);
+                firstLoad = false;
+            }
+        } catch (e) { console.error("Search error"); }
+    }
+
+    function renderList() {
+        const container = document.getElementById('video-list');
+        container.innerHTML = masterList.map((v, i) => {
+            const id = v.url.split('v=')[1];
+            // এখানে চেক করা হচ্ছে i কি currentIdx এর সমান কি না
+            return `<div class="v-card ${i === currentIdx ? 'active' : ''}" id="v-card-${i}" onclick="playVideo(${i})">
+                <div class="thumb-box">
+                    <img src="https://i.ytimg.com/vi/${id}/mqdefault.jpg" loading="lazy">
+                    <span class="time">${fmt(v.duration)}</span>
+                </div>
+                <div class="v-meta"><h5>${v.title}</h5></div>
+            </div>`;
+        }).join('');
+    }
+
+    function playVideo(index) {
+        if (index < 0 || index >= masterList.length) return;
+        
+        currentIdx = index;
+        const vidId = masterList[currentIdx].url.split('v=')[1];
+        player.loadVideoById({ videoId: vidId, suggestedQuality: 'small' });
+        
+        // শুধুমাত্র এখন ইউআই-তে হাইলাইট বসানো হবে
+        renderList(); 
+        
+        const activeCard = document.getElementById(`v-card-${index}`);
+        if(activeCard) {
+            activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function skipDeadVideo() {
+        if (currentIdx === -1) return;
+        masterList.splice(currentIdx, 1);
+        renderList();
+        if (masterList.length > currentIdx) playVideo(currentIdx);
+    }
+
+    function fmt(s) { 
+        let m = Math.floor(s/60);
+        let sec = s%60;
+        return m + ":" + (sec < 10 ? '0' : '') + sec; 
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+{
+  "system_apps": [
+    {
+      "id": "settings",
+      "name": "Settings",
+      "icon": "https://cdn-icons-png.flaticon.com/512/3953/3953226.png",
+      "category": "System"
+    },
+    {
+      "id": "appstore",
+      "name": "App Store",
+      "icon": "https://cdn-icons-png.flaticon.com/512/888/888841.png",
+      "category": "System"
+    }
+  ],
+  "available_in_store": [
+    {
+      "id": "calculator",
+      "name": "Calculator",
+      "icon": "https://cdn-icons-png.flaticon.com/512/2344/2344132.png",
+      "category": "Utility",
+      "description": "সহজ হিসাবনিকাশ করার জন্য একটি ক্যালকুলেটর।"
+    },
+    {
+      "id": "notepad",
+      "name": "Notepad",
+      "icon": "https://cdn-icons-png.flaticon.com/512/3075/3075908.png",
+      "category": "Productivity",
+      "description": "আপনার টেক্সট নোট লিখে সেভ করে রাখুন।"
+    },
+    {
+      "id": "browser",
+      "name": "Web Browser",
+      "icon": "https://cdn-icons-png.flaticon.com/512/888/888846.png",
+      "category": "Internet",
+      "description": "ইন্টারনেট এবং ওয়েবসাইট ব্রাউজ করার জন্য।"
+    },
+    {
+      "id": "terminal",
+      "name": "Terminal",
+      "icon": "https://cdn-icons-png.flaticon.com/512/906/906334.png",
+      "category": "Development",
+      "description": "সিস্টেমের ভেতরের কমান্ড চালানোর জন্য।"
+    },
+    {
+      "id": "photos",
+      "name": "Photos",
+      "icon": "https://cdn-icons-png.flaticon.com/512/2659/2659360.png",
+      "category": "Multimedia",
+      "description": "আপনার গ্যালারির ছবিগুলো ব্রাউজ করুন।"
+    },
+    {
+  "id": "youtube",
+  "name": "YouTube",
+  "category": "Multimedia",
+  "description": "Watch your favorite videos directly from the desktop.",
+  "icon": "https://cdn-icons-png.flaticon.com/512/1384/1384060.png"
+}
+
+  ]
+}

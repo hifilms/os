@@ -1,0 +1,120 @@
+/* lockscreen.css */
+.lock-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 10000;
+    background: rgba(0, 0, 0, 0.5); 
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    transition: opacity 1s ease-out, visibility 1s;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* আনলক হওয়ার সময় মসৃণভাবে অদৃশ্য হবে */
+.hide-lock {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.lock-top {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.lock-top h1 {
+    font-size: 7rem;
+    font-weight: 200;
+    margin: 0;
+    text-shadow: 0 5px 25px rgba(0,0,0,0.4);
+}
+
+.lock-top p {
+    font-size: 1.2rem;
+    opacity: 0.7;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: -10px;
+}
+
+.lock-bottom {
+    width: 320px;
+    position: relative;
+    text-align: center;
+}
+
+#lock-input-container {
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+#lock-input {
+    width: 100%;
+    padding: 12px 40px 12px 10px;
+    border: none;
+    background: transparent;
+    color: white;
+    text-align: center;
+    outline: none;
+    font-size: 1.6rem;
+    letter-spacing: 10px;
+}
+
+#lock-input::placeholder {
+    letter-spacing: normal;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.toggle-pass {
+    position: absolute;
+    right: 5px;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1.1rem;
+    transition: 0.3s;
+}
+
+.toggle-pass:hover { color: #38bdf8; }
+
+.lock-msg-area {
+    margin-top: 20px;
+    min-height: 80px;
+}
+
+.hint-text {
+    color: #ef4444;
+    font-size: 0.9rem;
+    margin: 0;
+    font-weight: 500;
+}
+
+.reset-btn {
+    background: #ff4d4d;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    display: none; /* ৩ বার ভুলের পর দেখা যাবে */
+    width: 100%;
+    box-shadow: 0 4px 15px rgba(255, 77, 77, 0.3);
+    text-transform: uppercase;
+    transition: 0.3s;
+}
+
+.reset-btn:hover {
+    background: #e63939;
+    transform: scale(1.02);
+}

@@ -1,0 +1,220 @@
+/* গ্লোবাল সেটিংস */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* পুরো স্ক্রিন ১০০% নিশ্চিত করা */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+/* ডেস্কটপ এরিয়া */
+#desktop {
+    width: 100%;
+    height: 100vh;
+    background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072') no-repeat center/cover;
+    padding: 30px;
+    position: relative;
+}
+
+#app-grid {
+    display: grid;
+    grid-template-rows: repeat(auto-fill, 110px);
+    grid-template-columns: repeat(auto-fill, 100px);
+    grid-auto-flow: column;
+    gap: 15px;
+    height: calc(100vh - 65px);
+}
+
+.desktop-app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.app-icon-container {
+    width: 65px;
+    height: 65px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.app-icon-container img { width: 40px; height: 40px; object-fit: contain; }
+.app-label { color: white; font-size: 12px; margin-top: 8px; text-shadow: 1px 1px 4px #000; }
+
+/* স্বতন্ত্র উইন্ডো সিস্টেম (Full Screen) */
+.window {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #121212;
+    z-index: 100;
+    display: none;
+    flex-direction: column;
+    transition: opacity 0.3s ease;
+}
+
+.window.active-win {
+    display: flex;
+    z-index: 500;
+}
+
+.window-content {
+    flex-grow: 1;
+    padding: 40px;
+    color: white;
+}
+
+/* টাস্কবার */
+#taskbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(15px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 9999;
+    
+    /* কন্টেন্ট সোজা লাইনে রাখার জন্য */
+    display: flex;
+    flex-direction: row; /* আইকনগুলো পাশাপাশি থাকবে */
+    align-items: center; /* উপর-নিচ থেকে মাঝখানে থাকবে */
+    justify-content: flex-start; /* বাম দিক থেকে শুরু হবে, আপনি চাইলে center দিতে পারেন */
+    
+    padding: 0 15px;
+    gap: 10px; /* আইকনগুলোর মাঝের দূরত্ব */
+    box-sizing: border-box;
+    transition: transform 0.4s ease-in-out;
+}
+
+/* টাস্কবার হাইড হলে */
+#taskbar.autohide {
+    transform: translateY(calc(100% - 5px));
+}
+
+/* টাস্কবারের আইকনগুলোর স্টাইল */
+.taskbar-icon, .home-btn {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0; /* আইকন যাতে চ্যাপ্টা না হয়ে যায় */
+}
+
+.taskbar-icon img, .home-btn img {
+    width: 35px;
+    height: 35px;
+    object-fit: contain;
+}
+
+/* আইকনগুলোর ওপর মাউস নিলে ইফেক্ট */
+.taskbar-icon:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+#home-btn {
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-right: 20px;
+    transition: 0.3s;
+    box-shadow: 0 0 10px rgba(255,255,255,0.2);
+}
+
+#home-btn:hover { transform: scale(1.1); background: #f0f0f0; }
+
+#running-apps {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+/* টাস্কবার আইটেম (স্মার্ট ট্যাব) */
+.task-item {
+    display: flex;
+    align-items: center;
+    height: 46px;
+    width: 46px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50px;
+    padding: 0 11px;
+    cursor: pointer;
+    transition: all 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+    overflow: hidden;
+}
+
+.task-item img { width: 24px; min-width: 24px; height: 24px; }
+
+.task-text {
+    color: white;
+    font-size: 13px;
+    margin-left: 12px;
+    white-space: nowrap;
+    display: none;
+    opacity: 0;
+}
+
+/* ক্লোজ বাটন ডিজাইন */
+.task-close {
+    display: none;
+    opacity: 0;
+    width: 22px;
+    height: 22px;
+    background: rgba(255, 95, 86, 0.9);
+    border-radius: 50%;
+    margin-left: auto;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+}
+
+.task-close svg { width: 12px; height: 12px; }
+
+.task-item.active, .task-item:hover {
+    width: 170px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.task-item.active .task-text, .task-item:hover .task-text,
+.task-item.active .task-close, .task-item:hover .task-close {
+    display: flex;
+    opacity: 1;
+}
+
+/* ঘড়ি ও তারিখ */
+#system-tray {
+    min-width: 130px;
+    color: white;
+    text-align: right;
+    border-left: 1px solid rgba(255,255,255,0.2);
+    padding-left: 15px;
+}
+.datetime { display: flex; flex-direction: column; }
+#clock { font-size: 14px; font-weight: bold; }
+#date { font-size: 12px; opacity: 0.7; }
