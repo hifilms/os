@@ -155,6 +155,36 @@
         let sec = s%60;
         return m + ":" + (sec < 10 ? '0' : '') + sec; 
     }
+
+
+
+
+// ভিডিও চললে মেইন ওএস-কে জানানো
+setInterval(() => {
+    // যদি ইউটিউব প্লেয়ার প্লেয়িং মোডে থাকে (১ মানে Playing)
+    if (typeof player !== 'undefined' && player.getPlayerState && player.getPlayerState() === 1) {
+        
+        // মেইন ওএস (Parent Window)-কে মেসেজ পাঠানো
+        window.parent.postMessage('keep_awake', '*');
+    }
+}, 30000); // প্রতি ৩০ সেকেন্ড পর পর সিগন্যাল দেবে
+
+
+
+// ইউটিউব ভিডিওর অবস্থা চেক করে ওএস-কে জানানো
+setInterval(() => {
+    // যদি ইউটিউব প্লেয়ার লোড থাকে এবং ভিডিও প্লেয়িং (১) মোডে থাকে
+    if (typeof player !== 'undefined' && player.getPlayerState && player.getPlayerState() === 1) {
+        
+        // এটি মেইন ওএস-কে বলবে টাইমার রিসেট করতে
+        window.parent.postMessage('video_is_playing', '*');
+        console.log("সিগন্যাল পাঠানো হলো: ভিডিও চলছে");
+    }
+}, 10000); // প্রতি ১০ সেকেন্ডে একবার চেক করবে
+
+// ভিডিও চলার সময় এটি কল করুন
+window.parent.postMessage('reset_lock', '*');
+
 </script>
 </body>
 </html>
