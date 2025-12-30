@@ -232,7 +232,7 @@ html, body {
     -webkit-backdrop-filter: blur(15px);
     border-left: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1); /* স্মুথ স্লাইড */
-    z-index: 99;
+    z-index: 9990;
     display: flex;
     flex-direction: column;
     box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
@@ -274,3 +274,4 @@ html, body {
     width: 100%;
     background: transparent;
 }
+
