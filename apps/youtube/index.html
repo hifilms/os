@@ -3,159 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PRO VIDEO HUB V2.5 - INDEX FIX</title>
+    <title>YouTube Pro</title>
     <style>
-        :root { --bg: #000; --accent: #ff0000; --text: #eee; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        :root { --bg: #000; --sidebar-bg: #0f0f0f; --accent: #ff0000; --text: #fff; --gray: #aaa; }
+        * { box-sizing: border-box; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); overflow: hidden; font-family: 'Roboto', sans-serif; }
 
-        .player-side { flex: 3; background: #000; height: calc(100vh - 65px); position: relative; }
-        #api-player { width: 100%; height: 100%; border: none; }
+        .app-container { display: flex; width: 100vw; height: 100vh; }
+        
+        /* ভিডিও প্লেয়ার এরিয়া - নিচে ৬৫ পিক্সেল প্যাডিং */
+        .player-wrapper { flex: 1; background: #000; padding-bottom: 65px; }
+        iframe { width: 100%; height: 100%; border: none; }
 
-        .sidebar { flex: 1; min-width: 300px; background: #080808; border-left: 1px solid #1a1a1a; display: flex; flex-direction: column; }
-        .search-area { padding: 15px; background: #000; }
-        .search-wrapper { position: relative; display: flex; align-items: center; }
-        .search-icon { position: absolute; left: 10px; color: #555; }
-        .search-input { width: 100%; padding: 12px 10px 12px 35px; border-radius: 8px; border: 1px solid #222; background: #111; color: #fff; outline: none; font-size: 14px; }
-        .search-input:focus { border-color: var(--accent); }
+        /* সাইডবার ডিজাইন */
+        .sidebar {
+            width: 95px; background: var(--sidebar-bg);
+            display: flex; flex-direction: column;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 1px solid #222; z-index: 10;
+        }
+        .sidebar:hover { width: 380px; }
 
-        #list-container { flex: 1; overflow-y: auto; padding: 10px; scrollbar-width: none; }
-        #list-container::-webkit-scrollbar { display: none; }
+        /* লোগো সেকশন */
+        .brand { padding: 20px 0; display: flex; align-items: center; justify-content: center; cursor: pointer; width: 100%; }
+        .sidebar:hover .brand { justify-content: flex-start; padding-left: 20px; }
 
-        .v-card { display: flex; gap: 10px; margin-bottom: 12px; cursor: pointer; padding: 10px; border-radius: 10px; transition: 0.1s; background: rgba(255,255,255,0.02); border: 1px solid transparent; }
-        /* Active highlight only when playing from THIS specific list */
-        .v-card.active { background: #1a1a1a; border-left: 4px solid var(--accent); opacity: 1; }
+        .yt-logo { 
+            width: 38px; height: 26px; background: var(--accent); border-radius: 6px; 
+            position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            transition: 0.3s;
+        }
+        .yt-logo:hover { transform: scale(1.1); box-shadow: 0 0 15px rgba(255, 0, 0, 0.7); }
+        .yt-logo::after { content: ''; border-style: solid; border-width: 6px 0 6px 10px; border-color: transparent transparent transparent white; margin-left: 2px; }
 
-        .thumb-box { position: relative; flex-shrink: 0; width: 110px; height: 62px; background: #111; border-radius: 6px; }
-        .thumb-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
-        .time { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.85); color: #fff; font-size: 10px; padding: 2px 5px; border-radius: 3px; }
+        .brand-text { font-size: 20px; font-weight: bold; letter-spacing: -1px; margin-left: 10px; display: none; }
+        .sidebar:hover .brand-text { display: block; }
 
-        .v-meta h5 { margin: 0; font-size: 13px; color: #ccc; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
+        /* সার্চ এরিয়া */
+        .search-area { padding: 0 15px 15px; opacity: 0; visibility: hidden; height: 0; transition: 0.3s; position: relative; }
+        .sidebar:hover .search-area { opacity: 1; visibility: visible; height: auto; }
+        input { width: 100%; background: #121212; border: 1px solid #333; padding: 12px 15px; color: white; border-radius: 25px; outline: none; }
+
+        /* সাজেশন বক্স - স্ক্রলবার হাইড */
+        #suggestions {
+            position: absolute; top: 50px; left: 15px; right: 15px;
+            background: #1a1a1a; border-radius: 10px; z-index: 100;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.8); display: none;
+            max-height: 250px; overflow-y: auto; scrollbar-width: none;
+        }
+        #suggestions::-webkit-scrollbar { display: none; }
+        .suggestion-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #222; font-size: 14px; }
+        .suggestion-item:hover { background: #333; color: var(--accent); }
+
+        /* লোডিং ইন্ডিকেটর */
+        .loader {
+            display: none; width: 30px; height: 30px; border: 3px solid #333;
+            border-top: 3px solid var(--accent); border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 20px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* ভিডিও লিস্ট */
+        .video-list { flex: 1; overflow-y: auto; scrollbar-width: none; }
+        .video-list::-webkit-scrollbar { display: none; }
+
+        .video-item { display: flex; gap: 15px; padding: 12px; cursor: pointer; transition: background 0.2s; border-left: 3px solid transparent; align-items: center; }
+        .sidebar:hover .video-item { align-items: flex-start; }
+        .video-item:hover { background: #1a1a1a; }
+        .video-item.active { background: #222; border-left-color: var(--accent); }
+
+        /* থাম্বনেইল বক্স - সাইজ ফিক্সড */
+        .thumb-box { position: relative; flex-shrink: 0; display: flex; justify-content: center; width: 100%; }
+        .sidebar:hover .thumb-box { width: auto; }
+        .thumb-box img { width: 75px; height: 42px; border-radius: 4px; object-fit: cover; transition: all 0.4s ease; border: 1px solid #333; }
+        .sidebar:hover .thumb-box img { width: 165px; height: 92px; border-radius: 8px; }
+
+        .duration { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.8); color: white; font-size: 10px; padding: 2px 5px; border-radius: 3px; opacity: 0; transition: opacity 0.3s; }
+        .sidebar:hover .duration { opacity: 1; }
+
+        .video-info { display: none; overflow: hidden; flex: 1; }
+        .sidebar:hover .video-info { display: block; }
+        .video-info h4 { margin: 0 0 5px 0; font-size: 14px; line-height: 1.3; color: #efefef; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .channel-name { font-size: 12px; color: var(--gray); }
+
+        @media (max-width: 768px) { .sidebar { position: fixed; right: 0; height: 100%; } .sidebar:hover { width: 85%; } }
     </style>
 </head>
 <body>
 
-    <div class="player-side">
-        <div id="api-player"></div>
+<div class="app-container">
+    <div class="player-wrapper">
+        <div id="yt-player"></div>
     </div>
 
-    <div class="sidebar">
-        <div class="search-area">
-            <div class="search-wrapper">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="sInput" class="search-input" placeholder="Search and Enter..." autocomplete="off"
-                       onkeypress="if(event.key==='Enter') runSearch()">
-            </div>
+    <div class="sidebar" id="sidebar">
+        <div class="brand" onclick="location.reload()">
+            <div class="yt-logo"></div>
+            <span class="brand-text">YouTube<span style="font-weight: 800; color: #ff0000; margin-left: 4px;">Pro</span></span>
         </div>
-        <div id="list-container"><div id="video-list"></div></div>
+
+        <div class="search-area">
+            <input type="text" id="searchInput" placeholder="Search videos..." autocomplete="off">
+            <div id="suggestions"></div>
+        </div>
+
+        <div id="loading" class="loader"></div>
+        <div class="video-list" id="playlist"></div>
     </div>
+</div>
 
+<script src="https://www.youtube.com/iframe_api"></script>
 <script>
-    let player;
-    let masterList = [];
-    let currentIdx = -1; // -1 means no active video in the CURRENT list
-    let firstLoad = true;
-    let bufferWatchdog;
-
-    const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    document.head.appendChild(tag);
+    let player, currentVideos = [], currentIndex = -1;
+    const workerUrl = "https://ancient-base-c8f2.biswabyapihalder.workers.dev/"; 
 
     function onYouTubeIframeAPIReady() {
-        player = new YT.Player('api-player', {
-            height: '100%', width: '100%',
-            playerVars: { 'autoplay': 1, 'controls': 1, 'rel': 0, 'modestbranding': 1, 'vq': 'small' },
-            events: {
-                'onReady': () => runSearch("Trending Now"),
-                'onStateChange': onPlayerStateChange,
-                'onError': () => skipDeadVideo()
+        player = new YT.Player('yt-player', {
+            playerVars: { 
+                'autoplay': 1, 
+                'controls': 1, 
+                'rel': 0, 
+                'modestbranding': 1,
+                'iv_load_policy': 3, // ভিডিওর ওপরের পপআপ বন্ধের জন্য
+                'cc_load_policy': 0  // সাবটাইটেল ডিফল্ট অফ
+            },
+            events: { 
+                'onReady': () => loadVideos("Trending 2026", true),
+                'onStateChange': (e) => { if(e.data === 0) playNext(); }
             }
         });
     }
 
-    function onPlayerStateChange(event) {
-        clearTimeout(bufferWatchdog);
-        if (event.data == YT.PlayerState.ENDED) {
-            playVideo(currentIdx + 1);
-        }
-        if (event.data == YT.PlayerState.BUFFERING) {
-            bufferWatchdog = setTimeout(() => {
-                if (player.getPlayerState() === YT.PlayerState.BUFFERING) skipDeadVideo();
-            }, 5000); 
-        }
+    const searchInput = document.getElementById('searchInput');
+    const suggestionBox = document.getElementById('suggestions');
+    const sidebar = document.getElementById('sidebar');
+    const loader = document.getElementById('loading');
+    const listDiv = document.getElementById('playlist');
+
+    // সাইডবারে মাউস নিলে অটো ফোকাস
+    sidebar.addEventListener('mouseenter', () => {
+        setTimeout(() => { if(window.innerWidth > 768) searchInput.focus(); }, 400);
+    });
+
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleSearch(searchInput.value);
+    });
+
+    function handleSearch(query) {
+        if(!query) return;
+        loadVideos(query, false);
+        searchInput.value = ''; 
+        suggestionBox.style.display = 'none';
+        searchInput.blur();
     }
 
-    async function runSearch(qVal = null) {
-        const inputField = document.getElementById('sInput');
-        const query = qVal || inputField.value;
-        if(!query) return;
-        
-        // বক্স ক্লিয়ার করা
-        if(!qVal) inputField.value = ""; 
+    // অটো-সাজেশন লজিক
+    searchInput.addEventListener('input', () => {
+        const query = searchInput.value;
+        if (query.length < 2) { suggestionBox.style.display = 'none'; return; }
+        const script = document.createElement('script');
+        script.id = "jsonp_suggest";
+        script.src = `https://suggestqueries.google.com/complete/search?client=youtube&q=${encodeURIComponent(query)}&callback=handleSuggestions`;
+        const oldScript = document.getElementById("jsonp_suggest");
+        if(oldScript) oldScript.remove();
+        document.body.appendChild(script);
+    });
 
-        // গুরুত্বপূর্ণ ফিক্স: নতুন সার্চে ইনডেক্স পুরোপুরি রিসেট করা
-        currentIdx = -1; 
+    window.handleSuggestions = function(data) {
+        const suggestions = data[1];
+        if (suggestions && suggestions.length > 0) {
+            suggestionBox.innerHTML = suggestions.slice(0, 8).map(s => `
+                <div class="suggestion-item" onclick="selectSuggestion('${s[0].replace(/'/g, "\\'")}')">${s[0]}</div>
+            `).join('');
+            suggestionBox.style.display = 'block';
+        } else {
+            suggestionBox.style.display = 'none';
+        }
+    };
+
+    function selectSuggestion(text) { handleSearch(text); }
+
+    async function loadVideos(query, isFirst) {
+        // মেমোরি এবং হাইলাইট রিসেট
+        if(!isFirst) {
+            currentIndex = -1;
+            listDiv.innerHTML = '';
+        }
+        
+        loader.style.display = 'block';
+        listDiv.style.opacity = '0.3';
 
         try {
-            const res = await fetch(`https://pipedapi.kavin.rocks/search?q=${encodeURIComponent(query)}&filter=videos`);
-            const data = await res.json();
-            masterList = data.items.filter(v => v.duration > 15);
-            
-            // লিস্ট রি-রেন্ডার করা (এখন সব হাইলাইট মুছে যাবে)
-            renderList();
-
-            // শুধুমাত্র প্রথমবার অ্যাপ চালু হলে ১ নম্বর ভিডিও অটো প্লে হবে
-            if(firstLoad && masterList.length > 0) {
-                playVideo(0);
-                firstLoad = false;
-            }
-        } catch (e) { console.error("Search error"); }
+            const res = await fetch(`${workerUrl}?q=${encodeURIComponent(query)}`);
+            currentVideos = await res.json();
+            renderPlaylist();
+            if (isFirst && currentVideos.length > 0) playVideo(0);
+        } catch (e) { console.error("Fetch Error"); }
+        
+        loader.style.display = 'none';
+        listDiv.style.opacity = '1';
     }
 
-    function renderList() {
-        const container = document.getElementById('video-list');
-        container.innerHTML = masterList.map((v, i) => {
-            const id = v.url.split('v=')[1];
-            // এখানে চেক করা হচ্ছে i কি currentIdx এর সমান কি না
-            return `<div class="v-card ${i === currentIdx ? 'active' : ''}" id="v-card-${i}" onclick="playVideo(${i})">
+    function renderPlaylist() {
+        if(!currentVideos) return;
+        listDiv.innerHTML = currentVideos.map((v, i) => `
+            <div class="video-item ${i === currentIndex ? 'active' : ''}" onclick="playVideo(${i})">
                 <div class="thumb-box">
-                    <img src="https://i.ytimg.com/vi/${id}/mqdefault.jpg" loading="lazy">
-                    <span class="time">${fmt(v.duration)}</span>
+                    <img src="${v.thumb}">
+                    <span class="duration">${v.duration}</span>
                 </div>
-                <div class="v-meta"><h5>${v.title}</h5></div>
-            </div>`;
-        }).join('');
+                <div class="video-info">
+                    <h4>${v.title}</h4>
+                    <div class="channel-name">${v.channel}</div>
+                </div>
+            </div>
+        `).join('');
     }
 
     function playVideo(index) {
-        if (index < 0 || index >= masterList.length) return;
-        
-        currentIdx = index;
-        const vidId = masterList[currentIdx].url.split('v=')[1];
-        player.loadVideoById({ videoId: vidId, suggestedQuality: 'small' });
-        
-        // শুধুমাত্র এখন ইউআই-তে হাইলাইট বসানো হবে
-        renderList(); 
-        
-        const activeCard = document.getElementById(`v-card-${index}`);
-        if(activeCard) {
-            activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+        if(!currentVideos[index]) return;
+        currentIndex = index;
+        player.loadVideoById(currentVideos[index].id);
+        renderPlaylist();
     }
 
-    function skipDeadVideo() {
-        if (currentIdx === -1) return;
-        masterList.splice(currentIdx, 1);
-        renderList();
-        if (masterList.length > currentIdx) playVideo(currentIdx);
+    function playNext() {
+        if (currentIndex < currentVideos.length - 1) playVideo(currentIndex + 1);
     }
 
-    function fmt(s) { 
-        let m = Math.floor(s/60);
-        let sec = s%60;
-        return m + ":" + (sec < 10 ? '0' : '') + sec; 
-    }
-
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-area')) suggestionBox.style.display = 'none';
+    });
 
 
 
@@ -184,8 +262,6 @@ setInterval(() => {
 
 // ভিডিও চলার সময় এটি কল করুন
 window.parent.postMessage('reset_lock', '*');
-
 </script>
 </body>
 </html>
-
