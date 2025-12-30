@@ -209,12 +209,68 @@ html, body {
 
 /* ঘড়ি ও তারিখ */
 #system-tray {
-    min-width: 130px;
+    width: 100px;
     color: white;
-    text-align: right;
+    text-align: left;
+    border-right: 1px solid rgba(255,255,255,0.2);
     border-left: 1px solid rgba(255,255,255,0.2);
     padding-left: 15px;
 }
 .datetime { display: flex; flex-direction: column; }
-#clock { font-size: 14px; font-weight: bold; }
+#clock { font-size: 12px; font-weight: bold; }
 #date { font-size: 12px; opacity: 0.7; }
+
+/* AI সাইডবার মেইন কন্টেইনার */
+#ai-sidebar {
+    position: fixed;
+    right: -400px; /* শুরুতে বাইরে থাকবে */
+    top: 0;
+    width: 400px;
+    height: 100vh;
+    background: rgba(15, 20, 35, 0.75); /* হালকা স্বচ্ছ নীলচে কালো */
+    backdrop-filter: blur(15px); /* পেছনের অংশ ব্লার করার জাদু */
+    -webkit-backdrop-filter: blur(15px);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1); /* স্মুথ স্লাইড */
+    z-index: 99;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+}
+
+/* সাইডবার একটিভ হলে */
+#ai-sidebar.active {
+    right: 0;
+}
+
+/* সাইডবার হেডার */
+.sidebar-header {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    font-family: 'Segoe UI', sans-serif;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header h3 { margin: 0; font-size: 18px; font-weight: 500; }
+
+.close-ai {
+    background: none;
+    border: none;
+    color: #ccc;
+    font-size: 22px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.close-ai:hover { color: #ff4d4d; }
+
+/* এআই আইফ্রেম */
+#ai-iframe {
+    flex: 1;
+    border: none;
+    width: 100%;
+    background: transparent;
+}
