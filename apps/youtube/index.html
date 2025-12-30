@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Pro - Perfect Edition</title>
+    <title>YouTube Pro - Full Edition</title>
     <style>
         :root { --bg: #000; --sidebar-bg: #0f0f0f; --accent: #ff0000; --text: #fff; --gray: #aaa; }
         * { box-sizing: border-box; }
@@ -13,7 +13,7 @@
         .player-wrapper { flex: 1; background: #000; padding-bottom: 65px; position: relative; }
         #main-video { width: 100%; height: 100%; border: none; }
 
-        /* Classic Pro Sidebar */
+        /* Classic Design Sidebar */
         .sidebar {
             width: 95px; background: var(--sidebar-bg);
             display: flex; flex-direction: column;
@@ -35,12 +35,7 @@
         .sidebar:hover .search-area { opacity: 1; visibility: visible; height: auto; }
         input { width: 100%; background: #121212; border: 1px solid #333; padding: 12px 15px; color: white; border-radius: 25px; outline: none; }
 
-        #suggestions { 
-            position: absolute; top: 50px; left: 15px; right: 15px; 
-            background: #1a1a1a; border-radius: 10px; z-index: 100; 
-            box-shadow: 0 5px 25px rgba(0,0,0,0.8); display: none; 
-            max-height: 250px; overflow-y: auto; 
-        }
+        #suggestions { position: absolute; top: 50px; left: 15px; right: 15px; background: #1a1a1a; border-radius: 10px; z-index: 100; box-shadow: 0 5px 25px rgba(0,0,0,0.8); display: none; max-height: 250px; overflow-y: auto; }
         .suggestion-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #222; font-size: 14px; }
         .suggestion-item:hover { background: #333; color: var(--accent); }
 
@@ -89,51 +84,51 @@
     </div>
 </div>
 
-<script src="https://www.youtube.com/iframe_api"></script>
 <script>
+    // গুরুত্বপূর্ণ: আপনার ক্লাউডফ্লেয়ার লিঙ্কটি এখানে দিন
     const workerUrl = "https://ancient-base-c8f2.biswabyapihalder.workers.dev/"; 
-    let player, currentVideos = [], currentIndex = -1;
+    
+    let player, currentVideos = [], currentIndex = -1, apiReady = false;
 
-    // ১. ইউটিউব প্লেয়ার সেটআপ
+    // ১. ইউটিউব এপিআই লোড
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
     function onYouTubeIframeAPIReady() {
+        apiReady = true;
         player = new YT.Player('main-video', {
             playerVars: { 'autoplay': 1, 'rel': 0, 'modestbranding': 1, 'origin': window.location.origin },
             events: {
                 'onReady': () => loadVideos("Trending Music", true),
-                'onStateChange': (event) => { if (event.data === YT.PlayerState.ENDED) playNext(); },
-                'onError': onPlayerError
+                'onStateChange': (e) => { if (e.data === YT.PlayerState.ENDED) playNext(); },
+                'onError': () => { 
+                    currentVideos.splice(currentIndex, 1); 
+                    renderPlaylist(); 
+                    if (currentIndex < currentVideos.length) playVideo(currentIndex); 
+                }
             }
         });
     }
 
-    function onPlayerError() {
-        currentVideos.splice(currentIndex, 1);
-        renderPlaylist();
-        if (currentIndex < currentVideos.length) playVideo(currentIndex);
-    }
-
-    function playNext() {
-        if (currentIndex < currentVideos.length - 1) playVideo(currentIndex + 1);
-    }
-
-    // ২. ভিডিও লোড লজিক (Uninterrupted Search)
+    // ২. ভিডিও লোড এবং অটো-প্লে লজিক
     async function loadVideos(query, isFirstLaunch) {
         document.getElementById('loading').style.display = 'block';
         try {
             const response = await fetch(`${workerUrl}?q=${encodeURIComponent(query)}`);
             const newVideos = await response.json();
-            
             currentVideos = newVideos;
             
             if (isFirstLaunch) {
                 currentIndex = 0;
                 renderPlaylist();
-                player.loadVideoById(currentVideos[0].id);
+                if(apiReady) player.loadVideoById(currentVideos[0].id);
             } else {
                 currentIndex = -1; // সার্চ করলে হাইলাইট রিমুভ হবে কিন্তু পুরনো ভিডিও চলবে
                 renderPlaylist();
             }
-        } catch (e) { console.error("Error:", e); }
+        } catch (e) { console.error(e); }
         finally { document.getElementById('loading').style.display = 'none'; }
     }
 
@@ -155,22 +150,28 @@
 
     function playVideo(index) {
         currentIndex = index;
-        const videoId = currentVideos[index].id;
-        player.loadVideoById(videoId);
-        renderPlaylist();
+        if (player && player.loadVideoById) {
+            player.loadVideoById(currentVideos[index].id);
+            renderPlaylist();
+        }
     }
 
-    // ৩. ইনপুট ও সাজেশনস লজিক (নিখুঁতভাবে হ্যান্ডেল করা)
+    function playNext() {
+        if (currentIndex < currentVideos.length - 1) playVideo(currentIndex + 1);
+    }
+
+    // ৩. সার্চ, সাজেশন্স এবং অটো-ফোকাস লজিক
     const searchInput = document.getElementById('searchInput');
     const suggestionBox = document.getElementById('suggestions');
+    const sidebar = document.getElementById('sidebar');
+
+    // সাইডবার হোভার করলে অটো-ফোকাস
+    sidebar.addEventListener('mouseenter', () => {
+        setTimeout(() => { searchInput.focus(); }, 400);
+    });
 
     searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            loadVideos(searchInput.value, false);
-            searchInput.value = '';
-            suggestionBox.style.display = 'none';
-            searchInput.blur();
-        }
+        if (e.key === 'Enter') { selectSuggestion(searchInput.value); }
     });
 
     searchInput.addEventListener('input', () => {
@@ -189,8 +190,6 @@
                 <div class="suggestion-item" onclick="selectSuggestion('${s[0].replace(/'/g, "\\'")}')">${s[0]}</div>
             `).join('');
             suggestionBox.style.display = 'block';
-        } else {
-            suggestionBox.style.display = 'none';
         }
     };
 
@@ -204,7 +203,7 @@
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.search-area')) suggestionBox.style.display = 'none';
     });
-    
+ 
     // ভিডিও চললে মেইন ওএস-কে জানানো
 setInterval(() => {
     // যদি ইউটিউব প্লেয়ার প্লেয়িং মোডে থাকে (১ মানে Playing)
