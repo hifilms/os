@@ -3,55 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Pro</title>
+    <title>YouTube Pro - Perfect Edition</title>
     <style>
         :root { --bg: #000; --sidebar-bg: #0f0f0f; --accent: #ff0000; --text: #fff; --gray: #aaa; }
         * { box-sizing: border-box; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); overflow: hidden; font-family: 'Roboto', sans-serif; }
+
         .app-container { display: flex; width: 100vw; height: 100vh; }
         .player-wrapper { flex: 1; background: #000; padding-bottom: 65px; position: relative; }
-        #main-video { width: 100%; height: 100%; border: none; background: #000; }
-        .sidebar { width: 95px; background: var(--sidebar-bg); display: flex; flex-direction: column; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-left: 1px solid #222; z-index: 10; }
+        #main-video { width: 100%; height: 100%; border: none; }
+
+        /* Classic Pro Sidebar */
+        .sidebar {
+            width: 95px; background: var(--sidebar-bg);
+            display: flex; flex-direction: column;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 1px solid #222; z-index: 10;
+        }
         .sidebar:hover { width: 380px; }
+
         .brand { padding: 20px 0; display: flex; align-items: center; justify-content: center; cursor: pointer; width: 100%; }
         .sidebar:hover .brand { justify-content: flex-start; padding-left: 20px; }
+
         .yt-logo { width: 38px; height: 26px; background: var(--accent); border-radius: 6px; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .yt-logo::after { content: ''; border-style: solid; border-width: 6px 0 6px 10px; border-color: transparent transparent transparent white; margin-left: 2px; }
+
         .brand-text { font-size: 20px; font-weight: bold; letter-spacing: -1px; margin-left: 10px; display: none; }
         .sidebar:hover .brand-text { display: block; }
+
         .search-area { padding: 0 15px 15px; opacity: 0; visibility: hidden; height: 0; transition: 0.3s; position: relative; }
         .sidebar:hover .search-area { opacity: 1; visibility: visible; height: auto; }
         input { width: 100%; background: #121212; border: 1px solid #333; padding: 12px 15px; color: white; border-radius: 25px; outline: none; }
-        #suggestions { position: absolute; top: 50px; left: 15px; right: 15px; background: #1a1a1a; border-radius: 10px; z-index: 100; box-shadow: 0 5px 25px rgba(0,0,0,0.8); display: none; max-height: 250px; overflow-y: auto; scrollbar-width: none; }
-        #suggestions::-webkit-scrollbar { display: none; }
+
+        #suggestions { 
+            position: absolute; top: 50px; left: 15px; right: 15px; 
+            background: #1a1a1a; border-radius: 10px; z-index: 100; 
+            box-shadow: 0 5px 25px rgba(0,0,0,0.8); display: none; 
+            max-height: 250px; overflow-y: auto; 
+        }
         .suggestion-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #222; font-size: 14px; }
         .suggestion-item:hover { background: #333; color: var(--accent); }
-        .loader { display: none; width: 30px; height: 30px; border: 3px solid #333; border-top: 3px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
         .video-list { flex: 1; overflow-y: auto; scrollbar-width: none; }
         .video-list::-webkit-scrollbar { display: none; }
-        .video-item { display: flex; gap: 15px; padding: 12px; cursor: pointer; transition: background 0.2s; border-left: 3px solid transparent; align-items: center; }
-        .sidebar:hover .video-item { align-items: flex-start; }
+
+        .video-item { display: flex; gap: 15px; padding: 12px; cursor: pointer; transition: 0.2s; align-items: center; border-left: 3px solid transparent; }
         .video-item:hover { background: #1a1a1a; }
         .video-item.active { background: #222; border-left-color: var(--accent); }
-        .thumb-box { position: relative; flex-shrink: 0; display: flex; justify-content: center; width: 100%; }
+
+        .thumb-box { position: relative; flex-shrink: 0; width: 100%; display: flex; justify-content: center; }
         .sidebar:hover .thumb-box { width: auto; }
-        .thumb-box img { width: 75px; height: 42px; border-radius: 4px; object-fit: cover; transition: all 0.4s ease; border: 1px solid #333; }
+        .thumb-box img { width: 75px; height: 42px; border-radius: 4px; object-fit: cover; transition: 0.4s; }
         .sidebar:hover .thumb-box img { width: 165px; height: 92px; border-radius: 8px; }
-        .duration { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.8); color: white; font-size: 10px; padding: 2px 5px; border-radius: 3px; opacity: 0; transition: opacity 0.3s; }
+
+        .duration { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.8); color: white; font-size: 10px; padding: 2px 5px; border-radius: 3px; opacity: 0; }
         .sidebar:hover .duration { opacity: 1; }
-        .video-info { display: none; overflow: hidden; flex: 1; }
+
+        .video-info { display: none; flex: 1; overflow: hidden; }
         .sidebar:hover .video-info { display: block; }
         .video-info h4 { margin: 0 0 5px 0; font-size: 14px; line-height: 1.3; color: #efefef; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .channel-name { font-size: 12px; color: var(--gray); }
-        @media (max-width: 768px) { .sidebar { position: fixed; right: 0; height: 100%; } .sidebar:hover { width: 85%; } }
+
+        .loader { display: none; width: 30px; height: 30px; border: 3px solid #333; border-top: 3px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+
 <div class="app-container">
     <div class="player-wrapper">
-        <iframe id="main-video" src="about:blank" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
+        <div id="main-video"></div>
     </div>
+
     <div class="sidebar" id="sidebar">
         <div class="brand" onclick="location.reload()">
             <div class="yt-logo"></div>
@@ -66,44 +89,66 @@
     </div>
 </div>
 
+<script src="https://www.youtube.com/iframe_api"></script>
 <script>
     const workerUrl = "https://ancient-base-c8f2.biswabyapihalder.workers.dev/"; 
-    let currentVideos = [], currentIndex = -1;
-    const searchInput = document.getElementById('searchInput');
-    const suggestionBox = document.getElementById('suggestions');
-    const loader = document.getElementById('loading');
-    const listDiv = document.getElementById('playlist');
-    const videoFrame = document.getElementById('main-video');
+    let player, currentVideos = [], currentIndex = -1;
 
-    window.onload = () => { loadVideos("Trending Music", true); };
-
-    function handleSearch(query) {
-        if(!query) return;
-        loadVideos(query, false);
-        searchInput.value = ''; 
-        suggestionBox.style.display = 'none';
-        searchInput.blur();
+    // ১. ইউটিউব প্লেয়ার সেটআপ
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('main-video', {
+            playerVars: { 'autoplay': 1, 'rel': 0, 'modestbranding': 1, 'origin': window.location.origin },
+            events: {
+                'onReady': () => loadVideos("Trending Music", true),
+                'onStateChange': (event) => { if (event.data === YT.PlayerState.ENDED) playNext(); },
+                'onError': onPlayerError
+            }
+        });
     }
 
-    searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSearch(searchInput.value); });
+    function onPlayerError() {
+        currentVideos.splice(currentIndex, 1);
+        renderPlaylist();
+        if (currentIndex < currentVideos.length) playVideo(currentIndex);
+    }
 
-    async function loadVideos(query, isFirst) {
-        if(!isFirst) { currentIndex = -1; listDiv.innerHTML = ''; }
-        loader.style.display = 'block';
+    function playNext() {
+        if (currentIndex < currentVideos.length - 1) playVideo(currentIndex + 1);
+    }
+
+    // ২. ভিডিও লোড লজিক (Uninterrupted Search)
+    async function loadVideos(query, isFirstLaunch) {
+        document.getElementById('loading').style.display = 'block';
         try {
             const response = await fetch(`${workerUrl}?q=${encodeURIComponent(query)}`);
-            currentVideos = await response.json();
-            renderPlaylist();
-            if (currentVideos.length > 0 && (isFirst || currentIndex === -1)) playVideo(0);
+            const newVideos = await response.json();
+            
+            currentVideos = newVideos;
+            
+            if (isFirstLaunch) {
+                currentIndex = 0;
+                renderPlaylist();
+                player.loadVideoById(currentVideos[0].id);
+            } else {
+                currentIndex = -1; // সার্চ করলে হাইলাইট রিমুভ হবে কিন্তু পুরনো ভিডিও চলবে
+                renderPlaylist();
+            }
         } catch (e) { console.error("Error:", e); }
-        finally { loader.style.display = 'none'; }
+        finally { document.getElementById('loading').style.display = 'none'; }
     }
 
     function renderPlaylist() {
+        const listDiv = document.getElementById('playlist');
         listDiv.innerHTML = currentVideos.map((v, i) => `
             <div class="video-item ${i === currentIndex ? 'active' : ''}" onclick="playVideo(${i})">
-                <div class="thumb-box"><img src="${v.thumb}"><span class="duration">${v.duration}</span></div>
-                <div class="video-info"><h4>${v.title}</h4><div class="channel-name">${v.channel}</div></div>
+                <div class="thumb-box">
+                    <img src="${v.thumb}">
+                    <span class="duration">${v.duration}</span>
+                </div>
+                <div class="video-info">
+                    <h4>${v.title}</h4>
+                    <div class="channel-name">${v.channel}</div>
+                </div>
             </div>
         `).join('');
     }
@@ -111,13 +156,23 @@
     function playVideo(index) {
         currentIndex = index;
         const videoId = currentVideos[index].id;
-        // GitHub-এ চালানোর জন্য origin প্যারামিটার যোগ করা হয়েছে
-        const origin = window.location.origin;
-        videoFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&origin=${origin}`;
+        player.loadVideoById(videoId);
         renderPlaylist();
     }
 
-    // সাজেশন লজিক
+    // ৩. ইনপুট ও সাজেশনস লজিক (নিখুঁতভাবে হ্যান্ডেল করা)
+    const searchInput = document.getElementById('searchInput');
+    const suggestionBox = document.getElementById('suggestions');
+
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            loadVideos(searchInput.value, false);
+            searchInput.value = '';
+            suggestionBox.style.display = 'none';
+            searchInput.blur();
+        }
+    });
+
     searchInput.addEventListener('input', () => {
         const query = searchInput.value;
         if (query.length < 2) { suggestionBox.style.display = 'none'; return; }
@@ -130,14 +185,27 @@
     window.handleSuggestions = (data) => {
         const suggestions = data[1];
         if (suggestions && suggestions.length > 0) {
-            suggestionBox.innerHTML = suggestions.slice(0, 8).map(s => `<div class="suggestion-item" onclick="handleSearch('${s[0]}')">${s[0]}</div>`).join('');
+            suggestionBox.innerHTML = suggestions.slice(0, 8).map(s => `
+                <div class="suggestion-item" onclick="selectSuggestion('${s[0].replace(/'/g, "\\'")}')">${s[0]}</div>
+            `).join('');
             suggestionBox.style.display = 'block';
+        } else {
+            suggestionBox.style.display = 'none';
         }
     };
 
+    function selectSuggestion(text) {
+        loadVideos(text, false);
+        searchInput.value = '';
+        suggestionBox.style.display = 'none';
+        searchInput.blur();
+    }
 
-
-// ভিডিও চললে মেইন ওএস-কে জানানো
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-area')) suggestionBox.style.display = 'none';
+    });
+    
+    // ভিডিও চললে মেইন ওএস-কে জানানো
 setInterval(() => {
     // যদি ইউটিউব প্লেয়ার প্লেয়িং মোডে থাকে (১ মানে Playing)
     if (typeof player !== 'undefined' && player.getPlayerState && player.getPlayerState() === 1) {
@@ -165,5 +233,3 @@ window.parent.postMessage('reset_lock', '*');
 </script>
 </body>
 </html>
-
-
