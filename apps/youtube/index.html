@@ -8,146 +8,74 @@
         :root { --bg: #000; --sidebar-bg: #0f0f0f; --accent: #ff0000; --text: #fff; --gray: #aaa; }
         * { box-sizing: border-box; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); overflow: hidden; font-family: 'Roboto', sans-serif; }
-
         .app-container { display: flex; width: 100vw; height: 100vh; }
-        
-        /* ভিডিও প্লেয়ার এরিয়া - নিচে ৬৫ পিক্সেল প্যাডিং */
-        .player-wrapper { flex: 1; background: #000; padding-bottom: 65px; }
-        iframe { width: 100%; height: 100%; border: none; }
-
-        /* সাইডবার ডিজাইন */
-        .sidebar {
-            width: 95px; background: var(--sidebar-bg);
-            display: flex; flex-direction: column;
-            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border-left: 1px solid #222; z-index: 10;
-        }
+        .player-wrapper { flex: 1; background: #000; padding-bottom: 65px; position: relative; }
+        #main-video { width: 100%; height: 100%; border: none; background: #000; }
+        .sidebar { width: 95px; background: var(--sidebar-bg); display: flex; flex-direction: column; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-left: 1px solid #222; z-index: 10; }
         .sidebar:hover { width: 380px; }
-
-        /* লোগো সেকশন */
         .brand { padding: 20px 0; display: flex; align-items: center; justify-content: center; cursor: pointer; width: 100%; }
         .sidebar:hover .brand { justify-content: flex-start; padding-left: 20px; }
-
-        .yt-logo { 
-            width: 38px; height: 26px; background: var(--accent); border-radius: 6px; 
-            position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-            transition: 0.3s;
-        }
-        .yt-logo:hover { transform: scale(1.1); box-shadow: 0 0 15px rgba(255, 0, 0, 0.7); }
+        .yt-logo { width: 38px; height: 26px; background: var(--accent); border-radius: 6px; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .yt-logo::after { content: ''; border-style: solid; border-width: 6px 0 6px 10px; border-color: transparent transparent transparent white; margin-left: 2px; }
-
         .brand-text { font-size: 20px; font-weight: bold; letter-spacing: -1px; margin-left: 10px; display: none; }
         .sidebar:hover .brand-text { display: block; }
-
-        /* সার্চ এরিয়া */
         .search-area { padding: 0 15px 15px; opacity: 0; visibility: hidden; height: 0; transition: 0.3s; position: relative; }
         .sidebar:hover .search-area { opacity: 1; visibility: visible; height: auto; }
         input { width: 100%; background: #121212; border: 1px solid #333; padding: 12px 15px; color: white; border-radius: 25px; outline: none; }
-
-        /* সাজেশন বক্স - স্ক্রলবার হাইড */
-        #suggestions {
-            position: absolute; top: 50px; left: 15px; right: 15px;
-            background: #1a1a1a; border-radius: 10px; z-index: 100;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.8); display: none;
-            max-height: 250px; overflow-y: auto; scrollbar-width: none;
-        }
+        #suggestions { position: absolute; top: 50px; left: 15px; right: 15px; background: #1a1a1a; border-radius: 10px; z-index: 100; box-shadow: 0 5px 25px rgba(0,0,0,0.8); display: none; max-height: 250px; overflow-y: auto; scrollbar-width: none; }
         #suggestions::-webkit-scrollbar { display: none; }
         .suggestion-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #222; font-size: 14px; }
         .suggestion-item:hover { background: #333; color: var(--accent); }
-
-        /* লোডিং ইন্ডিকেটর */
-        .loader {
-            display: none; width: 30px; height: 30px; border: 3px solid #333;
-            border-top: 3px solid var(--accent); border-radius: 50%;
-            animation: spin 1s linear infinite; margin: 20px auto;
-        }
+        .loader { display: none; width: 30px; height: 30px; border: 3px solid #333; border-top: 3px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* ভিডিও লিস্ট */
         .video-list { flex: 1; overflow-y: auto; scrollbar-width: none; }
         .video-list::-webkit-scrollbar { display: none; }
-
         .video-item { display: flex; gap: 15px; padding: 12px; cursor: pointer; transition: background 0.2s; border-left: 3px solid transparent; align-items: center; }
         .sidebar:hover .video-item { align-items: flex-start; }
         .video-item:hover { background: #1a1a1a; }
         .video-item.active { background: #222; border-left-color: var(--accent); }
-
-        /* থাম্বনেইল বক্স - সাইজ ফিক্সড */
         .thumb-box { position: relative; flex-shrink: 0; display: flex; justify-content: center; width: 100%; }
         .sidebar:hover .thumb-box { width: auto; }
         .thumb-box img { width: 75px; height: 42px; border-radius: 4px; object-fit: cover; transition: all 0.4s ease; border: 1px solid #333; }
         .sidebar:hover .thumb-box img { width: 165px; height: 92px; border-radius: 8px; }
-
         .duration { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.8); color: white; font-size: 10px; padding: 2px 5px; border-radius: 3px; opacity: 0; transition: opacity 0.3s; }
         .sidebar:hover .duration { opacity: 1; }
-
         .video-info { display: none; overflow: hidden; flex: 1; }
         .sidebar:hover .video-info { display: block; }
         .video-info h4 { margin: 0 0 5px 0; font-size: 14px; line-height: 1.3; color: #efefef; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .channel-name { font-size: 12px; color: var(--gray); }
-
         @media (max-width: 768px) { .sidebar { position: fixed; right: 0; height: 100%; } .sidebar:hover { width: 85%; } }
     </style>
 </head>
 <body>
-
 <div class="app-container">
     <div class="player-wrapper">
-        <div id="yt-player"></div>
+        <iframe id="main-video" src="about:blank" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
     </div>
-
     <div class="sidebar" id="sidebar">
         <div class="brand" onclick="location.reload()">
             <div class="yt-logo"></div>
-            <span class="brand-text">YouTube<span style="font-weight: 800; color: #ff0000; margin-left: 4px;">Pro</span></span>
+            <span class="brand-text">YouTube<span style="font-weight: 800; color: #ff0000; margin-left: 4px;">PRO</span></span>
         </div>
-
         <div class="search-area">
             <input type="text" id="searchInput" placeholder="Search videos..." autocomplete="off">
             <div id="suggestions"></div>
         </div>
-
         <div id="loading" class="loader"></div>
         <div class="video-list" id="playlist"></div>
     </div>
 </div>
 
-<script src="https://www.youtube.com/iframe_api"></script>
 <script>
-    let player, currentVideos = [], currentIndex = -1;
-    const workerUrl = "https://ancient-base-c8f2.biswabyapihalder.workers.dev/"; 
-
-    function onYouTubeIframeAPIReady() {
-        player = new YT.Player('yt-player', {
-            playerVars: { 
-                'autoplay': 1, 
-                'controls': 1, 
-                'rel': 0, 
-                'modestbranding': 1,
-                'iv_load_policy': 3, // ভিডিওর ওপরের পপআপ বন্ধের জন্য
-                'cc_load_policy': 0  // সাবটাইটেল ডিফল্ট অফ
-            },
-            events: { 
-                'onReady': () => loadVideos("Trending 2026", true),
-                'onStateChange': (e) => { if(e.data === 0) playNext(); }
-            }
-        });
-    }
-
+    const workerUrl = "YOUR_CLOUDFLARE_WORKER_LINK"; 
+    let currentVideos = [], currentIndex = -1;
     const searchInput = document.getElementById('searchInput');
     const suggestionBox = document.getElementById('suggestions');
-    const sidebar = document.getElementById('sidebar');
     const loader = document.getElementById('loading');
     const listDiv = document.getElementById('playlist');
+    const videoFrame = document.getElementById('main-video');
 
-    // সাইডবারে মাউস নিলে অটো ফোকাস
-    sidebar.addEventListener('mouseenter', () => {
-        setTimeout(() => { if(window.innerWidth > 768) searchInput.focus(); }, 400);
-    });
-
-    searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') handleSearch(searchInput.value);
-    });
+    window.onload = () => { loadVideos("Trending Music", true); };
 
     function handleSearch(query) {
         if(!query) return;
@@ -157,83 +85,55 @@
         searchInput.blur();
     }
 
-    // অটো-সাজেশন লজিক
-    searchInput.addEventListener('input', () => {
-        const query = searchInput.value;
-        if (query.length < 2) { suggestionBox.style.display = 'none'; return; }
-        const script = document.createElement('script');
-        script.id = "jsonp_suggest";
-        script.src = `https://suggestqueries.google.com/complete/search?client=youtube&q=${encodeURIComponent(query)}&callback=handleSuggestions`;
-        const oldScript = document.getElementById("jsonp_suggest");
-        if(oldScript) oldScript.remove();
-        document.body.appendChild(script);
-    });
-
-    window.handleSuggestions = function(data) {
-        const suggestions = data[1];
-        if (suggestions && suggestions.length > 0) {
-            suggestionBox.innerHTML = suggestions.slice(0, 8).map(s => `
-                <div class="suggestion-item" onclick="selectSuggestion('${s[0].replace(/'/g, "\\'")}')">${s[0]}</div>
-            `).join('');
-            suggestionBox.style.display = 'block';
-        } else {
-            suggestionBox.style.display = 'none';
-        }
-    };
-
-    function selectSuggestion(text) { handleSearch(text); }
+    searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSearch(searchInput.value); });
 
     async function loadVideos(query, isFirst) {
-        // মেমোরি এবং হাইলাইট রিসেট
-        if(!isFirst) {
-            currentIndex = -1;
-            listDiv.innerHTML = '';
-        }
-        
+        if(!isFirst) { currentIndex = -1; listDiv.innerHTML = ''; }
         loader.style.display = 'block';
-        listDiv.style.opacity = '0.3';
-
         try {
-            const res = await fetch(`${workerUrl}?q=${encodeURIComponent(query)}`);
-            currentVideos = await res.json();
+            const response = await fetch(`${workerUrl}?q=${encodeURIComponent(query)}`);
+            currentVideos = await response.json();
             renderPlaylist();
-            if (isFirst && currentVideos.length > 0) playVideo(0);
-        } catch (e) { console.error("Fetch Error"); }
-        
-        loader.style.display = 'none';
-        listDiv.style.opacity = '1';
+            if (currentVideos.length > 0 && (isFirst || currentIndex === -1)) playVideo(0);
+        } catch (e) { console.error("Error:", e); }
+        finally { loader.style.display = 'none'; }
     }
 
     function renderPlaylist() {
-        if(!currentVideos) return;
         listDiv.innerHTML = currentVideos.map((v, i) => `
             <div class="video-item ${i === currentIndex ? 'active' : ''}" onclick="playVideo(${i})">
-                <div class="thumb-box">
-                    <img src="${v.thumb}">
-                    <span class="duration">${v.duration}</span>
-                </div>
-                <div class="video-info">
-                    <h4>${v.title}</h4>
-                    <div class="channel-name">${v.channel}</div>
-                </div>
+                <div class="thumb-box"><img src="${v.thumb}"><span class="duration">${v.duration}</span></div>
+                <div class="video-info"><h4>${v.title}</h4><div class="channel-name">${v.channel}</div></div>
             </div>
         `).join('');
     }
 
     function playVideo(index) {
-        if(!currentVideos[index]) return;
         currentIndex = index;
-        player.loadVideoById(currentVideos[index].id);
+        const videoId = currentVideos[index].id;
+        // GitHub-এ চালানোর জন্য origin প্যারামিটার যোগ করা হয়েছে
+        const origin = window.location.origin;
+        videoFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&origin=${origin}`;
         renderPlaylist();
     }
 
-    function playNext() {
-        if (currentIndex < currentVideos.length - 1) playVideo(currentIndex + 1);
-    }
-
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.search-area')) suggestionBox.style.display = 'none';
+    // সাজেশন লজিক
+    searchInput.addEventListener('input', () => {
+        const query = searchInput.value;
+        if (query.length < 2) { suggestionBox.style.display = 'none'; return; }
+        const script = document.createElement('script');
+        script.src = `https://suggestqueries.google.com/complete/search?client=youtube&q=${encodeURIComponent(query)}&callback=handleSuggestions`;
+        document.body.appendChild(script);
+        document.body.removeChild(script);
     });
+
+    window.handleSuggestions = (data) => {
+        const suggestions = data[1];
+        if (suggestions && suggestions.length > 0) {
+            suggestionBox.innerHTML = suggestions.slice(0, 8).map(s => `<div class="suggestion-item" onclick="handleSearch('${s[0]}')">${s[0]}</div>`).join('');
+            suggestionBox.style.display = 'block';
+        }
+    };
 
 
 
@@ -265,3 +165,4 @@ window.parent.postMessage('reset_lock', '*');
 </script>
 </body>
 </html>
+
