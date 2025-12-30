@@ -16,8 +16,17 @@
     </main>
     <footer id="taskbar">
         <div id="home-btn"></div>
-        <div id="running-apps"></div>
-        <div id="os-controls" style="display: flex; gap: 10px; align-items: center; padding-right: 15px;">
+        <div id="running-apps"></div>                
+        <div class="taskbar-icon" onclick="toggleAISidebar()" title="Gemini AI">
+            <img src="https://img.icons8.com/fluency/48/artificial-intelligence.png" alt="AI Icon" style="width: 28px;">
+        </div>
+        <div id="system-tray">
+            <div class="datetime">
+                <span id="clock">00:00</span>
+                <span id="date">00/00/0000</span>
+            </div>
+        </div>
+        <div id="os-controls" style="display: flex; gap: 10px; align-items: center;">
             <button id="fullscreen-btn" 
                     onclick="toggleOSFullScreen()" 
                     title="Full Screen" 
@@ -31,17 +40,11 @@
                 </span>
             </button>
         </div>
-        <div id="system-tray">
-            <div class="datetime">
-                <span id="clock">00:00</span>
-                <span id="date">00/00/0000</span>
-            </div>
-        </div>
     </footer>
 <div id="mouse-trigger"></div>
     <script src="script.js"></script>
     <script src="db-manager.js"></script>
     <script src="lockscreen.js"></script>
+    <script src="ai-assistant.js"></script>
 </body>
-
 </html>
