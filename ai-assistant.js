@@ -7,7 +7,7 @@ window.initAISidebar = function() {
         sidebar.style.display = 'none'; 
         
         sidebar.innerHTML = `
-            <div class="sidebar-header" style="padding: 12px 15px; display:flex; justify-content:space-between; align-items:center; background:#1a1b1e; color:#fff; border-bottom:1px solid #333; border-radius: 12px 0 0 0;">
+            <div class="sidebar-header" style="padding: 12px 15px; z-index: 9990; display:flex; justify-content:space-between; align-items:center; background:#1a1b1e; color:#fff; border-bottom:1px solid #333; border-radius: 12px 0 0 0;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <div style="width:10px; height:10px; background:#4285f4; border-radius:50%; box-shadow:0 0 10px #4285f4;"></div>
                     <span style="font-weight:bold; font-family:sans-serif; font-size:13px;">GEMINI AI 3.0</span>
@@ -43,4 +43,5 @@ window.toggleAISidebar = function() {
 // ৩. অটো-লোড
 window.addEventListener('DOMContentLoaded', (event) => {
     window.initAISidebar();
+
 });
