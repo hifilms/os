@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Pro - Full Edition</title>
+    <title>YouTube Pro - Full Edition v.2.9</title>
     <style>
         :root { --bg: #000; --sidebar-bg: #0f0f0f; --accent: #ff0000; --text: #fff; --gray: #aaa; }
         * { box-sizing: border-box; }
@@ -15,7 +15,7 @@
 
         /* Classic Design Sidebar */
         .sidebar {
-            width: 95px; background: var(--sidebar-bg);
+            width: 116px; background: var(--sidebar-bg);
             display: flex; flex-direction: column;
             transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             border-left: 1px solid #222; z-index: 10;
@@ -25,7 +25,7 @@
         .brand { padding: 20px 0; display: flex; align-items: center; justify-content: center; cursor: pointer; width: 100%; }
         .sidebar:hover .brand { justify-content: flex-start; padding-left: 20px; }
 
-        .yt-logo { width: 38px; height: 26px; background: var(--accent); border-radius: 6px; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .yt-logo { width: 42px; height: 29px; background: var(--accent); border-radius: 6px; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .yt-logo::after { content: ''; border-style: solid; border-width: 6px 0 6px 10px; border-color: transparent transparent transparent white; margin-left: 2px; }
 
         .brand-text { font-size: 20px; font-weight: bold; letter-spacing: -1px; margin-left: 10px; display: none; }
@@ -35,7 +35,17 @@
         .sidebar:hover .search-area { opacity: 1; visibility: visible; height: auto; }
         input { width: 100%; background: #121212; border: 1px solid #333; padding: 12px 15px; color: white; border-radius: 25px; outline: none; }
 
-        #suggestions { position: absolute; top: 50px; left: 15px; right: 15px; background: #1a1a1a; border-radius: 10px; z-index: 100; box-shadow: 0 5px 25px rgba(0,0,0,0.8); display: none; max-height: 250px; overflow-y: auto; }
+        #suggestions { position: absolute; top: 50px; left: 15px; right: 15px; background: #1a1a1a; border-radius: 10px; z-index: 100; box-shadow: 0 5px 25px rgba(0,0,0,0.8); display: none; max-height: 250px; overflow-y: auto; overflow-y: scroll; 
+
+    /* Internet Explorer এবং Edge-এর জন্য */
+    -ms-overflow-style: none;  
+    
+    /* Firefox-এর জন্য */
+    scrollbar-width: none;
+    }
+    #suggestions::-webkit-scrollbar {
+    display: none;
+}
         .suggestion-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #222; font-size: 14px; }
         .suggestion-item:hover { background: #333; color: var(--accent); }
 
@@ -48,7 +58,7 @@
 
         .thumb-box { position: relative; flex-shrink: 0; width: 100%; display: flex; justify-content: center; }
         .sidebar:hover .thumb-box { width: auto; }
-        .thumb-box img { width: 75px; height: 42px; border-radius: 4px; object-fit: cover; transition: 0.4s; }
+        .thumb-box img { width: 96px; height: 54px; border-radius: 4px; object-fit: cover; transition: 0.4s; }
         .sidebar:hover .thumb-box img { width: 165px; height: 92px; border-radius: 8px; }
 
         .duration { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.8); color: white; font-size: 10px; padding: 2px 5px; border-radius: 3px; opacity: 0; }
@@ -73,7 +83,7 @@
     <div class="sidebar" id="sidebar">
         <div class="brand" onclick="location.reload()">
             <div class="yt-logo"></div>
-            <span class="brand-text">YouTube<span style="font-weight: 800; color: #ff0000; margin-left: 4px;">PRO</span></span>
+            <span class="brand-text">YouTube<span style="font-weight: 800; color: #ff0000; margin-left: 4px;">Pro</span></span>
         </div>
         <div class="search-area">
             <input type="text" id="searchInput" placeholder="Search videos..." autocomplete="off">
