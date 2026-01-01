@@ -23,7 +23,7 @@
 },    
     {
       "id": "photopea",
-      "name": "photopea",
+      "name": "Photopea",
       "icon": "https://upload.wikimedia.org/wikipedia/commons/e/e6/Photopea_logo.svg",
       "category": "Tools",
       "description": "আপনার গ্যালারির ছবিগুলো ব্রাউজ করুন।"
@@ -40,5 +40,6 @@
   ]
 
 }
+
 
 
