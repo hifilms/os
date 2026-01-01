@@ -201,4 +201,19 @@ window.addEventListener('DOMContentLoaded', createLockScreen);
 
 
 
+// আইফ্রেম থেকে আসা মেসেজ রিসিভ করা
+window.addEventListener('message', function(event) {
+    if (event.data === 'user_is_active') {
+        // এখানে আপনার লক স্ক্রিনের টাইম রিসেট করার ফাংশনটি কল করুন
+        // উদাহরণস্বরূপ:
+        resetYourLockTimer(); 
+        console.log("User is active inside Iframe");
+    }
+});
+
+// আপনার বর্তমান যে ফাংশনটি টাইম রিসেট করে (যেমন নিচের মত হতে পারে)
+function resetYourLockTimer() {
+    clearTimeout(idleTimer); // আপনার ভেরিয়েবল নাম অনুযায়ী এটি পরিবর্তন করুন
+    idleTimer = setTimeout(showLockScreen, 60000); // ৬০ সেকেন্ড পর লক হবে
+}
 
