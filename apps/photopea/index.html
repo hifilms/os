@@ -80,20 +80,20 @@
         };
     </script>
 <script>
-    // আইফ্রেমের ভেতরে অ্যাক্টিভিটি হলে ওএস-কে সিগন্যাল পাঠাবে
-function sendActivitySignal() {
+// আইফ্রেমের ভেতর মাউস বা কিবোর্ড ব্যবহার করলে ওএসকে জানাবে
+function notifyOS() {
     window.parent.postMessage('reset_lock', '*');
 }
 
-// আইফ্রেমের ভেতর এই ইভেন্টগুলো ঘটলে সিগন্যাল যাবে
-window.addEventListener('mousemove', sendActivitySignal);
-window.addEventListener('mousedown', sendActivitySignal);
-window.addEventListener('keypress', sendActivitySignal);
-window.addEventListener('touchstart', sendActivitySignal);
+// ইভেন্ট লিসেনার সেট করা
+['mousemove', 'mousedown', 'keypress', 'touchstart'].forEach(function(evt) {
+    window.addEventListener(evt, notifyOS, false);
+});
 </script>
 
 </body>
 </html>
+
 
 
 
