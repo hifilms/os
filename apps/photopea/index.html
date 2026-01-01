@@ -80,21 +80,12 @@
         };
     </script>
 <script>
-    let lastSend = 0;
-    function notifyOS() {
-        let now = Date.now();
-        if (now - lastSend > 500) { // প্রতি আধ সেকেন্ডে একবার সিগন্যাল যাবে
-            window.parent.postMessage('reset_lock', '*');
-            lastSend = now;
-        }
-    }
-    ['mousemove', 'mousedown', 'keypress', 'touchstart'].forEach(evt => {
-        window.addEventListener(evt, notifyOS, true);
-    });
+    window.addEventListener('mousemove', () => window.parent.postMessage('reset_lock', '*'));
 </script>
 
 </body>
 </html>
+
 
 
 
