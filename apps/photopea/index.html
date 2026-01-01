@@ -1,17 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Page Title</title>
-<style>
-  .my-iframe {
-    border: none; /* Removes the default border */
-    width: 100%;
-    height: 100vh;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Page Iframe</title>
+    <style>
+        /* বডি এবং এইচটিএমএল এর ডিফল্ট মার্জিন-প্যাডিং সরিয়ে ফেলা */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* স্ক্রলবার হাইড করার জন্য */
+        }
+
+        /* আইফ্রেমকে পুরো পেজ জুড়ে সেট করা */
+        .full-page-iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;  /* ভিউপোর্টের ১০০% প্রস্থ */
+            height: 100vh; /* ভিউপোর্টের ১০০% উচ্চতা */
+            border: none;
+        }
+    </style>
 </head>
 <body>
-<iframe src="https://www.photopea.com/" title="photopea" class="my-iframe"></iframe>
+
+    <iframe 
+        src="https://www.photopea.com/" 
+        class="full-page-iframe"
+        allowfullscreen>
+    </iframe>
+
 </body>
 </html>
-
