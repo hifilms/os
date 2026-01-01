@@ -1,27 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Full Page Iframe</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fixed Full Page Website</title>
     <style>
-        /* বডি এবং এইচটিএমএল এর ডিফল্ট মার্জিন-প্যাডিং সরিয়ে ফেলা */
-        body, html {
+        /* ১. মেইন পেজের সব স্ক্রল এবং মুভমেন্ট বন্ধ করা */
+        html, body {
             margin: 0;
             padding: 0;
-            height: 100%;
-            width: 100%;
-            overflow: hidden; /* স্ক্রলবার হাইড করার জন্য */
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* স্ক্রলবার পুরোপুরি হাইড করবে */
+            position: fixed; /* পেজকে এক জায়গায় আটকে রাখবে */
         }
 
-        /* আইফ্রেমকে পুরো পেজ জুড়ে সেট করা */
-        .full-page-iframe {
+        /* ২. আইফ্রেমকে ফিক্সড পজিশনে রাখা */
+        .fixed-iframe {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100vw;  /* ভিউপোর্টের ১০০% প্রস্থ */
-            height: 100vh; /* ভিউপোর্টের ১০০% উচ্চতা */
+            width: 100%;
+            height: 100%;
             border: none;
+            overflow: hidden; /* আইফ্রেমের ভেতরের স্ক্রল ব্লক করার চেষ্টা করবে */
         }
     </style>
 </head>
@@ -29,8 +31,8 @@
 
     <iframe 
         src="https://www.photopea.com/" 
-        class="full-page-iframe"
-        allowfullscreen>
+        class="fixed-iframe"
+        scrolling="no">
     </iframe>
 
 </body>
