@@ -217,7 +217,7 @@ function resetMainLockTimer() {
     // নতুন করে টাইমার শুরু করা
     idleTimer = setTimeout(() => {
         showLockScreen(); // এই ফাংশনটি আপনার লক স্ক্রিন দেখায়
-    }, lockTimeLimit);
+    }, LOCK_LIMIT);
     
     console.log("টাইমার রিসেট হয়েছে - এখন থেকে নতুন করে ৬০ সেকেন্ড গোনা শুরু হবে।");
 }
@@ -237,3 +237,4 @@ window.addEventListener('message', function(event) {
 
 // শুরুতে একবার টাইমার চালু করা
 resetMainLockTimer();
+
