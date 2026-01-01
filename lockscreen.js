@@ -1,19 +1,17 @@
 /**
- * lockscreen.js - Master Stable Version
- * fixes: video detection, cross-origin iframe activity, and timer stability.
+ * lockscreen.js 
+ * Final Version: Auto-focus, Keyboard Support, and Video Playback Integration
  */
 
 let idleTime = 0;
 let wrongAttempts = 0; 
-let LOCK_LIMIT = 40; // আপনার দেওয়া সময় (সেকেন্ডে)
-let isLocked = false;
+let LOCK_LIMIT = 10000; // লক হওয়ার সময় (সেকেন্ডে)
 
-// ১. লক স্ক্রিন তৈরি
+// ১. লক স্ক্রিন তৈরি করার ফাংশন
 function createLockScreen() {
     const savedPass = localStorage.getItem('os_password');
-    if (!savedPass || savedPass === "" || isLocked) return; 
+    if (!savedPass || savedPass === "") return; 
 
-    isLocked = true;
     if(document.getElementById('lock-screen')) return; 
 
     const lockHTML = `
@@ -22,6 +20,7 @@ function createLockScreen() {
             <h1 id="lock-time">00:00</h1>
             <p id="lock-date">Loading...</p>
         </div>
+        
         <div class="lock-bottom">
             <div id="lock-input-container">
                 <input type="password" id="lock-input" placeholder=" " autocomplete="off">
@@ -38,7 +37,7 @@ function createLockScreen() {
     startLockServices();
 }
 
-// ২. লক স্ক্রিন সার্ভিস (টাইম ও ইনপুট)
+// ২. লক স্ক্রিনের ভেতরের সার্ভিসসমূহ (টাইম, ইনপুট, ফোকাস)
 function startLockServices() {
     const updateTime = () => {
         const now = new Date();
@@ -49,117 +48,153 @@ function startLockServices() {
         if(document.getElementById('lock-date')) document.getElementById('lock-date').innerText = dateStr;
     };
     updateTime();
-    let timeInterval = setInterval(() => {
-        if(!isLocked) clearInterval(timeInterval);
-        updateTime();
-    }, 1000);
+    setInterval(updateTime, 1000);
 
     const lockInput = document.getElementById('lock-input');
     const savedPass = localStorage.getItem('os_password');
     const hintEl = document.getElementById('lock-hint');
     const resetBtn = document.getElementById('reset-btn');
 
-    setTimeout(() => { if(lockInput) lockInput.focus(); }, 500);
+    // *** অটো-ফোকাস লজিক ***
+    setTimeout(() => {
+        if(lockInput) {
+            lockInput.focus();
+            console.log("Input focused automatically");
+        }
+    }, 500);
 
+    // ভুল পাসওয়ার্ড হ্যান্ডেল করার ফাংশন
     function handleWrongAttempt() {
         wrongAttempts++;
         lockInput.parentElement.style.borderBottomColor = "#ef4444";
         const savedHint = localStorage.getItem('os_hint');
         hintEl.innerText = "Incorrect Password!" + (savedHint ? " | Hint: " + savedHint : "");
+
         if (wrongAttempts >= 3) resetBtn.style.display = "block";
+
         setTimeout(() => {
-            if(lockInput && lockInput.value !== savedPass) {
+            if(lockInput.value !== savedPass) {
                 lockInput.parentElement.style.borderBottomColor = "rgba(255, 255, 255, 0.3)";
                 lockInput.value = ""; 
-                lockInput.focus();
+                lockInput.focus(); // ভুল হলে আবার অটো-ফোকাস
             }
         }, 1000);
     }
 
+    // এন্টার কী প্রেস করলে আনলক হবে
     lockInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            if (lockInput.value === savedPass) unlockNow();
-            else if (lockInput.value.length > 0) handleWrongAttempt();
+            if (lockInput.value === savedPass) {
+                unlockNow();
+            } else if (lockInput.value.length > 0) {
+                handleWrongAttempt();
+            }
         }
     });
 
+    // টাইপ করার সময় চেক করা
     lockInput.addEventListener('input', () => {
-        if (lockInput.value === savedPass) unlockNow();
+        if (lockInput.value === savedPass) {
+            unlockNow();
+        } 
+        else if (lockInput.value.length >= savedPass.length) {
+            handleWrongAttempt();
+        }
     });
 }
 
-// ৩. আনলক ফাংশন
+// ৩. সিস্টেম রিসেট ফাংশন
+async function factoryReset() {
+    if (confirm("Are you sure? This will WIPE ALL APPS and settings!")) {
+        if (confirm("FINAL WARNING: Everything will be deleted. Proceed?")) {
+            localStorage.clear();
+            sessionStorage.clear();
+            if (window.indexedDB.databases) {
+                const databases = await window.indexedDB.databases();
+                databases.forEach(db => window.indexedDB.deleteDatabase(db.name));
+            }
+            alert("System Wiped. Restarting...");
+            location.reload(); 
+        }
+    }
+}
+
+// ৪. পাসওয়ার্ড দেখানো/লুকানোর ফাংশন
+function toggleLockPass() {
+    const input = document.getElementById('lock-input');
+    if (input.type === "password") {
+        input.type = "text";
+        input.style.letterSpacing = "normal";
+    } else {
+        input.type = "password";
+        input.style.letterSpacing = "10px";
+    }
+}
+
+// ৫. আনলক করার ফাংশন
 function unlockNow() {
     const screen = document.getElementById('lock-screen');
     if(screen) {
         screen.classList.add('hide-lock');
         wrongAttempts = 0;
         idleTime = 0;
-        isLocked = false;
         setTimeout(() => screen.remove(), 1000);
     }
 }
 
-// ৪. মেইন টাইমার ইঞ্জিন (ভিডিও ডিটেকশন সহ)
-setInterval(() => {
-    if (isLocked) {
-        idleTime = 0;
-        return;
-    }
+// --- মাউস ও কিবোর্ড ডিটেকশন ---
+const resetIdle = () => idleTime = 0;
+window.onmousemove = resetIdle;
+window.onmousedown = resetIdle;
+window.onkeypress = resetIdle;
 
-    let videoActive = false;
+// --- মেইন টাইমার লজিক (ভিডিও সাপোর্টসহ) ---
+setInterval(() => {
+    let isPlaying = false;
     
     // ইউটিউব প্লেয়ার চেক
     if (typeof player !== 'undefined' && player.getPlayerState) {
-        if (player.getPlayerState() === 1) videoActive = true;
-    }
-    
-    // সাধারণ HTML5 ভিডিও ট্যাগ চেক
-    const videos = document.getElementsByTagName('video');
-    for (let v of videos) {
-        if (!v.paused && !v.ended && v.readyState > 2) videoActive = true;
+        if (player.getPlayerState() === 1) { 
+            isPlaying = true;
+        }
     }
 
-    if (localStorage.getItem('os_password')) {
-        if (videoActive) {
-            idleTime = 0; // ভিডিও চললে রিসেট থাকবে
+    if (localStorage.getItem('os_password') && !document.getElementById('lock-screen')) {
+        if (isPlaying) {
+            idleTime = 0; 
         } else {
-            idleTime++;
+            idleTime++; 
         }
         
-        if (idleTime >= LOCK_LIMIT) createLockScreen();
+        if(idleTime >= LOCK_LIMIT) createLockScreen();
+    } else {
+        idleTime = 0;
     }
 }, 1000);
 
-// ৫. অ্যাক্টিভিটি ট্র্যাকার (Main Window + Iframe)
-function resetIdle() {
-    idleTime = 0;
-}
-
-['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll'].forEach(evt => {
-    window.addEventListener(evt, resetIdle, { passive: true });
+// --- অ্যাপ কমিউনিকেশন (Message Receiver) ---
+window.addEventListener('message', function(event) {
+    // বিভিন্ন অ্যাপ থেকে আসা সিগন্যাল রিসিভ করা
+    if (event.data === 'keep_awake' || event.data === 'video_is_playing' || event.data === 'reset_lock') {
+        idleTime = 0;
+        console.log("Activity Signal Received from App: Timer Reset");
+    }
 });
 
-// আইফ্রেম থেকে সিগন্যাল রিসিভ করা (Cross-Origin Support)
-window.addEventListener('message', function(event) {
-    const validMessages = ['reset_lock', 'user_active', 'keep_awake', 'video_is_playing'];
-    if (validMessages.includes(event.data)) {
-        resetIdle();
-    }
-}, false);
-
-// ৬. ইউটিলিটি ফাংশনস (রিসেট ও পাসওয়ার্ড টগল)
-async function factoryReset() {
-    if (confirm("Are you sure? This will WIPE EVERYTHING!")) {
-        localStorage.clear();
-        location.reload(); 
+// --- আইফ্রেম ট্র্যাকার (অ্যাপের ভেতরে মাউস ট্র্যাক করা) ---
+function trackAllAppActivity() {
+    const iframes = document.getElementsByTagName('iframe');
+    for (let i = 0; i < iframes.length; i++) {
+        try {
+            iframes[i].contentWindow.onmousemove = resetIdle;
+            iframes[i].contentWindow.onkeydown = resetIdle;
+            iframes[i].contentWindow.onmousedown = resetIdle;
+        } catch (e) {
+            // Cross-origin frames will be ignored safely
+        }
     }
 }
+setInterval(trackAllAppActivity, 5000);
 
-function toggleLockPass() {
-    const input = document.getElementById('lock-input');
-    if(input) input.type = (input.type === "password") ? "text" : "password";
-}
-
+// পেজ লোড হলে লক স্ক্রিন চেক
 window.addEventListener('DOMContentLoaded', createLockScreen);
-
