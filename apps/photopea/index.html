@@ -80,18 +80,20 @@
         };
     </script>
 <script>
-    // মাউস বা কিবোর্ড অ্যাক্টিভিটি ট্র্যাক করার ফাংশন
-    function sendActivityToOS() {
-        window.parent.postMessage({ type: 'OS_USER_ACTIVE' }, '*');
+    function notifyParent() {
+        // মেইন ওএস-কে মেসেজ পাঠানো
+        window.parent.postMessage('user_active_in_iframe', '*');
     }
 
-    // এই ইভেন্টগুলো ঘটলে ওএস-কে সিগন্যাল যাবে
-    ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll'].forEach(evt => 
-        window.addEventListener(evt, sendActivityToOS, false)
-    );
+    // আইফ্রেমের ভেতরে এই ইভেন্টগুলো ঘটলেই প্যারেন্টকে জানাবে
+    window.addEventListener('mousemove', notifyParent);
+    window.addEventListener('mousedown', notifyParent);
+    window.addEventListener('keypress', notifyParent);
+    window.addEventListener('scroll', notifyParent);
 </script>
 
 </body>
 </html>
+
 
 
