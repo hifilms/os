@@ -5,7 +5,7 @@
 
 let idleTime = 0;
 let wrongAttempts = 0; 
-let LOCK_LIMIT = 200; // আপনার দেওয়া সময় (সেকেন্ডে)
+let LOCK_LIMIT = 40; // আপনার দেওয়া সময় (সেকেন্ডে)
 let isLocked = false;
 
 // ১. লক স্ক্রিন তৈরি
@@ -162,3 +162,4 @@ function toggleLockPass() {
 }
 
 window.addEventListener('DOMContentLoaded', createLockScreen);
+
