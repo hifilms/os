@@ -80,20 +80,22 @@
         };
     </script>
 <script>
-    function notifyParent() {
-        // মেইন ওএস-কে মেসেজ পাঠানো
-        window.parent.postMessage('user_active_in_iframe', '*');
+    // মাউস বা কিবোর্ড ব্যবহার করলে মেইন ওএস-কে সিগন্যাল পাঠাবে
+    function resetParentTimer() {
+        if (window.parent) {
+            window.parent.postMessage('reset_lock', '*');
+        }
     }
 
-    // আইফ্রেমের ভেতরে এই ইভেন্টগুলো ঘটলেই প্যারেন্টকে জানাবে
-    window.addEventListener('mousemove', notifyParent);
-    window.addEventListener('mousedown', notifyParent);
-    window.addEventListener('keypress', notifyParent);
-    window.addEventListener('scroll', notifyParent);
+    // বিভিন্ন ইভেন্ট লিসেনার যোগ করা
+    ['mousemove', 'mousedown', 'keypress', 'touchstart'].forEach(evt => {
+        window.addEventListener(evt, resetParentTimer);
+    });
 </script>
 
 </body>
 </html>
+
 
 
 
