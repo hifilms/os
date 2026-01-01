@@ -199,3 +199,14 @@ setInterval(trackAllAppActivity, 5000);
 // পেজ লোড হলে লক স্ক্রিন চেক
 window.addEventListener('DOMContentLoaded', createLockScreen);
 
+
+
+// আইফ্রেম থেকে আসা সিগন্যাল শুনে টাইমার জিরো করা
+window.addEventListener('message', function(event) {
+    if (event.data === 'reset_lock' || event.data === 'user_active') {
+        idleTime = 0; // আপনার ফাইলের ভেরিয়েবল অনুযায়ী idleTime জিরো হবে
+        console.log("Activity Signal Received: Timer Reset to 0");
+    }
+});
+
+
