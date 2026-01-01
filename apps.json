@@ -62,8 +62,17 @@
       "icon": "https://upload.wikimedia.org/wikipedia/commons/e/e6/Photopea_logo.svg",
       "category": "Internet",
       "description": "আপনার গ্যালারির ছবিগুলো ব্রাউজ করুন।"
+    },    
+    {
+      "id": "Subway-Surfer",
+      "name": "Subway Surfer",
+      "icon": "https://s3.amazonaws.com/subwaysurfers/wp-content/uploads/2020/06/Subway-Surfer-Game-Icon.png",
+      "category": "Games",
+      "description": "আপনার গ্যালারির ছবিগুলো ব্রাউজ করুন।"
     }
+    
 
   ]
 
 }
+
