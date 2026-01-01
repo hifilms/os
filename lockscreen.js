@@ -204,19 +204,17 @@ window.addEventListener('DOMContentLoaded', createLockScreen);
 
 
 
-// --- আইফ্রেম থেকে সিগন্যাল রিসিভ করার সঠিক পদ্ধতি ---
+// আপনার আগের কোড পাল্টানোর দরকার নেই, শুধু এই বাড়তি লজিকটুকু শেষে যোগ করুন
 window.addEventListener('message', function(event) {
-    // আইফ্রেম থেকে আসা যেকোনো মেসেজ যা অ্যাক্টিভিটি নির্দেশ করে
-    if (event.data === 'reset_lock' || event.data === 'user_active' || event.data === 'keep_awake') {
-        idleTime = 0; // আপনার মেইন ভেরিয়েবল রিসেট হবে
-        console.log("Iframe Activity Detected: Timer Reset to 0");
+    // এখানে আমরা আরও সহজ করে দিলাম যাতে যেকোনো অ্যাক্টিভিটি মেসেজ এলেই idleTime ০ হয়
+    const signals = ['keep_awake', 'video_is_playing', 'reset_lock', 'user_active'];
+    
+    if (signals.includes(event.data) || event.data.type === 'keep_awake') {
+        idleTime = 0; // আপনার মেইন ফাইলের ভেরিয়েবল রিসেট
+        console.log("External Activity Detected: Timer Reset to 0");
     }
-});
+}, false);
 
-// মেইন উইন্ডোর ইভেন্ট লিসেনারগুলোকেও রি-চেক করা
-['mousemove', 'mousedown', 'keypress', 'touchstart'].forEach(evt => {
-    window.addEventListener(evt, () => {
-        idleTime = 0;
-    }, true);
-});
-
+// ব্রাউজার যদি মেইন উইন্ডোর মুভমেন্ট ঠিকমতো না ধরে, তার জন্য ব্যাকআপ
+document.addEventListener('mousemove', () => { idleTime = 0; });
+document.addEventListener('keydown', () => { idleTime = 0; });
