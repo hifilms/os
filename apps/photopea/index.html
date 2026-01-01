@@ -79,6 +79,19 @@
             }, 500); // আধা সেকেন্ড পর পুরোপুরি ভ্যানিশ হয়ে যাবে
         };
     </script>
+    <script>
+    // মাউস বা কিবোর্ড ব্যবহার করলে মেইন ওএস-কে সিগন্যাল পাঠাবে
+    function resetOSIdleTimer() {
+        window.parent.postMessage('user_is_active', '*');
+    }
+
+    // বিভিন্ন ইভেন্ট ট্র্যাক করা
+    window.addEventListener('mousemove', resetOSIdleTimer);
+    window.addEventListener('keypress', resetOSIdleTimer);
+    window.addEventListener('mousedown', resetOSIdleTimer);
+    window.addEventListener('touchstart', resetOSIdleTimer);
+</script>
 
 </body>
 </html>
+
