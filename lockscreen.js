@@ -201,25 +201,39 @@ window.addEventListener('DOMContentLoaded', createLockScreen);
 
 
 
-// ১. আইফ্রেম থেকে আসা মেসেজ শোনার লিসেনার
+
+
+
+// আপনার টাইমার ভেরিয়েবলটি গ্লোবাল রাখুন
+let idleTimer; 
+const lockTimeLimit = 60000; // ৬০ সেকেন্ড
+
+function resetMainLockTimer() {
+    // আগের টাইমারটি পুরোপুরি বন্ধ করা
+    if (idleTimer) {
+        clearTimeout(idleTimer);
+    }
+    
+    // নতুন করে টাইমার শুরু করা
+    idleTimer = setTimeout(() => {
+        showLockScreen(); // এই ফাংশনটি আপনার লক স্ক্রিন দেখায়
+    }, lockTimeLimit);
+    
+    console.log("টাইমার রিসেট হয়েছে - এখন থেকে নতুন করে ৬০ সেকেন্ড গোনা শুরু হবে।");
+}
+
+// আইফ্রেম থেকে আসা মেসেজ রিসিভ করা
 window.addEventListener('message', function(event) {
-    // নিশ্চিত হওয়া যে এটি আমাদের পাঠানো মেসেজ
-    if (event.data && event.data.type === 'OS_USER_ACTIVE') {
-        resetMainLockTimer(); // টাইমার রিসেট করার ফাংশন কল
+    // শুধু আমাদের পাঠানো ডাটা প্রসেস করবে
+    if (event.data === 'user_active_in_iframe') {
+        resetMainLockTimer();
     }
 });
 
-// ২. টাইমার রিসেট করার মেইন ফাংশন
-function resetMainLockTimer() {
-    console.log("Activity detected in Iframe. Resetting Timer...");
-    
-    // আপনার ওএস-এ যে টাইমার ভেরিয়েবল আছে (ধরি সেটির নাম idleTimer)
-    if (typeof idleTimer !== 'undefined') {
-        clearTimeout(idleTimer);
-        
-        // এখানে আপনার লক স্ক্রিন দেখানোর ফাংশনটি আবার সেট করুন (যেমন ৬০ সেকেন্ড)
-        idleTimer = setTimeout(showLockScreen, 60000); 
-    }
-}
+// মেইন উইন্ডোর মুভমেন্টও ট্র্যাক করা (যাতে ডেস্কটপে থাকলেও কাজ করে)
+['mousemove', 'mousedown', 'keypress', 'scroll'].forEach(event => {
+    window.addEventListener(event, resetMainLockTimer);
+});
 
-
+// শুরুতে একবার টাইমার চালু করা
+resetMainLockTimer();
