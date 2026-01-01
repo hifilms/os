@@ -80,11 +80,15 @@
         };
     </script>
 <script>
-    window.addEventListener('mousemove', () => window.parent.postMessage('reset_lock', '*'));
+    // আইফ্রেমের সব ইভেন্ট ওএস-কে পাঠাবে
+    ['mousemove', 'keypress', 'mousedown', 'touchstart'].forEach(evt => {
+        window.addEventListener(evt, () => window.parent.postMessage('reset_lock', '*'), {passive: true});
+    });
 </script>
 
 </body>
 </html>
+
 
 
 
