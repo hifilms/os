@@ -55,7 +55,15 @@
   "category": "Multimedia",
   "description": "Watch your favorite videos directly from the desktop.",
   "icon": "https://cdn-icons-png.flaticon.com/512/1384/1384060.png"
-}
+},    
+    {
+      "id": "photopea",
+      "name": "photopea",
+      "icon": "https://upload.wikimedia.org/wikipedia/commons/e/e6/Photopea_logo.svg",
+      "category": "Internet",
+      "description": "আপনার গ্যালারির ছবিগুলো ব্রাউজ করুন।"
+    }
 
   ]
+
 }
