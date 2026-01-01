@@ -2,38 +2,83 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fixed Full Page Website</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iframe with Preloader</title>
     <style>
-        /* ১. মেইন পেজের সব স্ক্রল এবং মুভমেন্ট বন্ধ করা */
-        html, body {
+        /* ১. পেজের স্ক্রল বন্ধ করা */
+        body, html {
             margin: 0;
             padding: 0;
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden; /* স্ক্রলবার পুরোপুরি হাইড করবে */
-            position: fixed; /* পেজকে এক জায়গায় আটকে রাখবে */
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
         }
 
-        /* ২. আইফ্রেমকে ফিক্সড পজিশনে রাখা */
-        .fixed-iframe {
-            position: absolute;
+        /* ২. প্রিলোডার স্টাইল (যা লোড হওয়ার আগে দেখাবে) */
+        #loader {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            background: rgba(255, 255, 255, 0.8); /* হালকা সাদা এবং ঝাপসা ভাব */
+            backdrop-filter: blur(10px); /* ব্যাকগ্রাউন্ড ব্লার করার জন্য */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999; /* যেন সবার উপরে থাকে */
+            transition: opacity 0.5s ease;
+        }
+
+        /* লোগো বা ইমেজের স্টাইল */
+        #loader img {
+            width: 100px; /* লোগোর সাইজ ছোট-বড় করতে পারেন */
+            margin-bottom: 15px;
+        }
+
+        /* লোডিং টেক্সট বা অ্যানিমেশন */
+        .loading-text {
+            color: #333;
+            font-weight: bold;
+        }
+
+        /* ৩. আইফ্রেম স্টাইল */
+        iframe {
+            width: 100%;
+            height: 100%;
             border: none;
-            overflow: hidden; /* আইফ্রেমের ভেতরের স্ক্রল ব্লক করার চেষ্টা করবে */
+            display: block;
         }
     </style>
 </head>
 <body>
 
+    <div id="loader">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e6/Photopea_logo.svg" alt="Loading...">
+        <div class="loading-text">photopea</div>
+    </div>
+
     <iframe 
+        id="myIframe"
         src="https://www.photopea.com/" 
-        class="fixed-iframe"
         scrolling="no">
     </iframe>
+
+    <script>
+        // আইফ্রেম পুরোপুরি লোড হলে প্রিলোডারটি সরিয়ে দেওয়ার স্ক্রিপ্ট
+        const iframe = document.getElementById('myIframe');
+        const loader = document.getElementById('loader');
+
+        iframe.onload = function() {
+            // আইফ্রেম লোড হওয়ার পর প্রিলোডার হাইড করে দেবে
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.style.display = 'none';
+            }, 500); // আধা সেকেন্ড পর পুরোপুরি ভ্যানিশ হয়ে যাবে
+        };
+    </script>
 
 </body>
 </html>
