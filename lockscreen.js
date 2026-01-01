@@ -5,7 +5,7 @@
 
 let idleTime = 0;
 let wrongAttempts = 0; 
-let LOCK_LIMIT = 200; // আপনার দেওয়া লিমিট
+let LOCK_LIMIT = 20; // আপনার দেওয়া লিমিট
 
 // ১. লক স্ক্রিন তৈরি করার ফাংশন
 function createLockScreen() {
@@ -161,3 +161,4 @@ function trackAllAppActivity() {
 setInterval(trackAllAppActivity, 3000);
 
 window.addEventListener('DOMContentLoaded', createLockScreen);
+
