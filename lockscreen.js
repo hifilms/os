@@ -204,17 +204,17 @@ window.addEventListener('DOMContentLoaded', createLockScreen);
 
 
 
-// আপনার আগের কোড পাল্টানোর দরকার নেই, শুধু এই বাড়তি লজিকটুকু শেষে যোগ করুন
 window.addEventListener('message', function(event) {
-    // এখানে আমরা আরও সহজ করে দিলাম যাতে যেকোনো অ্যাক্টিভিটি মেসেজ এলেই idleTime ০ হয়
-    const signals = ['keep_awake', 'video_is_playing', 'reset_lock', 'user_active'];
-    
-    if (signals.includes(event.data) || event.data.type === 'keep_awake') {
-        idleTime = 0; // আপনার মেইন ফাইলের ভেরিয়েবল রিসেট
-        console.log("External Activity Detected: Timer Reset to 0");
+    if (event.data === 'reset_lock' || event.data === 'user_active' || event.data === 'keep_awake') {
+        // সরাসরি ০ করা
+        idleTime = 0; 
+        
+        // যদি আপনার ফাইলে অন্য কোনো টাইমার ভেরিয়েবল থাকে সেটিও এখানে ০ করতে পারেন
+        // console.log("Activity Sync: Timer Reset"); 
     }
 }, false);
 
 // ব্রাউজার যদি মেইন উইন্ডোর মুভমেন্ট ঠিকমতো না ধরে, তার জন্য ব্যাকআপ
 document.addEventListener('mousemove', () => { idleTime = 0; });
 document.addEventListener('keydown', () => { idleTime = 0; });
+
