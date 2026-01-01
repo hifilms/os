@@ -201,12 +201,22 @@ window.addEventListener('DOMContentLoaded', createLockScreen);
 
 
 
-// আইফ্রেম থেকে আসা সিগন্যাল শুনে টাইমার জিরো করা
+
+
+
+// --- আইফ্রেম থেকে সিগন্যাল রিসিভ করার সঠিক পদ্ধতি ---
 window.addEventListener('message', function(event) {
-    if (event.data === 'reset_lock' || event.data === 'user_active') {
-        idleTime = 0; // আপনার ফাইলের ভেরিয়েবল অনুযায়ী idleTime জিরো হবে
-        console.log("Activity Signal Received: Timer Reset to 0");
+    // আইফ্রেম থেকে আসা যেকোনো মেসেজ যা অ্যাক্টিভিটি নির্দেশ করে
+    if (event.data === 'reset_lock' || event.data === 'user_active' || event.data === 'keep_awake') {
+        idleTime = 0; // আপনার মেইন ভেরিয়েবল রিসেট হবে
+        console.log("Iframe Activity Detected: Timer Reset to 0");
     }
 });
 
+// মেইন উইন্ডোর ইভেন্ট লিসেনারগুলোকেও রি-চেক করা
+['mousemove', 'mousedown', 'keypress', 'touchstart'].forEach(evt => {
+    window.addEventListener(evt, () => {
+        idleTime = 0;
+    }, true);
+});
 
