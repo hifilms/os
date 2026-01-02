@@ -31,7 +31,7 @@
     {
       "id": "Subway-Surfer",
       "name": "Subway Surfer",
-      "icon": "apps/Subway-Surfer/Subway-Surfer.png",
+      "icon": "../apps/Subway-Surfer/Subway-Surfer.png",
       "category": "Games",
       "description": "আপনার গ্যালারির ছবিগুলো ব্রাউজ করুন।"
     }
@@ -40,6 +40,7 @@
   ]
 
 }
+
 
 
 
