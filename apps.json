@@ -31,7 +31,7 @@
     {
       "id": "Subway-Surfer",
       "name": "Subway Surfer",
-      "icon": "https://hifilms.github.io/os/apps/Subway-Surfer/Subway-Surfer.png",
+      "icon": "https://hifilms.github.io/os/apps/Subway-Surfer/Subway-Surfer.svg",
       "category": "Games",
       "description": "আপনার গ্যালারির ছবিগুলো ব্রাউজ করুন।"
     }
@@ -40,6 +40,7 @@
   ]
 
 }
+
 
 
 
