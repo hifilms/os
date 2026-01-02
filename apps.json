@@ -24,22 +24,21 @@
     {
       "id": "photopea",
       "name": "Photopea",
-      "icon": "https://upload.wikimedia.org/wikipedia/commons/e/e6/Photopea_logo.svg",
-      "category": "Tools",
-      "description": "আপনার গ্যালারির ছবিগুলো ব্রাউজ করুন।"
+      "icon": "https://hifilms.github.io/os/apps/photopea/Photopea.svg",
+      "category": "Tools"
     },    
     {
       "id": "Subway-Surfer",
       "name": "Subway Surfer",
       "icon": "https://hifilms.github.io/os/apps/Subway-Surfer/Subway-Surfer.svg",
-      "category": "Games",
-      "description": "আপনার গ্যালারির ছবিগুলো ব্রাউজ করুন।"
+      "category": "Games"
     }
     
 
   ]
 
 }
+
 
 
 
