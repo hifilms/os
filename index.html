@@ -6,6 +6,12 @@
     <title>Gemini WebOS</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="lockscreen.css">
+    <style>
+        #offline-notice {
+            display: none; position: fixed; top: 0; width: 100%; background: #d93025;
+            color: white; padding: 12px; text-align: center; font-weight: bold; z-index: 9999;
+        }
+    </style>
 </head>
 <body>
 
@@ -41,10 +47,42 @@
             </button>
         </div>
     </footer>
+    <div id="offline-notice">⚠️ ইন্টারনেট কানেকশন নেই। আপনি অফলাইন মোডে আছেন।</div>
 <div id="mouse-trigger"></div>
     <script src="script.js"></script>
     <script src="db-manager.js"></script>
     <script src="lockscreen.js"></script>
     <script src="ai-assistant.js"></script>
+
+    <script>
+        // ১. সার্ভিস ওয়ার্কার রেজিস্ট্রেশন
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker Registered!'))
+                    .catch(err => console.log('Registration Error:', err));
+            });
+        }
+
+        // ২. রিফ্রেশ ছাড়া অনলাইন-অফলাইন হ্যান্ডলিং
+        const notice = document.getElementById('offline-notice');
+
+        function updateStatus() {
+            if (navigator.onLine) {
+                notice.style.display = 'none';
+                document.body.classList.remove('is-offline');
+                console.log("আমরা অনলাইনে আছি!");
+            } else {
+                notice.style.display = 'block';
+                document.body.classList.add('is-offline');
+                console.log("ইন্টারনেট সংযোগ বিচ্ছিন্ন।");
+            }
+        }
+
+        window.addEventListener('online', updateStatus);
+        window.addEventListener('offline', updateStatus);
+        updateStatus(); // শুরুতে একবার চেক করা
+    </script>
 </body>
 </html>
+
