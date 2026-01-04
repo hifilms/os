@@ -1,0 +1,20 @@
+{
+  "name": "My Offline Web App",
+  "short_name": "SmartApp",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f0f2f5",
+  "theme_color": "#1a73e8",
+  "icons": [
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/5/53/Wikimedia-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/5/53/Wikimedia-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
