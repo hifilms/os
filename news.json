@@ -1,14 +1,12 @@
 {
-            bn: [
-                { cat: "নিউজ", langCode: "bn", title: "বাংলা এআই-এর নতুন চমক", desc: "খুব শীঘ্রই বাংলা ভাষার জন্য বিশেষ এআই মডেল আসছে। এটি নির্ভুলভাবে কথা বলতে পারবে।", img: "https://picsum.photos/400/300?1", src: "টেক নিউজ", url: "#", time: "2026-01-08T10:00:00" },
-                { cat: "খেলা", langCode: "bn", title: "বিপিএল ২০২৬ শুরু", desc: "ক্রিকেট উন্মাদনায় ভাসছে দেশ। সব প্রস্তুতি সম্পন্ন হয়েছে।", img: "https://picsum.photos/400/300?2", src: "স্পোর্টস বিডি", url: "#", time: "2026-01-08T11:00:00" }
+  "bn": [
+   { cat: "নিউজ", langCode: "bn", title: "বাংলা এআই-এর নতুন চমক", desc: "খুব শীঘ্রই বাংলা ভাষার জন্য বিশেষ এআই মডেল আসছে। এটি নির্ভুলভাবে কথা বলতে পারবে।", img: "https://picsum.photos/400/300?1", src: "টেক নিউজ", url: "#", time: "2026-01-08T10:00:00" },
+   { cat: "খেলা", langCode: "bn", title: "বিপিএল ২০২৬ শুরু", desc: "ক্রিকেট উন্মাদনায় ভাসছে দেশ। সব প্রস্তুতি সম্পন্ন হয়েছে।", img: "https://picsum.photos/400/300?2", src: "স্পোর্টস বিডি", url: "#", time: "2026-01-08T11:00:00" } 
             ],
-            en: [
-                { cat: "Tech", langCode: "en", title: "Global AI Trends", desc: "AI technology is evolving rapidly across the globe.", img: "https://picsum.photos/400/300?3", src: "Tech Daily", url: "#", time: "2026-01-08T09:00:00" }
+  "en": [
+    { cat: "Tech", langCode: "en", title: "Global AI Trends", desc: "AI technology is evolving rapidly across the globe.", img: "https://picsum.photos/400/300?3", src: "Tech Daily", url: "#", time: "2026-01-08T09:00:00" }
             ],
-            hi: [
-                { cat: "समाचार", langCode: "hi", title: "भारत में नई एआई तकनीक", desc: "भारत एआई के क्षेत्र में नई ऊंचाइयों को छू रहा है।", img: "https://picsum.photos/400/300?4", src: "आज तक", url: "#", time: "2026-01-08T08:00:00" }
+ "hi": [
+   { cat: "समाचार", langCode: "hi", title: "भारत में नई एआई तकनीक", desc: "भारत एआई के क्षेत्र में नई ऊंचाइयों को छू रहा है।", img: "https://picsum.photos/400/300?4", src: "आज तक", url: "#", time: "2026-01-08T08:00:00" }
             ]
-            // অন্যান্য ভাষার ডেটা এখানে থাকবে...
-        }
-
+}
