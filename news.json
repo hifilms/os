@@ -1,0 +1,8 @@
+{
+  "bn": [
+    { "cat": "নিউজ", "langCode": "bn", "title": "বাংলা এআই-এর নতুন চমক", "desc": "খুব শীঘ্রই বাংলা ভাষার জন্য বিশেষ এআই মডেল আসছে...", "img": "url_here", "src": "টেক নিউজ", "url": "#", "time": "2026-01-07T11:00:00" }
+  ],
+  "en": [
+    { "cat": "Tech", "langCode": "en", "title": "Global Tech Trends", "desc": "AI is reshaping the world...", "img": "url_here", "src": "Daily Tech", "url": "#", "time": "2026-01-07T11:00:00" }
+  ]
+}
