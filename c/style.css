@@ -1,0 +1,303 @@
+:root {
+    --primary-color: #25d366; /* WhatsApp Green */
+    --danger-color: #ef4444; /* Call End Red */
+    --bg-color: #f4f7f6;
+    --card-bg: #ffffff;
+    --text-main: #1f2937;
+    --text-sub: #6b7280;
+    --online-color: #10b981;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background-color: var(--bg-color);
+    overflow: hidden; /* স্ক্রলবার হাইড রাখতে */
+}
+
+/* স্ক্রিন ম্যানেজমেন্ট */
+.screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    z-index: 10;
+    background: var(--bg-color);
+}
+
+.screen.active {
+    display: flex;
+}
+
+/* লঞ্চ স্ক্রিন */
+.setup-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 30px;
+    text-align: center;
+}
+
+.setup-container input {
+    padding: 15px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    font-size: 16px;
+}
+
+.setup-container button {
+    padding: 15px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+/* হেডার ডিজাইন */
+header {
+    background: var(--card-bg);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.profile-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-avatar {
+    background: #e5e7eb;
+    border-radius: 50%;
+    padding: 8px;
+}
+
+.user-info h3 { font-size: 16px; color: var(--text-main); }
+.user-info p { font-size: 12px; color: var(--text-sub); }
+
+/* সার্চ এবং ট্যাব */
+.search-bar { padding: 15px; }
+.search-bar input {
+    width: 100%;
+    padding: 12px 20px;
+    border-radius: 25px;
+    border: none;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.tabs {
+    display: flex;
+    padding: 0 15px;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-sub);
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+/* কন্টাক্ট লিস্ট */
+.list-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 15px;
+}
+
+.contact-item {
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: fadeIn 0.3s ease;
+}
+
+.contact-info { display: flex; align-items: center; gap: 15px; }
+
+.avatar {
+    width: 45px;
+    height: 45px;
+    background: #ddd;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    position: relative;
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    background: #ccc;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+}
+
+.status-dot.online { background: var(--online-color); }
+
+/* FAB (Floating Action Button) */
+.fab {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+    z-index: 20;
+}
+
+/* বটম শিট এনিমেশন */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    z-index: 100;
+}
+
+.bottom-sheet {
+    position: fixed;
+    bottom: -100%;
+    left: 0;
+    width: 100%;
+    background: white;
+    border-radius: 25px 25px 0 0;
+    padding: 20px;
+    transition: bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 101;
+    max-height: 70%;
+    overflow-y: auto;
+}
+
+.bottom-sheet.show { bottom: 0; }
+
+.sheet-handle {
+    width: 40px;
+    height: 5px;
+    background: #e5e7eb;
+    margin: 0 auto 20px;
+    border-radius: 10px;
+}
+
+/* কল স্ক্রিন */
+.call-ui {
+    background: #111827; /* Dark background */
+    color: white;
+    justify-content: space-around;
+    align-items: center;
+    text-align: center;
+}
+
+.call-avatar {
+    width: 120px;
+    height: 120px;
+    background: #374151;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    font-size: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.call-bottom {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 50px;
+}
+
+.call-opt {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.call-opt.hangup { background: var(--danger-color); }
+
+/* ইনকামিং পপ-আপ */
+.incoming-popup {
+    position: fixed;
+    bottom: -150px;
+    left: 15px;
+    right: 15px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    z-index: 200;
+    transition: bottom 0.5s ease;
+}
+
+.incoming-popup.show { bottom: 20px; }
+
+/* নো ইন্টারনেট বার */
+.no-internet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: var(--danger-color);
+    color: white;
+    text-align: center;
+    padding: 5px;
+    font-size: 12px;
+    display: none;
+    z-index: 300;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
