@@ -28,23 +28,19 @@
         .page { display: none; width: 100%; min-height: 100vh; }
         .active { display: block; }
 
+        /* Skeleton/Shimmer Animation */
+        @keyframes shimmer { 0% { background-position: -468px 0; } 100% { background-position: 468px 0; } }
+        .skeleton { background: #f6f7f8; background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%); background-repeat: no-repeat; background-size: 800px 100%; animation: shimmer 1.5s infinite linear; border-radius: 8px; }
+
         .slider-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
         .slide { min-width: 100%; height: 210px; position: relative; scroll-snap-align: center; cursor: pointer; }
         .slide img { width: 100%; height: 100%; object-fit: cover; }
         .slide-info { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 25px 15px 10px; color: #fff; }
         
-        /* আপডেট: ট্যাব বার শ্যাডো (ভিডিও ডিটেইলস সেকশনের মতো) */
         .tab-wrapper { 
-            position: sticky; 
-            top: var(--header-h); 
-            background: #fff; 
-            z-index: 40; 
-            padding: 15px 0; 
-            overflow-x: auto; 
-            white-space: nowrap; 
-            display: flex; 
-            gap: 10px;
-            border-bottom: 5px solid #f4f4f4; /* ভিডিও ডিটেইলস এর মতো শ্যাডো/বর্ডার */
+            position: sticky; top: var(--header-h); background: #fff; z-index: 40; 
+            padding: 15px 0; overflow-x: auto; white-space: nowrap; display: flex; gap: 10px;
+            border-bottom: 5px solid #f4f4f4; 
         }
         .tab-wrapper::before, .tab-wrapper::after { content: ''; min-width: 5px; }
         .tab-item { padding: 6px 18px; background: transparent; border: 1px solid #ddd; border-radius: 25px; font-size: 13px; font-weight: 600; color: #666; cursor: pointer; transition: 0.3s; }
@@ -60,7 +56,6 @@
         #player-container { width: 100%; height: 100%; }
         #player-container iframe { width: 100%; height: 100%; border: none; }
         
-        /* আপডেট: মডার্ন ড্যাশড SVG (ঘোরার সময় বোঝা যাবে) */
         .offline-ui { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; color: #fff; z-index: 10; display: none; }
         .offline-ui svg { width: 45px; height: 45px; animation: rotate 1s linear infinite; margin-bottom: 12px; }
         .offline-ui circle { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 40, 100; }
@@ -76,7 +71,8 @@
         .video-time { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.8); color: #fff; font-size: 10px; padding: 1px 4px; border-radius: 3px; }
         .item-title { font-size: 13px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-        #net-alert { position: fixed; bottom: -50px; left: 0; width: 100%; background: #cc0000; color: #fff; text-align: center; padding: 8px 0; transition: 0.4s; font-size: 13px; z-index: 1000; }
+        /* বটম এলার্ট */
+        #net-alert { position: fixed; bottom: -60px; left: 0; width: 100%; background: #333; color: #fff; text-align: center; padding: 4px 0; transition: 0.4s; font-size: 11px; z-index: 1000; font-weight: 500; }
         #net-alert.active { bottom: 0; }
 
         .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 200; }
@@ -95,9 +91,20 @@
     </header>
 
     <div id="home-page" class="page active">
-        <div class="slider-container" id="slider"></div>
-        <div class="tab-wrapper" id="tab-bar"></div>
-        <div class="grid" id="category-grid"></div>
+        <div class="slider-container" id="slider">
+            <div class="slide skeleton"></div>
+        </div>
+        
+        <div class="tab-wrapper" id="tab-bar">
+            <div class="tab-item skeleton" style="width:80px; height:30px; border:none;"></div>
+            <div class="tab-item skeleton" style="width:100px; height:30px; border:none;"></div>
+            <div class="tab-item skeleton" style="width:70px; height:30px; border:none;"></div>
+        </div>
+
+        <div class="grid" id="category-grid">
+            <div class="card skeleton"></div><div class="card skeleton"></div>
+            <div class="card skeleton"></div><div class="card skeleton"></div>
+        </div>
     </div>
 
     <div id="view-page" class="page">
@@ -117,23 +124,101 @@
         <div class="list-container" id="video-list"></div>
     </div>
 
+    <div id="net-alert">No Internet</div>
+
+    <div class="sheet-overlay" id="overlay" onclick="toggleSheet(false)"></div>
+    <div class="bottom-sheet" id="sheet">
+        <div style="width:30px; height:4px; background:#ddd; margin:0 auto 15px; border-radius:10px;"></div>
+        <div class="sheet-item">Rate App</div>
+        <div class="sheet-item">Share App</div>
+        <div class="sheet-item" style="border:none;" onclick="toggleSheet(false)">Close</div>
+    </div>
+
     <script>
         let globalData = null;
         let autoScrollInterval = null;
         let lastScrollTop = 0;
         let currentVideoId = null;
-        const REMOTE_PLAYER_URL = "player.html"; 
+        const REMOTE_PLAYER_URL = "https://hifilms.github.io/os/player.html"; 
 
+        // ইন্টারনেট ফিরলে অটো লোড
+        window.addEventListener('online', () => {
+            document.getElementById('net-alert').classList.remove('active');
+            if(!globalData) loadAppData(); // যদি হোম পেজ লোড না হয়ে থাকে
+            if(document.getElementById('view-page').classList.contains('active')) {
+                if(document.getElementById('offline-ui').style.display === 'flex') reloadVideo();
+            }
+        });
+        window.addEventListener('offline', () => {
+            document.getElementById('net-alert').classList.add('active');
+        });
+
+        function loadAppData() {
+            fetch('https://hifilms.github.io/os/data.json').then(res => res.json()).then(data => {
+                globalData = data;
+                renderHome(data);
+                
+                // রিলোড চেক
+                const urlParams = new URLSearchParams(window.location.search);
+                const savedLeagueId = urlParams.get('l');
+                if(savedLeagueId) showView(savedLeagueId, false);
+            }).catch(err => {
+                if(!navigator.onLine) document.getElementById('net-alert').classList.add('active');
+            });
+        }
+
+        function renderHome(data) {
+            const slider = document.getElementById('slider');
+            const grid = document.getElementById('category-grid');
+            const tabBar = document.getElementById('tab-bar');
+            
+            slider.innerHTML = "";
+            grid.innerHTML = "";
+            tabBar.innerHTML = "";
+
+            const games = ['All', ...new Set(data.l.map(item => item.g))];
+            games.forEach(gameName => {
+                if(!gameName) return;
+                let tab = document.createElement('div');
+                tab.className = 'tab-item' + (gameName === 'All' ? ' active' : '');
+                tab.innerText = gameName;
+                tab.onclick = function() {
+                    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    renderGrid(gameName);
+                };
+                tabBar.appendChild(tab);
+            });
+
+            function renderGrid(filterGame) {
+                grid.innerHTML = "";
+                data.l.forEach(league => {
+                    if (filterGame === 'All' || league.g === filterGame) {
+                        let c = document.createElement('div'); 
+                        c.className = 'card';
+                        c.innerHTML = `<img src="${league.i}" loading="lazy"><div class="card-label">${league.n}</div>`;
+                        c.onclick = () => showView(league.id);
+                        grid.appendChild(c);
+                    }
+                });
+            }
+
+            data.l.forEach(league => {
+                let s = document.createElement('div'); s.className = 'slide';
+                s.innerHTML = `<img src="https://img.youtube.com/vi/${league.v[0].id}/mqdefault.jpg"><div class="slide-info"><b>${league.n}</b></div>`;
+                s.onclick = () => showView(league.id);
+                slider.appendChild(s);
+            });
+
+            renderGrid('All');
+            startAutoScroll();
+        }
+
+        // বাকি ফাংশনগুলো আগের মতোই থাকছে
         window.onpopstate = function() {
             const urlParams = new URLSearchParams(window.location.search);
             if(!urlParams.get('l')) showHomeUI();
         };
-
-        window.addEventListener('online', () => {
-            if(document.getElementById('offline-ui').style.display === 'flex') {
-                reloadVideo();
-            }
-        });
 
         function toggleSheet(open) {
             document.getElementById('sheet').classList.toggle('open', open);
@@ -189,22 +274,13 @@
             const container = document.getElementById('player-container');
             const offlineUI = document.getElementById('offline-ui');
             const msg = document.getElementById('offline-msg');
-            
             offlineUI.style.display = 'flex';
             msg.innerText = "Loading...";
-
             const iframe = document.createElement('iframe');
             iframe.src = `${REMOTE_PLAYER_URL}?v=${currentVideoId}&autoplay=1`;
-            iframe.allow = "autoplay; fullscreen";
-            iframe.allowFullscreen = true;
-            
-            // যখন আইফ্রেম পুরোপুরি লোড হবে তখনই কেবল কালো পর্দা সরবে
-            iframe.onload = function() {
-                offlineUI.style.display = 'none';
-            };
-
-            container.innerHTML = "";
-            container.appendChild(iframe);
+            iframe.allow = "autoplay; fullscreen"; iframe.allowFullscreen = true;
+            iframe.onload = () => { offlineUI.style.display = 'none'; };
+            container.innerHTML = ""; container.appendChild(iframe);
         }
 
         function renderPlayer(league) {
@@ -229,8 +305,7 @@
                 let item = document.createElement('div');
                 item.className = 'video-item';
                 if(index === 0) item.classList.add('playing');
-                let timeTag = v.dur ? `<div class="video-time">${v.dur}</div>` : '';
-                item.innerHTML = `<div class="thumb-box"><img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" loading="lazy">${timeTag}</div>
+                item.innerHTML = `<div class="thumb-box"><img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" loading="lazy"></div>
                                   <div><div class="item-title">${v.t}</div><div style="font-size:11px; color:#888; margin-top:4px;">${v.m} • ${v.d}</div></div>`;
                 item.onclick = function() { play(v, item); };
                 listDiv.appendChild(item);
@@ -247,53 +322,9 @@
             }, 5000);
         }
 
-        fetch('data.json').then(res => res.json()).then(data => {
-            globalData = data;
-            const slider = document.getElementById('slider');
-            const grid = document.getElementById('category-grid');
-            const tabBar = document.getElementById('tab-bar');
-
-            const games = ['All', ...new Set(data.l.map(item => item.g))];
-            games.forEach(gameName => {
-                if(!gameName) return;
-                let tab = document.createElement('div');
-                tab.className = 'tab-item' + (gameName === 'All' ? ' active' : '');
-                tab.innerText = gameName;
-                tab.onclick = function() {
-                    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    renderGrid(gameName);
-                };
-                tabBar.appendChild(tab);
-            });
-
-            function renderGrid(filterGame) {
-                grid.innerHTML = "";
-                data.l.forEach(league => {
-                    if (filterGame === 'All' || league.g === filterGame) {
-                        let c = document.createElement('div'); 
-                        c.className = 'card';
-                        c.innerHTML = `<img src="${league.i}" loading="lazy"><div class="card-label">${league.n}</div>`;
-                        c.onclick = () => showView(league.id);
-                        grid.appendChild(c);
-                    }
-                });
-            }
-
-            data.l.forEach(league => {
-                let s = document.createElement('div'); s.className = 'slide';
-                s.innerHTML = `<img src="https://img.youtube.com/vi/${league.v[0].id}/mqdefault.jpg"><div class="slide-info"><b>${league.n}</b></div>`;
-                s.onclick = () => showView(league.id);
-                slider.appendChild(s);
-            });
-
-            renderGrid('All');
-            startAutoScroll();
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const savedLeagueId = urlParams.get('l');
-            if(savedLeagueId) showView(savedLeagueId, false);
-        });
+        // শুরুতে ডেটা লোড করার চেষ্টা
+        loadAppData();
+        if(!navigator.onLine) document.getElementById('net-alert').classList.add('active');
     </script>
 </body>
 </html>
