@@ -22,20 +22,16 @@
 <body>
     <div id="video-container"></div>
     <script>
-        const params = new URLSearchParams(window.location.search);
-        const vId = params.get('v');
-        if (vId) {
-            // origin=https://www.youtube.com এবং widget_referrer যোগ করা হয়েছে
-            // এতে ভিডিও হোম পেজে রিডাইরেক্ট হওয়ার সমস্যা কমবে
-            const embedUrl = `https://www.youtube.com/embed/${vId}?autoplay=1&rel=0&modestbranding=1&fs=1&enablejsapi=1&origin=${window.location.origin}&widget_referrer=${window.location.origin}`;
-            
-            document.getElementById('video-container').innerHTML = 
-                `<iframe src="${embedUrl}" 
-                 allow="autoplay; fullscreen; picture-in-picture" 
-                 allowfullscreen="true" 
-                 webkitallowfullscreen="true" 
-                 mozallowfullscreen="true"></iframe>`;
-        }
-    </script>
+    const vId = new URLSearchParams(window.location.search).get('v');
+    if (vId) {
+        // 'preload' নিশ্চিত করতে এবং অপ্রয়োজনীয় এলিমেন্ট বাদ দিতে
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube.com/embed/${vId}?autoplay=1&rel=0&modestbranding=1&fs=1&widget_referrer=${window.location.origin}`;
+        iframe.setAttribute('allow', 'autoplay; fullscreen');
+        iframe.setAttribute('allowfullscreen', 'true');
+        document.body.appendChild(iframe);
+    }
+</script>
 </body>
 </html>
+
