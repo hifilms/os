@@ -20,7 +20,8 @@
             transition: transform 0.3s ease;
         }
         header.hide { transform: translateY(-100%); }
-        .logo { width: 32px; height: 32px; margin-right: 12px; } 
+        /* লোগো সব সময় দৃশ্যমান রাখার জন্য */
+        .logo { width: 32px; height: 32px; margin-right: 12px; display: block; } 
         .app-name { font-size: 18px; font-weight: 700; flex-grow: 1; }
         .back-btn { cursor: pointer; width: 24px; height: 24px; margin-right: 15px; fill: #333; display: none; }
         .menu-dots { cursor: pointer; width: 24px; fill: #333; }
@@ -32,7 +33,6 @@
         @keyframes shimmer { 0% { background-position: -468px 0; } 100% { background-position: 468px 0; } }
         .skeleton { background: #f6f7f8; background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%); background-repeat: no-repeat; background-size: 800px 100%; animation: shimmer 1.5s infinite linear; border-radius: 8px; }
 
-        /* ইমেজ লোড না হওয়া পর্যন্ত সুন্দর প্লেসহোল্ডার */
         .thumb-box, .card, .slide {
             background-color: #f9f9f9;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='%23ddd'%3E%3Cpath d='M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z'/%3E%3C/svg%3E");
@@ -121,7 +121,7 @@
                 <div id="player-container"></div>
                 <div id="offline-ui" class="offline-ui">
                     <svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="20"/></svg>
-                    <span id="offline-msg">No Internet</span>
+                    <span id="offline-msg">Loading...</span>
                 </div>
             </div>
             <div class="video-details">
@@ -147,6 +147,7 @@
         let autoScrollInterval = null;
         let lastScrollTop = 0;
         let currentVideoId = null;
+        let loadTimeout = null;
         const REMOTE_PLAYER_URL = "player.html"; 
 
         const onImgLoad = (el) => el.classList.add('loaded');
@@ -171,12 +172,17 @@
                     if(!img.complete || img.naturalWidth === 0) handleImgError(img);
                 });
             }
-            if(document.getElementById('view-page').classList.contains('active') && 
-               document.getElementById('offline-ui').style.display === 'flex') reloadVideo();
+            if(document.getElementById('view-page').classList.contains('active')) {
+                reloadVideo();
+            }
         });
 
         window.addEventListener('offline', () => {
             document.getElementById('net-alert').classList.add('active');
+            if(document.getElementById('view-page').classList.contains('active')) {
+                document.getElementById('offline-msg').innerText = "No Internet";
+                document.getElementById('offline-ui').style.display = 'flex';
+            }
         });
 
         function loadAppData() {
@@ -235,30 +241,43 @@
             startAutoScroll();
         }
 
-        function showView(leagueId, pushHistory = true) {
-            const league = globalData.l.find(x => x.id === leagueId);
-            if(!league) return;
-            if(pushHistory) window.history.pushState({l: leagueId}, "", "?l=" + leagueId);
-            clearInterval(autoScrollInterval);
-            document.getElementById('home-page').classList.remove('active');
-            document.getElementById('view-page').classList.add('active');
-            document.getElementById('main-back').style.display = 'block';
-            document.getElementById('main-logo').style.display = 'none';
-            document.getElementById('header-text').innerText = league.n;
-            renderPlayer(league);
-        }
-
         function reloadVideo() {
             if(!currentVideoId) return;
             const container = document.getElementById('player-container');
             const offlineUI = document.getElementById('offline-ui');
+            const msg = document.getElementById('offline-msg');
+
+            if(!navigator.onLine) {
+                msg.innerText = "No Internet";
+                offlineUI.style.display = 'flex';
+                return;
+            }
+
             offlineUI.style.display = 'flex';
-            document.getElementById('offline-msg').innerText = "Loading...";
+            msg.innerText = "Loading...";
+            
+            // পূর্বের টাইমআউট ক্লিয়ার করা
+            if(loadTimeout) clearTimeout(loadTimeout);
+
             const iframe = document.createElement('iframe');
             iframe.src = `${REMOTE_PLAYER_URL}?v=${currentVideoId}&autoplay=1`;
-            iframe.allow = "autoplay; fullscreen"; iframe.allowFullscreen = true;
-            iframe.onload = () => { offlineUI.style.display = 'none'; };
-            container.innerHTML = ""; container.appendChild(iframe);
+            iframe.allow = "autoplay; fullscreen"; 
+            iframe.allowFullscreen = true;
+
+            iframe.onload = () => {
+                clearTimeout(loadTimeout);
+                offlineUI.style.display = 'none';
+            };
+
+            // যদি ৮ সেকেন্ডের মধ্যে লোড না হয় তবে আবার চেষ্টা করবে
+            loadTimeout = setTimeout(() => {
+                if(offlineUI.style.display === 'flex' && navigator.onLine) {
+                    reloadVideo(); 
+                }
+            }, 8000);
+
+            container.innerHTML = ""; 
+            container.appendChild(iframe);
         }
 
         function renderPlayer(league) {
@@ -266,13 +285,7 @@
             listDiv.innerHTML = "";
             function play(v, clickedElement) {
                 currentVideoId = v.id;
-                if(!navigator.onLine) {
-                    document.getElementById('player-container').innerHTML = ""; 
-                    document.getElementById('offline-msg').innerText = "No Internet";
-                    document.getElementById('offline-ui').style.display = 'flex';
-                } else {
-                    reloadVideo();
-                }
+                reloadVideo();
                 document.getElementById('v-title').innerText = v.t;
                 document.getElementById('v-meta').innerText = v.m + " | " + v.d;
                 document.querySelectorAll('.video-item').forEach(el => el.classList.remove('playing'));
@@ -309,12 +322,25 @@
             document.getElementById('view-page').classList.remove('active');
             document.getElementById('home-page').classList.add('active');
             document.getElementById('main-back').style.display = 'none';
-            document.getElementById('main-logo').style.display = 'block';
+            document.getElementById('main-logo').style.display = 'block'; // লোগো শো করবে
             document.getElementById('header-text').innerText = 'SPORTS HUB';
             document.getElementById('player-container').innerHTML = ""; 
             currentVideoId = null;
             document.getElementById('offline-ui').style.display = 'none';
             startAutoScroll();
+        }
+
+        function showView(leagueId, pushHistory = true) {
+            const league = globalData.l.find(x => x.id === leagueId);
+            if(!league) return;
+            if(pushHistory) window.history.pushState({l: leagueId}, "", "?l=" + leagueId);
+            clearInterval(autoScrollInterval);
+            document.getElementById('home-page').classList.remove('active');
+            document.getElementById('view-page').classList.add('active');
+            document.getElementById('main-back').style.display = 'block';
+            document.getElementById('main-logo').style.display = 'none'; // ভিউ পেজে লোগো হাইড
+            document.getElementById('header-text').innerText = league.n;
+            renderPlayer(league);
         }
 
         function toggleSheet(open) {
