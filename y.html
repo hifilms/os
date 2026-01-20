@@ -3,79 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sports Hub SPA</title>
+    <title>Sports Hub Pro</title>
     <style>
         :root { --bg: #ffffff; --text: #333; --header-h: 50px; --accent: #f2f2f2; }
         
-        ::-webkit-scrollbar { display: none; }
-        * { -ms-overflow-style: none; scrollbar-width: none; box-sizing: border-box; }
+        /* স্ক্রলবার হাইড করার জন্য */
+        * { box-sizing: border-box; -ms-overflow-style: none; scrollbar-width: none; }
+        *::-webkit-scrollbar { display: none; }
 
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
         
-        .page { display: none; width: 100%; min-height: 100vh; }
-        .active { display: block; }
-
-        /* স্লিম হেডার ও বড় লোগো */
+        /* হেডার ডিজাইন */
         header { 
-            display: flex; align-items: center; 
-            height: var(--header-h); padding: 0 15px; 
-            background: #fff; border-bottom: 1px solid #eee; 
-            position: sticky; top: 0; z-index: 100; 
+            display: flex; align-items: center; height: var(--header-h); padding: 0 15px; 
+            background: #fff; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 100; 
             transition: transform 0.3s ease;
         }
         header.hide { transform: translateY(-100%); }
-
         .logo { width: 32px; height: 32px; margin-right: 12px; } 
         .app-name { font-size: 18px; font-weight: 700; flex-grow: 1; }
         .back-btn { cursor: pointer; width: 24px; height: 24px; margin-right: 15px; fill: #333; display: none; }
         .menu-dots { cursor: pointer; width: 24px; fill: #333; }
 
+        .page { display: none; width: 100%; min-height: 100vh; }
+        .active { display: block; }
+
         /* স্লাইডার */
-        .slider-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; }
-        .slide { min-width: 100%; height: 210px; position: relative; scroll-snap-align: center; overflow: hidden; cursor: pointer; }
+        .slider-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
+        .slide { min-width: 100%; height: 210px; position: relative; scroll-snap-align: center; cursor: pointer; }
         .slide img { width: 100%; height: 100%; object-fit: cover; }
-        .slide-info { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 25px 15px 10px; color: #fff; font-size: 14px; }
+        .slide-info { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 25px 15px 10px; color: #fff; }
         
-        /* ক্যাটাগরি গ্রিড */
+        /* গ্রিড */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
-        .card { position: relative; aspect-ratio: 16/10; border-radius: 12px; overflow: hidden; cursor: pointer; border: 1px solid #eee; }
+        .card { position: relative; aspect-ratio: 16/10; border-radius: 12px; overflow: hidden; border: 1px solid #eee; }
         .card img { width: 100%; height: 100%; object-fit: cover; }
         .card-label { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
 
         /* স্টিকি প্লেয়ার */
         .sticky-wrapper { position: sticky; top: 0; z-index: 50; background: #fff; transition: top 0.3s ease; }
-        .player-box { width: 100%; aspect-ratio: 16/9; background: #000; }
-        iframe { width: 100%; height: 100%; border: none; display: block; }
+        .player-box { width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; }
+        #main-player { width: 100%; height: 100%; border: none; display: block; }
         .video-details { padding: 12px 15px; border-bottom: 5px solid #f4f4f4; background: #fff; }
         
-        /* ভিডিও লিস্ট ও হাইলাইটার */
+        /* ভিডিও লিস্ট */
         .list-container { padding: 10px 15px; }
-        .video-item { display: flex; gap: 12px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; padding: 8px; border-radius: 8px; }
+        .video-item { display: flex; gap: 12px; margin-bottom: 12px; cursor: pointer; padding: 8px; border-radius: 8px; }
         .video-item.playing { background: var(--accent); } 
-
-        .thumb-box { 
-            width: 120px; min-width: 120px; aspect-ratio: 16/9; 
-            border-radius: 6px; overflow: hidden; background: #eee; 
-            position: relative; 
-        }
+        .thumb-box { width: 120px; min-width: 120px; aspect-ratio: 16/9; border-radius: 6px; overflow: hidden; position: relative; }
         .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
-        .video-time { 
-            position: absolute; bottom: 4px; right: 4px; 
-            background: rgba(0,0,0,0.8); color: #fff; 
-            font-size: 10px; padding: 1px 4px; border-radius: 3px; 
-        }
-
         .item-title { font-size: 13px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-        /* বটম শিট স্টাইল */
+        /* বটম শিট */
         .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 200; }
-        .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: #fff; border-radius: 15px 15px 0 0; transition: 0.4s; z-index: 201; padding: 20px; box-sizing: border-box; }
+        .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: #fff; border-radius: 15px 15px 0 0; transition: 0.4s; z-index: 201; padding: 20px; }
         .bottom-sheet.open { bottom: 0; }
-        .sheet-item { padding: 15px 0; border-bottom: 1px solid #eee; font-size: 15px; font-weight: 500; color: #333; cursor: pointer; }
-
-        /* ইন্টারনেট অ্যালার্ট */
-        #net-alert { position: fixed; bottom: -50px; left: 0; width: 100%; background: #cc0000; color: #fff; text-align: center; padding: 8px 0; transition: 0.4s; font-size: 12px; z-index: 1000; }
-        #net-alert.show { bottom: 0; }
+        .sheet-item { padding: 15px 0; border-bottom: 1px solid #eee; font-size: 15px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -95,10 +78,10 @@
     <div id="view-page" class="page">
         <div class="sticky-wrapper" id="player-sticky">
             <div class="player-box">
-                <iframe id="main-player" src="" allow="autoplay; fullscreen"></iframe>
+                <iframe id="main-player" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
             </div>
             <div class="video-details">
-                <b style="display:block; font-size: 15px; margin-bottom:4px;" id="v-title"></b>
+                <b id="v-title" style="display:block; font-size:15px; margin-bottom:4px;"></b>
                 <small id="v-meta" style="color:#666;"></small>
             </div>
         </div>
@@ -108,46 +91,39 @@
     <div class="sheet-overlay" id="overlay" onclick="toggleSheet(false)"></div>
     <div class="bottom-sheet" id="sheet">
         <div style="width:30px; height:4px; background:#ddd; margin:0 auto 15px; border-radius:10px;"></div>
-        <div class="sheet-item" onclick="alert('Rate us on Play Store')">Rate App</div>
-        <div class="sheet-item" onclick="alert('Share this app with friends')">Share App</div>
+        <div class="sheet-item">Rate App</div>
+        <div class="sheet-item">Share App</div>
         <div class="sheet-item" style="border:none;" onclick="toggleSheet(false)">Close</div>
     </div>
-
-    <div id="net-alert">No Internet Connection</div>
 
     <script>
         let globalData = null;
         let autoScrollInterval = null;
         let lastScrollTop = 0;
 
-        // মেনু ডটস কন্ট্রোল
+        // আপনার হোস্ট করা player.html এর লিঙ্ক এখানে বসান
+        const REMOTE_PLAYER_URL = "https://hifilms.github.io/os/player.html"; 
+
         function toggleSheet(open) {
             document.getElementById('sheet').classList.toggle('open', open);
             document.getElementById('overlay').style.display = open ? 'block' : 'none';
         }
 
-        // হেডার ও প্লেয়ার স্টিকি লজিক
-        window.onscroll = function() {
+        // হেডার হাইড লজিক আপডেট করা হয়েছে
+        window.addEventListener('scroll', function() {
             let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
             let header = document.getElementById('main-header');
             let playerSticky = document.getElementById('player-sticky');
 
             if (currentScroll > lastScrollTop && currentScroll > 80) {
                 header.classList.add('hide');
-                playerSticky.style.top = "0";
+                if(playerSticky) playerSticky.style.top = "0";
             } else {
                 header.classList.remove('hide');
-                playerSticky.style.top = "var(--header-h)";
+                if(playerSticky) playerSticky.style.top = "var(--header-h)";
             }
             lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
-        };
-
-        function checkConnection() {
-            if (navigator.onLine) document.getElementById('net-alert').classList.remove('show');
-            else document.getElementById('net-alert').classList.add('show');
-        }
-        window.addEventListener('online', checkConnection);
-        window.addEventListener('offline', checkConnection);
+        }, false);
 
         function showHome() {
             document.getElementById('view-page').classList.remove('active');
@@ -162,7 +138,6 @@
         function showView(leagueId) {
             const league = globalData.l.find(x => x.id === leagueId);
             if(!league) return;
-            
             clearInterval(autoScrollInterval);
             document.getElementById('home-page').classList.remove('active');
             document.getElementById('view-page').classList.add('active');
@@ -178,10 +153,9 @@
             listDiv.innerHTML = "";
             
             function play(v, clickedElement) {
-                document.getElementById('main-player').src = "https://www.youtube.com/embed/" + v.id + "?autoplay=1&rel=0";
+                document.getElementById('main-player').src = REMOTE_PLAYER_URL + "?v=" + v.id;
                 document.getElementById('v-title').innerText = v.t;
                 document.getElementById('v-meta').innerText = v.m + " | " + v.d;
-                
                 document.querySelectorAll('.video-item').forEach(el => el.classList.remove('playing'));
                 if(clickedElement) clickedElement.classList.add('playing');
                 else if(listDiv.firstChild) listDiv.firstChild.classList.add('playing');
@@ -191,11 +165,8 @@
                 let item = document.createElement('div');
                 item.className = 'video-item';
                 if(index === 0) item.classList.add('playing');
-                let timeTag = v.dur ? `<div class="video-time">${v.dur}</div>` : '';
-
-                item.innerHTML = `<div class="thumb-box"><img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg">${timeTag}</div>
-                                  <div><div class="item-title">${v.t}</div><div style="font-size:11px; color:#888; margin-top:4px;">${v.m} • ${v.d}</div></div>`;
-                
+                item.innerHTML = `<div class="thumb-box"><img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg"></div>
+                                  <div><div class="item-title">${v.t}</div><div style="font-size:11px; color:#888;">${v.m} • ${v.d}</div></div>`;
                 item.onclick = function() { play(v, item); window.scrollTo({top:0, behavior:'smooth'}); };
                 listDiv.appendChild(item);
             });
@@ -226,8 +197,7 @@
                 grid.appendChild(c);
             });
             startAutoScroll();
-            checkConnection();
-        }).catch(e => console.error(e));
+        });
     </script>
 </body>
 </html>
