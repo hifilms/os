@@ -14,30 +14,27 @@
         *::-webkit-scrollbar { display: none; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
         
-        /* হেডার স্টাইল - পুরনো ফাইলের মতো সহজ রাখা হয়েছে */
+        /* হেডার: আপনার পাঠানো পুরনো ফাইল থেকে নেওয়া গঠন */
         header { 
             display: flex; align-items: center; height: var(--header-h); padding: 0 15px; 
             background: #fff; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 1000; 
             transition: transform 0.3s ease;
         }
         header.hide { transform: translateY(-100%); }
-        
-        /* লোগো এবং ব্যাক বাটন - পুরনো ফাইলের ক্লাস ব্যবহার করা হয়েছে */
-        .logo { width: 32px; height: 32px; margin-right: 12px; display: block; object-fit: contain; } 
-        .back-btn { cursor: pointer; width: 24px; height: 24px; margin-right: 15px; fill: #333; display: none; }
-        
+        .logo { width: 32px; height: 32px; margin-right: 12px; } 
         .app-name { font-size: 18px; font-weight: 700; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .back-btn { cursor: pointer; width: 24px; height: 24px; margin-right: 15px; fill: #333; display: none; }
         .menu-dots { cursor: pointer; width: 24px; fill: #333; }
 
+        /* বাকি সব নতুন স্টাইল অক্ষুণ্ণ রাখা হয়েছে */
         .page { display: none; width: 100%; min-height: 100vh; }
         .active { display: block; }
 
-        /* Skeleton Animation */
         @keyframes shimmer { 0% { background-position: -468px 0; } 100% { background-position: 468px 0; } }
         .skeleton { background: #f6f7f8; background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%); background-repeat: no-repeat; background-size: 800px 100%; animation: shimmer 1.5s infinite linear; border-radius: 8px; }
 
         .slider-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
-        .slide { min-width: 100%; height: 210px; position: relative; scroll-snap-align: center; cursor: pointer; }
+        .slide { min-width: 100%; height: 210px; position: relative; scroll-snap-align: center; cursor: pointer; overflow: hidden; }
         .slide img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.5s; }
         .slide img.loaded { opacity: 1; }
         .slide-info { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 25px 15px 10px; color: #fff; }
@@ -58,7 +55,9 @@
         #player-container { width: 100%; height: 100%; }
         #player-container iframe { width: 100%; height: 100%; border: none; }
         
-        .offline-ui { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; color: #fff; display: none; }
+        .offline-ui { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; color: #fff; display: none; z-index: 10; }
+        .offline-ui svg { width: 40px; height: 40px; animation: rotate 1s linear infinite; margin-bottom: 10px; }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         .video-details { padding: 12px 15px; border-bottom: 5px solid #f4f4f4; background: #fff; }
         .list-container { padding: 10px 15px; }
@@ -67,12 +66,12 @@
         .thumb-box { width: 120px; min-width: 120px; aspect-ratio: 16/9; border-radius: 6px; overflow: hidden; position: relative; background: #eee; }
         .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
         
-        /* আপনার ডাটা থেকে dur প্যারামিটার ব্যবহার */
-        .video-time { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.8); color: #fff; font-size: 10px; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+        /* টাইম ডিউরেশন (dur) */
+        .video-time { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.85); color: #fff; font-size: 10px; padding: 1px 5px; border-radius: 3px; font-weight: 600; }
         
         .item-title { font-size: 13px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-        #net-alert { position: fixed; bottom: -50px; left: 0; width: 100%; background: #333; color: #fff; text-align: center; padding: 10px 0; transition: 0.4s; font-size: 13px; z-index: 2000; }
+        #net-alert { position: fixed; bottom: -60px; left: 0; width: 100%; background: #333; color: #fff; text-align: center; padding: 12px 0; transition: 0.4s; font-size: 13px; z-index: 2000; }
         #net-alert.active { bottom: 0; }
 
         .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 3000; }
@@ -86,9 +85,7 @@
     <header id="main-header">
         <svg id="main-back" class="back-btn" onclick="window.history.back()" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
         <img id="main-logo" src="https://cdn-icons-png.flaticon.com/512/5351/5351486.png" class="logo">
-        
         <div class="app-name" id="header-text">SPORTS HUB</div>
-        
         <svg class="menu-dots" onclick="toggleSheet(true)" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
     </header>
 
@@ -105,6 +102,7 @@
             <div class="player-box">
                 <div id="player-container"></div>
                 <div id="offline-ui" class="offline-ui">
+                    <svg viewBox="0 0 50 50" style="fill:none; stroke:#fff; stroke-width:3; stroke-linecap:round; stroke-dasharray:40,100;"><circle cx="25" cy="25" r="20"/></svg>
                     <span>Loading...</span>
                 </div>
             </div>
@@ -134,7 +132,7 @@
 
         const onImgLoad = (el) => el.classList.add('loaded');
 
-        // হিস্ট্রি হ্যান্ডলিং - পুরনো কোড থেকে নেওয়া
+        // হিস্ট্রি ব্যাক হ্যান্ডলিং (পুরনো ফাইল থেকে নেওয়া)
         window.onpopstate = function() {
             showHome();
         };
@@ -146,7 +144,7 @@
             document.getElementById('view-page').classList.remove('active');
             document.getElementById('home-page').classList.add('active');
             
-            // লোগো শো এবং ব্যাক হাইড - সরাসরি পুরনো লজিক
+            // পুরনো ফাইলের লজিক: লোগো শো, ব্যাক হাইড
             document.getElementById('main-back').style.display = 'none';
             document.getElementById('main-logo').style.display = 'block';
             
@@ -165,7 +163,7 @@
             document.getElementById('home-page').classList.remove('active');
             document.getElementById('view-page').classList.add('active');
             
-            // ব্যাক শো এবং লোগো হাইড - সরাসরি পুরনো লজিক
+            // পুরনো ফাইলের লজিক: ব্যাক শো, লোগো হাইড
             document.getElementById('main-back').style.display = 'block';
             document.getElementById('main-logo').style.display = 'none';
             
@@ -176,12 +174,15 @@
 
         function renderPlayer(league) {
             const listDiv = document.getElementById('video-list');
+            const offUI = document.getElementById('offline-ui');
             listDiv.innerHTML = "";
             
             function play(v, clickedElement) {
+                offUI.style.display = 'flex';
                 const container = document.getElementById('player-container');
                 const videoUrl = REMOTE_PLAYER_URL + "?v=" + v.id + "&autoplay=1";
-                container.innerHTML = `<iframe src="${videoUrl}" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+                
+                container.innerHTML = `<iframe src="${videoUrl}" allow="autoplay; fullscreen" allowfullscreen onload="document.getElementById('offline-ui').style.display='none'"></iframe>`;
 
                 document.getElementById('v-title').innerText = v.t;
                 document.getElementById('v-meta').innerText = v.m + " | " + v.d;
@@ -195,7 +196,6 @@
                 item.className = 'video-item';
                 if(index === 0) item.classList.add('playing');
                 
-                // আপনার ডাটার dur প্যারামিটার এখানে বসানো হয়েছে
                 let timeTag = v.dur ? `<div class="video-time">${v.dur}</div>` : '';
                 
                 item.innerHTML = `<div class="thumb-box">
@@ -223,9 +223,10 @@
             const tabBar = document.getElementById('tab-bar');
             slider.innerHTML = ""; grid.innerHTML = ""; tabBar.innerHTML = "";
 
-            // Tabs
+            // উন্নত Tabs সিস্টেম (নতুন ফাইলের)
             const games = ['All', ...new Set(data.l.map(item => item.g))];
             games.forEach(gameName => {
+                if(!gameName) return;
                 let tab = document.createElement('div');
                 tab.className = 'tab-item' + (gameName === 'All' ? ' active' : '');
                 tab.innerText = gameName;
