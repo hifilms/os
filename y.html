@@ -10,10 +10,8 @@
 
     <style>
         :root { --bg: #ffffff; --text: #333; --header-h: 50px; --accent: #f2f2f2; }
-        
         * { box-sizing: border-box; -ms-overflow-style: none; scrollbar-width: none; }
         *::-webkit-scrollbar { display: none; }
-
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
         
         header { 
@@ -30,7 +28,6 @@
         .page { display: none; width: 100%; min-height: 100vh; }
         .active { display: block; }
 
-        /* স্লাইডার */
         .slider-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
         .slide { min-width: 100%; height: 210px; position: relative; scroll-snap-align: center; cursor: pointer; }
         .slide img { width: 100%; height: 100%; object-fit: cover; }
@@ -43,7 +40,10 @@
 
         .sticky-wrapper { position: sticky; top: 0; z-index: 50; background: #fff; transition: top 0.3s ease; }
         .player-box { width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; }
-        #main-player { width: 100%; height: 100%; border: none; display: block; }
+        /* আইফ্রেমটি এখন ডাইনামিক্যালি তৈরি হবে */
+        #player-container { width: 100%; height: 100%; }
+        #player-container iframe { width: 100%; height: 100%; border: none; }
+        
         .video-details { padding: 12px 15px; border-bottom: 5px solid #f4f4f4; background: #fff; }
         
         .list-container { padding: 10px 15px; }
@@ -54,13 +54,7 @@
         .video-time { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.8); color: #fff; font-size: 10px; padding: 1px 4px; border-radius: 3px; }
         .item-title { font-size: 13px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-        /* ইন্টারনেট এলার্ট স্টাইল */
-        #net-alert { 
-            position: fixed; bottom: -50px; left: 0; width: 100%; 
-            background: #cc0000; color: #fff; text-align: center; 
-            padding: 8px 0; transition: 0.4s; font-size: 13px; z-index: 1000; 
-            font-weight: 500;
-        }
+        #net-alert { position: fixed; bottom: -50px; left: 0; width: 100%; background: #cc0000; color: #fff; text-align: center; padding: 8px 0; transition: 0.4s; font-size: 13px; z-index: 1000; }
         #net-alert.active { bottom: 0; }
 
         .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 200; }
@@ -72,7 +66,7 @@
 <body>
 
     <header id="main-header">
-        <svg id="main-back" class="back-btn" onclick="showHome()" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        <svg id="main-back" class="back-btn" onclick="window.history.back()" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
         <img id="main-logo" src="https://cdn-icons-png.flaticon.com/512/5351/5351486.png" class="logo">
         <div class="app-name" id="header-text">SPORTS HUB</div>
         <svg class="menu-dots" onclick="toggleSheet(true)" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
@@ -86,7 +80,7 @@
     <div id="view-page" class="page">
         <div class="sticky-wrapper" id="player-sticky">
             <div class="player-box">
-                <iframe id="main-player" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+                <div id="player-container"></div>
             </div>
             <div class="video-details">
                 <b id="v-title" style="display:block; font-size:15px; margin-bottom:4px;"></b>
@@ -101,8 +95,8 @@
     <div class="sheet-overlay" id="overlay" onclick="toggleSheet(false)"></div>
     <div class="bottom-sheet" id="sheet">
         <div style="width:30px; height:4px; background:#ddd; margin:0 auto 15px; border-radius:10px;"></div>
-        <div class="sheet-item" onclick="alert('Rate App')">Rate App</div>
-        <div class="sheet-item" onclick="alert('Share App')">Share App</div>
+        <div class="sheet-item">Rate App</div>
+        <div class="sheet-item">Share App</div>
         <div class="sheet-item" style="border:none;" onclick="toggleSheet(false)">Close</div>
     </div>
 
@@ -110,12 +104,14 @@
         let globalData = null;
         let autoScrollInterval = null;
         let lastScrollTop = 0;
-        const REMOTE_PLAYER_URL = "https://hifilms.github.io/os/player.html"; 
+        const REMOTE_PLAYER_URL = "YOUR_ONLINE_URL_HERE"; 
 
-        // ইন্টারনেট চেক লজিক
+        window.onpopstate = function() {
+            showHome();
+        };
+
         window.addEventListener('online', () => document.getElementById('net-alert').classList.remove('active'));
         window.addEventListener('offline', () => document.getElementById('net-alert').classList.add('active'));
-        if(!navigator.onLine) document.getElementById('net-alert').classList.add('active');
 
         function toggleSheet(open) {
             document.getElementById('sheet').classList.toggle('open', open);
@@ -142,13 +138,16 @@
             document.getElementById('main-back').style.display = 'none';
             document.getElementById('main-logo').style.display = 'block';
             document.getElementById('header-text').innerText = 'SPORTS HUB';
-            document.getElementById('main-player').src = "";
+            document.getElementById('player-container').innerHTML = ""; // প্লেয়ার বন্ধ করা
             startAutoScroll();
         }
 
         function showView(leagueId) {
             const league = globalData.l.find(x => x.id === leagueId);
             if(!league) return;
+
+            window.history.pushState({view: 'player'}, "");
+
             clearInterval(autoScrollInterval);
             document.getElementById('home-page').classList.remove('active');
             document.getElementById('view-page').classList.add('active');
@@ -164,9 +163,12 @@
             listDiv.innerHTML = "";
             
             function play(v, clickedElement) {
-                const p = document.getElementById('main-player');
-                p.src = "about:blank"; 
-                setTimeout(() => { p.src = REMOTE_PLAYER_URL + "?v=" + v.id; }, 10);
+                const container = document.getElementById('player-container');
+                // আইফ্রেমটি নতুন করে তৈরি করা হচ্ছে যাতে হিস্ট্রি না জমে এবং অটো-প্লে হয়
+                const videoUrl = REMOTE_PLAYER_URL + "?v=" + v.id + "&autoplay=1";
+                
+                // এই লাইনটিই ম্যাজিক করবে: নতুন আইফ্রেম পুরনোটাকে রিপ্লেস করবে
+                container.innerHTML = `<iframe src="${videoUrl}" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
 
                 document.getElementById('v-title').innerText = v.t;
                 document.getElementById('v-meta').innerText = v.m + " | " + v.d;
@@ -185,6 +187,8 @@
                 item.onclick = function() { play(v, item); window.scrollTo({top:0, behavior:'smooth'}); };
                 listDiv.appendChild(item);
             });
+
+            // প্রথম ভিডিওটি প্লে করা
             play(league.v[0]);
         }
 
@@ -197,7 +201,7 @@
             }, 5000);
         }
 
-        fetch('https://hifilms.github.io/os/data.json').then(res => res.json()).then(data => {
+        fetch('data.json').then(res => res.json()).then(data => {
             globalData = data;
             const slider = document.getElementById('slider');
             const grid = document.getElementById('category-grid');
