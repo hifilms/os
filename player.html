@@ -3,31 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Hub Pro</title>
     <style>
-        body, html { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            background: #000; overflow: hidden; 
+        :root { --bg: #ffffff; --text: #333; --header-h: 50px; --accent: #f2f2f2; }
+        ::-webkit-scrollbar { display: none; }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+        
+        /* স্লিম হেডার */
+        header { 
+            display: flex; align-items: center; height: var(--header-h); padding: 0 15px; 
+            background: #fff; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 100; 
+            transition: transform 0.3s ease;
         }
-        #video-container {
-            position: absolute; top: 0; left: 0; 
-            width: 100%; height: 100%;
-        }
-        iframe { 
-            width: 100%; height: 100%; border: none; 
-        }
+        header.hide { transform: translateY(-100%); }
+        .logo { width: 32px; height: 32px; margin-right: 12px; } 
+        .app-name { font-size: 18px; font-weight: 700; flex-grow: 1; }
+        .back-btn { cursor: pointer; width: 24px; height: 24px; margin-right: 15px; fill: #333; display: none; }
+        .menu-dots { cursor: pointer; width: 24px; fill: #333; }
+
+        .page { display: none; width: 100%; min-height: 100vh; }
+        .active { display: block; }
+
+        /* স্লাইডার ও গ্রিড */
+        .slider-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
+        .slide { min-width: 100%; height: 210px; position: relative; scroll-snap-align: center; cursor: pointer; }
+        .slide img { width: 100%; height: 100%; object-fit: cover; }
+        .slide-info { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 25px 15px 10px; color: #fff; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
+        .card { position: relative; aspect-ratio: 16/10; border-radius: 12px; overflow: hidden; border: 1px solid #eee; }
+        .card img { width: 100%; height: 100%; object-fit: cover; }
+        .card-label { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
+
+        /* স্টিকি প্লেয়ার ফিক্সড উইডথ */
+        .sticky-wrapper { position: sticky; top: 0; z-index: 50; background: #fff; }
+        .player-box { width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; }
+        #main-player { width: 100%; height: 100%; border: none; display: block; }
+        .video-details { padding: 12px 15px; border-bottom: 5px solid #f4f4f4; background: #fff; }
+        
+        /* ভিডিও লিস্ট */
+        .list-container { padding: 10px 15px; }
+        .video-item { display: flex; gap: 12px; margin-bottom: 12px; cursor: pointer; padding: 8px; border-radius: 8px; }
+        .video-item.playing { background: var(--accent); } 
+        .thumb-box { width: 120px; min-width: 120px; aspect-ratio: 16/9; border-radius: 6px; overflow: hidden; position: relative; }
+        .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
+        .video-time { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.8); color: #fff; font-size: 10px; padding: 1px 4px; border-radius: 3px; }
+        .item-title { font-size: 13px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* বটম শিট */
+        .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 200; }
+        .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: #fff; border-radius: 15px 15px 0 0; transition: 0.4s; z-index: 201; padding: 20px; }
+        .bottom-sheet.open { bottom: 0; }
+        .sheet-item { padding: 15px 0; border-bottom: 1px solid #eee; font-size: 15px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div id="video-container"></div>
+
+    <header id="main-header">
+        <svg id="main-back" class="back-btn" onclick="showHome()" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        <img id="main-logo" src="https://cdn-icons-png.flaticon.com/512/5351/5351486.png" class="logo">
+        <div class="app-name" id="header-text">SPORTS HUB</div>
+        <svg class="menu-dots" onclick="toggleSheet(true)" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+    </header>
+
+    <div id="home-page" class="page active">
+        <div class="slider-container" id="slider"></div>
+        <div class="grid" id="category-grid"></div>
+    </div>
+
+    <div id="view-page" class="page">
+        <div class="sticky-wrapper" id="player-sticky">
+            <div class="player-box">
+                <iframe id="main-player" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+            </div>
+            <div class="video-details">
+                <b id="v-title" style="display:block; font-size:15px; margin-bottom:4px;"></b>
+                <small id="v-meta" style="color:#666;"></small>
+            </div>
+        </div>
+        <div class="list-container" id="video-list"></div>
+    </div>
+
+    <div class="sheet-overlay" id="overlay" onclick="toggleSheet(false)"></div>
+    <div class="bottom-sheet" id="sheet">
+        <div style="width:30px; height:4px; background:#ddd; margin:0 auto 15px; border-radius:10px;"></div>
+        <div class="sheet-item">Rate App</div>
+        <div class="sheet-item">Share App</div>
+        <div class="sheet-item" style="border:none;" onclick="toggleSheet(false)">Close</div>
+    </div>
+
     <script>
-        const params = new URLSearchParams(window.location.search);
-        const vId = params.get('v');
-        if (vId) {
-            // allowfullscreen প্যারামিটার যোগ করা হয়েছে
-            document.getElementById('video-container').innerHTML = 
-                `<iframe src="https://www.youtube.com/embed/${vId}?autoplay=1&rel=0&modestbranding=1&fs=1" 
-                 allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+        let globalData = null;
+        let autoScrollInterval = null;
+        let lastScrollTop = 0;
+
+        // আপনার হোস্ট করা player.html এর পূর্ণাঙ্গ লিঙ্ক এখানে বসান
+        const REMOTE_PLAYER_URL = "YOUR_ONLINE_URL_HERE"; 
+
+        function toggleSheet(open) {
+            document.getElementById('sheet').classList.toggle('open', open);
+            document.getElementById('overlay').style.display = open ? 'block' : 'none';
         }
+
+        function showHome() {
+            document.getElementById('view-page').classList.remove('active');
+            document.getElementById('home-page').classList.add('active');
+            document.getElementById('main-back').style.display = 'none';
+            document.getElementById('main-logo').style.display = 'block';
+            document.getElementById('header-text').innerText = 'SPORTS HUB';
+            document.getElementById('main-player').src = "";
+            startAutoScroll();
+        }
+
+        function showView(leagueId) {
+            const league = globalData.l.find(x => x.id === leagueId);
+            if(!league) return;
+            clearInterval(autoScrollInterval);
+            document.getElementById('home-page').classList.remove('active');
+            document.getElementById('view-page').classList.add('active');
+            document.getElementById('main-back').style.display = 'block';
+            document.getElementById('main-logo').style.display = 'none';
+            document.getElementById('header-text').innerText = league.n;
+            renderPlayer(league);
+            window.scrollTo(0,0);
+        }
+
+        function renderPlayer(league) {
+            const listDiv = document.getElementById('video-list');
+            listDiv.innerHTML = "";
+            
+            function play(v, clickedElement) {
+                document.getElementById('main-player').src = REMOTE_PLAYER_URL + "?v=" + v.id;
+                document.getElementById('v-title').innerText = v.t;
+                document.getElementById('v-meta').innerText = v.m + " | " + v.d;
+                document.querySelectorAll('.video-item').forEach(el => el.classList.remove('playing'));
+                if(clickedElement) clickedElement.classList.add('playing');
+                else if(listDiv.firstChild) listDiv.firstChild.classList.add('playing');
+            }
+
+            league.v.forEach((v, index) => {
+                let item = document.createElement('div');
+                item.className = 'video-item';
+                if(index === 0) item.classList.add('playing');
+                item.innerHTML = `<div class="thumb-box"><img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg"></div>
+                                  <div><div class="item-title">${v.t}</div><div style="font-size:11px; color:#888;">${v.m} • ${v.d}</div></div>`;
+                item.onclick = function() { play(v, item); window.scrollTo({top:0, behavior:'smooth'}); };
+                listDiv.appendChild(item);
+            });
+            play(league.v[0]);
+        }
+
+        function startAutoScroll() {
+            const slider = document.getElementById('slider');
+            if(autoScrollInterval) clearInterval(autoScrollInterval);
+            autoScrollInterval = setInterval(() => {
+                if (slider.scrollLeft + slider.offsetWidth >= slider.scrollWidth - 10) slider.scrollTo({left: 0, behavior: 'smooth'});
+                else slider.scrollBy({left: window.innerWidth, behavior: 'smooth'});
+            }, 5000);
+        }
+
+        fetch('data.json').then(res => res.json()).then(data => {
+            globalData = data;
+            const slider = document.getElementById('slider');
+            const grid = document.getElementById('category-grid');
+            data.l.forEach(league => {
+                let s = document.createElement('div'); s.className = 'slide';
+                s.innerHTML = `<img src="https://img.youtube.com/vi/${league.v[0].id}/maxresdefault.jpg"><div class="slide-info"><b>${league.n}</b></div>`;
+                s.onclick = () => showView(league.id);
+                slider.appendChild(s);
+                let c = document.createElement('div'); c.className = 'card';
+                c.innerHTML = `<img src="${league.i}"><div class="card-label">${league.n}</div>`;
+                c.onclick = () => showView(league.id);
+                grid.appendChild(c);
+            });
+            startAutoScroll();
+        });
     </script>
 </body>
 </html>
