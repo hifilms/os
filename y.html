@@ -9,35 +9,35 @@
     <link rel="dns-prefetch" href="https://img.youtube.com">
 
     <style>
-        :root { --bg: #ffffff; --text: #333; --header-h: 55px; --accent: #f2f2f2; }
+        :root { --bg: #ffffff; --text: #333; --header-h: 50px; --accent: #f2f2f2; }
         * { box-sizing: border-box; -ms-overflow-style: none; scrollbar-width: none; }
         *::-webkit-scrollbar { display: none; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
         
         header { 
             display: flex; align-items: center; height: var(--header-h); padding: 0 15px; 
-            background: #fff; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 1000; 
+            background: #fff; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 100; 
             transition: transform 0.3s ease;
         }
         header.hide { transform: translateY(-100%); }
-        
-        /* লোগো এবং ব্যাক বাটনের জন্য পুরনো ফাইলের স্টাইল */
-        .logo { width: 32px; height: 32px; margin-right: 12px; object-fit: contain; } 
-        .back-btn { cursor: pointer; width: 26px; height: 26px; margin-right: 15px; fill: #333; }
-        
-        .app-name { font-size: 19px; font-weight: 700; flex-grow: 1; }
+        .logo { width: 32px; height: 32px; margin-right: 12px; } 
+        .app-name { font-size: 18px; font-weight: 700; flex-grow: 1; }
+        .back-btn { cursor: pointer; width: 24px; height: 24px; margin-right: 15px; fill: #333; display: none; }
         .menu-dots { cursor: pointer; width: 24px; fill: #333; }
 
         .page { display: none; width: 100%; min-height: 100vh; }
         .active { display: block; }
 
+        /* Skeleton & Placeholder Effect */
         @keyframes shimmer { 0% { background-position: -468px 0; } 100% { background-position: 468px 0; } }
         .skeleton { background: #f6f7f8; background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%); background-repeat: no-repeat; background-size: 800px 100%; animation: shimmer 1.5s infinite linear; border-radius: 8px; }
 
+        /* ইমেজ লোড না হওয়া পর্যন্ত সুন্দর প্লেসহোল্ডার */
         .thumb-box, .card, .slide {
             background-color: #f9f9f9;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='%23ddd'%3E%3Cpath d='M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat; background-position: center;
+            background-repeat: no-repeat;
+            background-position: center;
         }
 
         img { opacity: 0; transition: opacity 0.5s ease; }
@@ -79,16 +79,14 @@
         .video-item.playing { background: var(--accent); } 
         .thumb-box { width: 120px; min-width: 120px; aspect-ratio: 16/9; border-radius: 6px; overflow: hidden; position: relative; background: #eee; }
         .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .v-duration { position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.85); color: #fff; font-size: 10px; padding: 2px 5px; border-radius: 4px; font-weight: bold; }
-        
+        .video-time { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.8); color: #fff; font-size: 10px; padding: 1px 4px; border-radius: 3px; }
         .item-title { font-size: 13px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-        #net-alert { position: fixed; bottom: -60px; left: 0; width: 100%; background: #333; color: #fff; text-align: center; padding: 12px 0; transition: 0.4s; font-size: 13px; z-index: 2000; font-weight: 500; }
+        #net-alert { position: fixed; bottom: -60px; left: 0; width: 100%; background: #333; color: #fff; text-align: center; padding: 12px 0; transition: 0.4s; font-size: 13px; z-index: 1000; font-weight: 500; }
         #net-alert.active { bottom: 0; }
 
-        .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 3000; }
-        .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: #fff; border-radius: 15px 15px 0 0; transition: 0.4s; z-index: 3001; padding: 20px; }
+        .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 200; }
+        .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: #fff; border-radius: 15px 15px 0 0; transition: 0.4s; z-index: 201; padding: 20px; }
         .bottom-sheet.open { bottom: 0; }
         .sheet-item { padding: 15px 0; border-bottom: 1px solid #eee; font-size: 15px; cursor: pointer; }
     </style>
@@ -96,9 +94,8 @@
 <body>
 
     <header id="main-header">
-        <svg id="main-back" class="back-btn" onclick="goHome()" viewBox="0 0 24 24" style="display: none;"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-        <img id="main-logo" src="https://cdn-icons-png.flaticon.com/512/5351/5351486.png" class="logo" style="display: block;">
-        
+        <svg id="main-back" class="back-btn" onclick="goHome()" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        <img id="main-logo" src="https://cdn-icons-png.flaticon.com/512/5351/5351486.png" class="logo">
         <div class="app-name" id="header-text">SPORTS HUB</div>
         <svg class="menu-dots" onclick="toggleSheet(true)" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
     </header>
@@ -110,8 +107,10 @@
         <div class="tab-wrapper" id="tab-bar">
             <div class="tab-item skeleton" style="width:80px; height:30px; border:none;"></div>
             <div class="tab-item skeleton" style="width:100px; height:30px; border:none;"></div>
+            <div class="tab-item skeleton" style="width:70px; height:30px; border:none;"></div>
         </div>
         <div class="grid" id="category-grid">
+            <div class="card skeleton"></div><div class="card skeleton"></div>
             <div class="card skeleton"></div><div class="card skeleton"></div>
         </div>
     </div>
@@ -122,7 +121,7 @@
                 <div id="player-container"></div>
                 <div id="offline-ui" class="offline-ui">
                     <svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="20"/></svg>
-                    <span id="offline-msg">Loading...</span>
+                    <span id="offline-msg">No Internet</span>
                 </div>
             </div>
             <div class="video-details">
@@ -167,7 +166,13 @@
         window.addEventListener('online', () => {
             document.getElementById('net-alert').classList.remove('active');
             if(!globalData) loadAppData();
-            if(document.getElementById('view-page').classList.contains('active')) reloadVideo();
+            else {
+                document.querySelectorAll('img').forEach(img => {
+                    if(!img.complete || img.naturalWidth === 0) handleImgError(img);
+                });
+            }
+            if(document.getElementById('view-page').classList.contains('active') && 
+               document.getElementById('offline-ui').style.display === 'flex') reloadVideo();
         });
 
         window.addEventListener('offline', () => {
@@ -230,19 +235,30 @@
             startAutoScroll();
         }
 
+        function showView(leagueId, pushHistory = true) {
+            const league = globalData.l.find(x => x.id === leagueId);
+            if(!league) return;
+            if(pushHistory) window.history.pushState({l: leagueId}, "", "?l=" + leagueId);
+            clearInterval(autoScrollInterval);
+            document.getElementById('home-page').classList.remove('active');
+            document.getElementById('view-page').classList.add('active');
+            document.getElementById('main-back').style.display = 'block';
+            document.getElementById('main-logo').style.display = 'none';
+            document.getElementById('header-text').innerText = league.n;
+            renderPlayer(league);
+        }
+
         function reloadVideo() {
             if(!currentVideoId) return;
             const container = document.getElementById('player-container');
             const offlineUI = document.getElementById('offline-ui');
             offlineUI.style.display = 'flex';
-            
+            document.getElementById('offline-msg').innerText = "Loading...";
             const iframe = document.createElement('iframe');
             iframe.src = `${REMOTE_PLAYER_URL}?v=${currentVideoId}&autoplay=1`;
-            iframe.allow = "autoplay; fullscreen"; 
-            iframe.onload = () => offlineUI.style.display = 'none';
-
-            container.innerHTML = ""; 
-            container.appendChild(iframe);
+            iframe.allow = "autoplay; fullscreen"; iframe.allowFullscreen = true;
+            iframe.onload = () => { offlineUI.style.display = 'none'; };
+            container.innerHTML = ""; container.appendChild(iframe);
         }
 
         function renderPlayer(league) {
@@ -250,20 +266,24 @@
             listDiv.innerHTML = "";
             function play(v, clickedElement) {
                 currentVideoId = v.id;
-                reloadVideo();
+                if(!navigator.onLine) {
+                    document.getElementById('player-container').innerHTML = ""; 
+                    document.getElementById('offline-msg').innerText = "No Internet";
+                    document.getElementById('offline-ui').style.display = 'flex';
+                } else {
+                    reloadVideo();
+                }
                 document.getElementById('v-title').innerText = v.t;
                 document.getElementById('v-meta').innerText = v.m + " | " + v.d;
                 document.querySelectorAll('.video-item').forEach(el => el.classList.remove('playing'));
                 if(clickedElement) clickedElement.classList.add('playing');
+                else if(listDiv.firstChild) listDiv.firstChild.classList.add('playing');
             }
             league.v.forEach((v, index) => {
                 let item = document.createElement('div');
                 item.className = 'video-item';
                 if(index === 0) item.classList.add('playing');
-                item.innerHTML = `<div class="thumb-box">
-                                    <img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" onload="onImgLoad(this)" onerror="handleImgError(this)" loading="lazy">
-                                    <div class="v-duration">${v.dur || "00:00"}</div>
-                                  </div>
+                item.innerHTML = `<div class="thumb-box"><img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" onload="onImgLoad(this)" onerror="handleImgError(this)" loading="lazy"></div>
                                   <div><div class="item-title">${v.t}</div><div style="font-size:11px; color:#888; margin-top:4px;">${v.m} • ${v.d}</div></div>`;
                 item.onclick = function() { play(v, item); };
                 listDiv.appendChild(item);
@@ -275,7 +295,7 @@
             const slider = document.getElementById('slider');
             if(autoScrollInterval) clearInterval(autoScrollInterval);
             autoScrollInterval = setInterval(() => {
-                if (slider.scrollLeft + slider.offsetWidth >= slider.scrollWidth - 10) slider.scrollTo({left: 0});
+                if (slider.scrollLeft + slider.offsetWidth >= slider.scrollWidth - 10) slider.scrollTo({left: 0, behavior: 'smooth'});
                 else slider.scrollBy({left: window.innerWidth, behavior: 'smooth'});
             }, 5000);
         }
@@ -288,31 +308,13 @@
         function showHomeUI() {
             document.getElementById('view-page').classList.remove('active');
             document.getElementById('home-page').classList.add('active');
-            
-            // লোগো দেখানোর লজিক
-            document.getElementById('main-logo').style.display = 'block';
             document.getElementById('main-back').style.display = 'none';
-            
+            document.getElementById('main-logo').style.display = 'block';
             document.getElementById('header-text').innerText = 'SPORTS HUB';
             document.getElementById('player-container').innerHTML = ""; 
             currentVideoId = null;
+            document.getElementById('offline-ui').style.display = 'none';
             startAutoScroll();
-        }
-
-        function showView(leagueId, pushHistory = true) {
-            const league = globalData.l.find(x => x.id === leagueId);
-            if(!league) return;
-            if(pushHistory) window.history.pushState({l: leagueId}, "", "?l=" + leagueId);
-            clearInterval(autoScrollInterval);
-            document.getElementById('home-page').classList.remove('active');
-            document.getElementById('view-page').classList.add('active');
-            
-            // ব্যাক বাটন দেখানোর লজিক
-            document.getElementById('main-logo').style.display = 'none';
-            document.getElementById('main-back').style.display = 'block';
-            
-            document.getElementById('header-text').innerText = league.n;
-            renderPlayer(league);
         }
 
         function toggleSheet(open) {
@@ -325,12 +327,19 @@
         window.addEventListener('scroll', function() {
             let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
             let header = document.getElementById('main-header');
-            if (currentScroll > lastScrollTop && currentScroll > 80) header.classList.add('hide');
-            else header.classList.remove('hide');
+            let playerSticky = document.getElementById('player-sticky');
+            if (currentScroll > lastScrollTop && currentScroll > 80) {
+                header.classList.add('hide');
+                if(playerSticky) playerSticky.style.top = "0";
+            } else {
+                header.classList.remove('hide');
+                if(playerSticky) playerSticky.style.top = "var(--header-h)";
+            }
             lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
         });
 
         loadAppData();
+        if(!navigator.onLine) document.getElementById('net-alert').classList.add('active');
     </script>
 </body>
 </html>
