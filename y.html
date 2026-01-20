@@ -33,6 +33,40 @@
         .slide img { width: 100%; height: 100%; object-fit: cover; }
         .slide-info { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 25px 15px 10px; color: #fff; }
         
+        /* মডার্ন বর্ডার-ভিত্তিক ট্যাব বার */
+        .tab-wrapper { 
+            position: sticky; 
+            top: var(--header-h); 
+            background: #fff; 
+            z-index: 40; 
+            padding: 15px 0; 
+            overflow-x: auto; 
+            white-space: nowrap; 
+            display: flex; 
+            gap: 10px;
+            scroll-padding: 15px;
+        }
+        /* শুরুতে ও শেষে ফাঁকা জায়গা নিশ্চিত করার জন্য */
+        .tab-wrapper::before, .tab-wrapper::after { content: ''; min-width: 5px; }
+
+        .tab-item { 
+            padding: 6px 18px; 
+            background: transparent; 
+            border: 1px solid #ddd; 
+            border-radius: 25px; 
+            font-size: 13px; 
+            font-weight: 600; 
+            color: #666; 
+            cursor: pointer; 
+            transition: all 0.2s ease;
+        }
+        /* অ্যাক্টিভ ট্যাবে বর্ডার কালো হবে এবং ব্যাকগ্রাউন্ড হালকা গ্রে */
+        .tab-item.active { 
+            background: #f9f9f9; 
+            border-color: #000; 
+            color: #000; 
+        }
+
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
         .card { position: relative; aspect-ratio: 16/10; border-radius: 12px; overflow: hidden; border: 1px solid #eee; }
         .card img { width: 100%; height: 100%; object-fit: cover; }
@@ -40,7 +74,6 @@
 
         .sticky-wrapper { position: sticky; top: 0; z-index: 50; background: #fff; transition: top 0.3s ease; }
         .player-box { width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; }
-        /* আইফ্রেমটি এখন ডাইনামিক্যালি তৈরি হবে */
         #player-container { width: 100%; height: 100%; }
         #player-container iframe { width: 100%; height: 100%; border: none; }
         
@@ -74,6 +107,9 @@
 
     <div id="home-page" class="page active">
         <div class="slider-container" id="slider"></div>
+        
+        <div class="tab-wrapper" id="tab-bar"></div>
+
         <div class="grid" id="category-grid"></div>
     </div>
 
@@ -138,16 +174,14 @@
             document.getElementById('main-back').style.display = 'none';
             document.getElementById('main-logo').style.display = 'block';
             document.getElementById('header-text').innerText = 'SPORTS HUB';
-            document.getElementById('player-container').innerHTML = ""; // প্লেয়ার বন্ধ করা
+            document.getElementById('player-container').innerHTML = ""; 
             startAutoScroll();
         }
 
         function showView(leagueId) {
             const league = globalData.l.find(x => x.id === leagueId);
             if(!league) return;
-
             window.history.pushState({view: 'player'}, "");
-
             clearInterval(autoScrollInterval);
             document.getElementById('home-page').classList.remove('active');
             document.getElementById('view-page').classList.add('active');
@@ -161,22 +195,16 @@
         function renderPlayer(league) {
             const listDiv = document.getElementById('video-list');
             listDiv.innerHTML = "";
-            
             function play(v, clickedElement) {
                 const container = document.getElementById('player-container');
-                // আইফ্রেমটি নতুন করে তৈরি করা হচ্ছে যাতে হিস্ট্রি না জমে এবং অটো-প্লে হয়
                 const videoUrl = REMOTE_PLAYER_URL + "?v=" + v.id + "&autoplay=1";
-                
-                // এই লাইনটিই ম্যাজিক করবে: নতুন আইফ্রেম পুরনোটাকে রিপ্লেস করবে
                 container.innerHTML = `<iframe src="${videoUrl}" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
-
                 document.getElementById('v-title').innerText = v.t;
                 document.getElementById('v-meta').innerText = v.m + " | " + v.d;
                 document.querySelectorAll('.video-item').forEach(el => el.classList.remove('playing'));
                 if(clickedElement) clickedElement.classList.add('playing');
                 else if(listDiv.firstChild) listDiv.firstChild.classList.add('playing');
             }
-
             league.v.forEach((v, index) => {
                 let item = document.createElement('div');
                 item.className = 'video-item';
@@ -187,8 +215,6 @@
                 item.onclick = function() { play(v, item); window.scrollTo({top:0, behavior:'smooth'}); };
                 listDiv.appendChild(item);
             });
-
-            // প্রথম ভিডিওটি প্লে করা
             play(league.v[0]);
         }
 
@@ -205,19 +231,48 @@
             globalData = data;
             const slider = document.getElementById('slider');
             const grid = document.getElementById('category-grid');
+            const tabBar = document.getElementById('tab-bar');
+
+            // ইউনিক গেম লজিক (Basketball, Cricket, etc.)
+            const games = ['All', ...new Set(data.l.map(item => item.g))];
+
+            // ট্যাব বার রেন্ডার করা
+            games.forEach(gameName => {
+                if(!gameName) return; // যদি কোনো গেমের নাম খালি থাকে
+                let tab = document.createElement('div');
+                tab.className = 'tab-item' + (gameName === 'All' ? ' active' : '');
+                tab.innerText = gameName;
+                tab.onclick = function() {
+                    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    renderGrid(gameName);
+                };
+                tabBar.appendChild(tab);
+            });
+
+            function renderGrid(filterGame) {
+                grid.innerHTML = "";
+                data.l.forEach(league => {
+                    if (filterGame === 'All' || league.g === filterGame) {
+                        let c = document.createElement('div'); 
+                        c.className = 'card';
+                        c.innerHTML = `<img src="${league.i}" loading="lazy"><div class="card-label">${league.n}</div>`;
+                        c.onclick = () => showView(league.id);
+                        grid.appendChild(c);
+                    }
+                });
+            }
+
             data.l.forEach(league => {
                 let s = document.createElement('div'); s.className = 'slide';
                 s.innerHTML = `<img src="https://img.youtube.com/vi/${league.v[0].id}/mqdefault.jpg"><div class="slide-info"><b>${league.n}</b></div>`;
                 s.onclick = () => showView(league.id);
                 slider.appendChild(s);
-                let c = document.createElement('div'); c.className = 'card';
-                c.innerHTML = `<img src="${league.i}" loading="lazy"><div class="card-label">${league.n}</div>`;
-                c.onclick = () => showView(league.id);
-                grid.appendChild(c);
             });
+
+            renderGrid('All');
             startAutoScroll();
         });
     </script>
 </body>
 </html>
-
