@@ -22,16 +22,19 @@
 <body>
     <div id="video-container"></div>
     <script>
-    const vId = new URLSearchParams(window.location.search).get('v');
-    if (vId) {
-        // 'preload' নিশ্চিত করতে এবং অপ্রয়োজনীয় এলিমেন্ট বাদ দিতে
-        const iframe = document.createElement('iframe');
-        iframe.src = `https://www.youtube.com/embed/${vId}?autoplay=1&rel=0&modestbranding=1&fs=1&widget_referrer=${window.location.origin}`;
-        iframe.setAttribute('allow', 'autoplay; fullscreen');
-        iframe.setAttribute('allowfullscreen', 'true');
-        document.body.appendChild(iframe);
-    }
-</script>
+        const params = new URLSearchParams(window.location.search);
+        const vId = params.get('v');
+        if (vId) {
+            // fs=1 এবং সব ধরণের allowfullscreen প্যারামিটার দেওয়া হয়েছে
+            document.getElementById('video-container').innerHTML = 
+                `<iframe src="https://www.youtube.com/embed/${vId}?autoplay=1&rel=0&modestbranding=1&fs=1&enablejsapi=1" 
+                 allow="autoplay; fullscreen; picture-in-picture" 
+                 allowfullscreen="true" 
+                 webkitallowfullscreen="true" 
+                 mozallowfullscreen="true"></iframe>`;
+        }
+    </script>
 </body>
 </html>
+
 
