@@ -28,17 +28,12 @@
         .page { display: none; width: 100%; min-height: 100vh; }
         .active { display: block; }
 
-        /* ব্রোকেন ইমেজ লুকানোর জন্য CSS */
-        img { opacity: 0; transition: opacity 0.3s; }
-        img.loaded { opacity: 1; }
-        img:not([src]), img[src=""] { visibility: hidden; }
-
         /* Skeleton Shimmer Effect */
         @keyframes shimmer { 0% { background-position: -468px 0; } 100% { background-position: 468px 0; } }
         .skeleton { background: #f6f7f8; background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%); background-repeat: no-repeat; background-size: 800px 100%; animation: shimmer 1.5s infinite linear; border-radius: 8px; }
 
         .slider-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
-        .slide { min-width: 100%; height: 210px; position: relative; scroll-snap-align: center; cursor: pointer; background: #eee; }
+        .slide { min-width: 100%; height: 210px; position: relative; scroll-snap-align: center; cursor: pointer; }
         .slide img { width: 100%; height: 100%; object-fit: cover; }
         .slide-info { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 25px 15px 10px; color: #fff; }
         
@@ -52,7 +47,7 @@
         .tab-item.active { background: #f9f9f9; border-color: #000; color: #000; }
 
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px 15px; }
-        .card { position: relative; aspect-ratio: 16/10; border-radius: 12px; overflow: hidden; border: 1px solid #eee; background: #eee; }
+        .card { position: relative; aspect-ratio: 16/10; border-radius: 12px; overflow: hidden; border: 1px solid #eee; }
         .card img { width: 100%; height: 100%; object-fit: cover; }
         .card-label { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
 
@@ -72,7 +67,17 @@
         .video-item { display: flex; gap: 12px; margin-bottom: 12px; cursor: pointer; padding: 8px; border-radius: 8px; }
         .video-item.playing { background: var(--accent); } 
         .thumb-box { width: 120px; min-width: 120px; aspect-ratio: 16/9; border-radius: 6px; overflow: hidden; position: relative; background: #eee; }
-        .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* ইমেজের জন্য ব্যাকগ্রাউন্ড SVG স্টাইল */
+        .thumb-box img, .card img, .slide img { 
+            width: 100%; height: 100%; object-fit: cover; 
+            background-color: #eee;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 40px;
+        }
+
         .video-time { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.8); color: #fff; font-size: 10px; padding: 1px 4px; border-radius: 3px; }
         .item-title { font-size: 13px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
@@ -89,7 +94,7 @@
 
     <header id="main-header">
         <svg id="main-back" class="back-btn" onclick="goHome()" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-        <img id="main-logo" src="https://cdn-icons-png.flaticon.com/512/5351/5351486.png" class="logo" onload="this.classList.add('loaded')">
+        <img id="main-logo" src="https://cdn-icons-png.flaticon.com/512/5351/5351486.png" class="logo">
         <div class="app-name" id="header-text">SPORTS HUB</div>
         <svg class="menu-dots" onclick="toggleSheet(true)" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
     </header>
@@ -145,19 +150,20 @@
         let currentVideoId = null;
         const REMOTE_PLAYER_URL = "player.html"; 
 
-        // ইমেজ সাকসেস হলে অপাসিটি ১ হবে
-        const onImgLoad = (el) => {
-            el.classList.add('loaded');
-        };
-
+        // ইমেজ রিট্রাই এবং আইকন হ্যান্ডলিং
         const handleImgError = (el) => {
-            el.classList.remove('loaded'); // এরর হলে ইমেজ হাইড থাকবে
+            // এরর হলে ব্রাউজারের ডিফল্ট আইকন লুকানোর জন্য অপাসিটি ০ করে দেওয়া হলো
+            el.style.opacity = "0";
+            
             if(el.dataset.retry === "3") return;
             el.dataset.retry = (parseInt(el.dataset.retry) || 0) + 1;
+            
             setTimeout(() => {
                 if(navigator.onLine) {
                     const baseSrc = el.src.split('?')[0];
                     el.src = baseSrc + "?r=" + Date.now();
+                    // ছবি আবার লোড হতে শুরু করলে অপাসিটি ১ করে দেওয়া হলো
+                    el.onload = () => el.style.opacity = "1";
                 }
             }, 3000);
         };
@@ -167,7 +173,7 @@
             if(!globalData) loadAppData();
             else {
                 document.querySelectorAll('img').forEach(img => {
-                    if(!img.classList.contains('loaded')) handleImgError(img);
+                    if(!img.complete || img.naturalWidth === 0) handleImgError(img);
                 });
             }
             if(document.getElementById('view-page').classList.contains('active')) {
@@ -218,16 +224,16 @@
                     if (filterGame === 'All' || league.g === filterGame) {
                         let c = document.createElement('div'); 
                         c.className = 'card';
-                        c.innerHTML = `<img src="${league.i}" onload="onImgLoad(this)" onerror="handleImgError(this)" loading="lazy"><div class="card-label">${league.n}</div>`;
-                        grid.appendChild(c);
+                        c.innerHTML = `<img src="${league.i}" onerror="handleImgError(this)" loading="lazy"><div class="card-label">${league.n}</div>`;
                         c.onclick = () => showView(league.id);
+                        grid.appendChild(c);
                     }
                 });
             }
 
             data.l.forEach(league => {
                 let s = document.createElement('div'); s.className = 'slide';
-                s.innerHTML = `<img src="https://img.youtube.com/vi/${league.v[0].id}/mqdefault.jpg" onload="onImgLoad(this)" onerror="handleImgError(this)" loading="lazy"><div class="slide-info"><b>${league.n}</b></div>`;
+                s.innerHTML = `<img src="https://img.youtube.com/vi/${league.v[0].id}/mqdefault.jpg" onerror="handleImgError(this)" loading="lazy"><div class="slide-info"><b>${league.n}</b></div>`;
                 s.onclick = () => showView(league.id);
                 slider.appendChild(s);
             });
@@ -285,7 +291,7 @@
                 let item = document.createElement('div');
                 item.className = 'video-item';
                 if(index === 0) item.classList.add('playing');
-                item.innerHTML = `<div class="thumb-box"><img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" onload="onImgLoad(this)" onerror="handleImgError(this)" loading="lazy"></div>
+                item.innerHTML = `<div class="thumb-box"><img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" onerror="handleImgError(this)" loading="lazy"></div>
                                   <div><div class="item-title">${v.t}</div><div style="font-size:11px; color:#888; margin-top:4px;">${v.m} • ${v.d}</div></div>`;
                 item.onclick = function() { play(v, item); };
                 listDiv.appendChild(item);
