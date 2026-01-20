@@ -48,9 +48,10 @@
         #player-container { width: 100%; height: 100%; }
         #player-container iframe { width: 100%; height: 100%; border: none; }
         
-        /* অফলাইন রিলোড স্টাইল */
-        .offline-ui { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #000; color: #fff; z-index: 10; display: none; }
-        .offline-ui svg { width: 40px; height: 40px; fill: #fff; animation: rotate 2s linear infinite; cursor: pointer; }
+        /* অফলাইন UI আপডেট */
+        .offline-ui { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; color: #fff; z-index: 10; display: none; }
+        .offline-ui svg { width: 40px; height: 40px; fill: #fff; animation: rotate 2s linear infinite; margin-bottom: 10px; }
+        .offline-ui span { font-size: 12px; font-weight: 400; opacity: 0.8; }
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         .video-details { padding: 12px 15px; border-bottom: 5px solid #f4f4f4; background: #fff; }
@@ -92,6 +93,7 @@
                 <div id="player-container"></div>
                 <div id="offline-ui" class="offline-ui">
                     <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                    <span>No Internet Connection</span>
                 </div>
             </div>
             <div class="video-details">
@@ -102,7 +104,7 @@
         <div class="list-container" id="video-list"></div>
     </div>
 
-    <div id="net-alert">No Internet</div>
+    <div id="net-alert">No Internet Connection</div>
 
     <div class="sheet-overlay" id="overlay" onclick="toggleSheet(false)"></div>
     <div class="bottom-sheet" id="sheet">
@@ -117,21 +119,23 @@
         let autoScrollInterval = null;
         let lastScrollTop = 0;
         let currentVideoId = null;
-        const REMOTE_PLAYER_URL = "https://hifilms.github.io/os/player.html"; 
+        const REMOTE_PLAYER_URL = "player.html"; 
 
         window.onpopstate = function() {
             const urlParams = new URLSearchParams(window.location.search);
             if(!urlParams.get('l')) showHomeUI();
         };
 
+        // ইন্টারনেট ফিরে এলে অটো-লোড হবে কিন্তু অফলাইন হলে সাথে সাথে ভিডিও বন্ধ হবে না
         window.addEventListener('online', () => {
             document.getElementById('net-alert').classList.remove('active');
-            document.getElementById('offline-ui').style.display = 'none';
-            if(currentVideoId) reloadVideo();
+            if(document.getElementById('offline-ui').style.display === 'flex') {
+                document.getElementById('offline-ui').style.display = 'none';
+                reloadVideo();
+            }
         });
         window.addEventListener('offline', () => {
             document.getElementById('net-alert').classList.add('active');
-            document.getElementById('offline-ui').style.display = 'flex';
         });
 
         function toggleSheet(open) {
@@ -166,6 +170,7 @@
             document.getElementById('header-text').innerText = 'SPORTS HUB';
             document.getElementById('player-container').innerHTML = ""; 
             currentVideoId = null;
+            document.getElementById('offline-ui').style.display = 'none';
             startAutoScroll();
         }
 
@@ -196,7 +201,10 @@
             
             function play(v, clickedElement) {
                 currentVideoId = v.id;
+                
+                // অফলাইন অবস্থায় ক্লিক করলেই কেবল কালো স্ক্রিন দেখাবে
                 if(!navigator.onLine) {
+                    document.getElementById('player-container').innerHTML = ""; // প্লেয়ার ক্লিয়ার
                     document.getElementById('offline-ui').style.display = 'flex';
                 } else {
                     document.getElementById('offline-ui').style.display = 'none';
@@ -217,7 +225,7 @@
                 let timeTag = v.dur ? `<div class="video-time">${v.dur}</div>` : '';
                 item.innerHTML = `<div class="thumb-box"><img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" loading="lazy">${timeTag}</div>
                                   <div><div class="item-title">${v.t}</div><div style="font-size:11px; color:#888; margin-top:4px;">${v.m} • ${v.d}</div></div>`;
-                item.onclick = function() { play(v, item); }; // scrollTo(0,0) বাদ দেওয়া হয়েছে যাতে পজিশন ঠিক থাকে
+                item.onclick = function() { play(v, item); };
                 listDiv.appendChild(item);
             });
 
@@ -233,7 +241,7 @@
             }, 5000);
         }
 
-        fetch('https://hifilms.github.io/os/data.json').then(res => res.json()).then(data => {
+        fetch('data.json').then(res => res.json()).then(data => {
             globalData = data;
             const slider = document.getElementById('slider');
             const grid = document.getElementById('category-grid');
@@ -276,7 +284,6 @@
             renderGrid('All');
             startAutoScroll();
 
-            // রিলোড চেক
             const urlParams = new URLSearchParams(window.location.search);
             const savedLeagueId = urlParams.get('l');
             if(savedLeagueId) showView(savedLeagueId, false);
@@ -284,4 +291,3 @@
     </script>
 </body>
 </html>
-
