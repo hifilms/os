@@ -28,12 +28,23 @@
         .page { display: none; width: 100%; min-height: 100vh; }
         .active { display: block; }
 
-        /* Skeleton Shimmer Effect */
+        /* Skeleton & Placeholder Effect */
         @keyframes shimmer { 0% { background-position: -468px 0; } 100% { background-position: 468px 0; } }
         .skeleton { background: #f6f7f8; background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%); background-repeat: no-repeat; background-size: 800px 100%; animation: shimmer 1.5s infinite linear; border-radius: 8px; }
 
+        /* ইমেজ লোড না হওয়া পর্যন্ত সুন্দর প্লেসহোল্ডার */
+        .thumb-box, .card, .slide {
+            background-color: #f9f9f9;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='%23ddd'%3E%3Cpath d='M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        img { opacity: 0; transition: opacity 0.5s ease; }
+        img.loaded { opacity: 1; }
+
         .slider-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
-        .slide { min-width: 100%; height: 210px; position: relative; scroll-snap-align: center; cursor: pointer; }
+        .slide { min-width: 100%; height: 210px; position: relative; scroll-snap-align: center; cursor: pointer; overflow: hidden; }
         .slide img { width: 100%; height: 100%; object-fit: cover; }
         .slide-info { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 25px 15px 10px; color: #fff; }
         
@@ -93,13 +104,11 @@
         <div class="slider-container" id="slider">
             <div class="slide skeleton"></div>
         </div>
-        
         <div class="tab-wrapper" id="tab-bar">
             <div class="tab-item skeleton" style="width:80px; height:30px; border:none;"></div>
             <div class="tab-item skeleton" style="width:100px; height:30px; border:none;"></div>
             <div class="tab-item skeleton" style="width:70px; height:30px; border:none;"></div>
         </div>
-
         <div class="grid" id="category-grid">
             <div class="card skeleton"></div><div class="card skeleton"></div>
             <div class="card skeleton"></div><div class="card skeleton"></div>
@@ -140,8 +149,10 @@
         let currentVideoId = null;
         const REMOTE_PLAYER_URL = "player.html"; 
 
-        // ইমেজ রিট্রাই লজিক
+        const onImgLoad = (el) => el.classList.add('loaded');
+
         const handleImgError = (el) => {
+            el.classList.remove('loaded');
             if(el.dataset.retry === "3") return;
             el.dataset.retry = (parseInt(el.dataset.retry) || 0) + 1;
             setTimeout(() => {
@@ -156,14 +167,12 @@
             document.getElementById('net-alert').classList.remove('active');
             if(!globalData) loadAppData();
             else {
-                // অনলাইন হওয়ার পর ফেইল হওয়া ছবিগুলো রিফ্রেশ
                 document.querySelectorAll('img').forEach(img => {
                     if(!img.complete || img.naturalWidth === 0) handleImgError(img);
                 });
             }
-            if(document.getElementById('view-page').classList.contains('active')) {
-                if(document.getElementById('offline-ui').style.display === 'flex') reloadVideo();
-            }
+            if(document.getElementById('view-page').classList.contains('active') && 
+               document.getElementById('offline-ui').style.display === 'flex') reloadVideo();
         });
 
         window.addEventListener('offline', () => {
@@ -186,7 +195,6 @@
             const slider = document.getElementById('slider');
             const grid = document.getElementById('category-grid');
             const tabBar = document.getElementById('tab-bar');
-            
             slider.innerHTML = ""; grid.innerHTML = ""; tabBar.innerHTML = "";
 
             const games = ['All', ...new Set(data.l.map(item => item.g))];
@@ -209,7 +217,7 @@
                     if (filterGame === 'All' || league.g === filterGame) {
                         let c = document.createElement('div'); 
                         c.className = 'card';
-                        c.innerHTML = `<img src="${league.i}" onerror="handleImgError(this)" loading="lazy"><div class="card-label">${league.n}</div>`;
+                        c.innerHTML = `<img src="${league.i}" onload="onImgLoad(this)" onerror="handleImgError(this)" loading="lazy"><div class="card-label">${league.n}</div>`;
                         c.onclick = () => showView(league.id);
                         grid.appendChild(c);
                     }
@@ -218,7 +226,7 @@
 
             data.l.forEach(league => {
                 let s = document.createElement('div'); s.className = 'slide';
-                s.innerHTML = `<img src="https://img.youtube.com/vi/${league.v[0].id}/mqdefault.jpg" onerror="handleImgError(this)" loading="lazy"><div class="slide-info"><b>${league.n}</b></div>`;
+                s.innerHTML = `<img src="https://img.youtube.com/vi/${league.v[0].id}/mqdefault.jpg" onload="onImgLoad(this)" onerror="handleImgError(this)" loading="lazy"><div class="slide-info"><b>${league.n}</b></div>`;
                 s.onclick = () => showView(league.id);
                 slider.appendChild(s);
             });
@@ -244,9 +252,8 @@
             if(!currentVideoId) return;
             const container = document.getElementById('player-container');
             const offlineUI = document.getElementById('offline-ui');
-            const msg = document.getElementById('offline-msg');
             offlineUI.style.display = 'flex';
-            msg.innerText = "Loading...";
+            document.getElementById('offline-msg').innerText = "Loading...";
             const iframe = document.createElement('iframe');
             iframe.src = `${REMOTE_PLAYER_URL}?v=${currentVideoId}&autoplay=1`;
             iframe.allow = "autoplay; fullscreen"; iframe.allowFullscreen = true;
@@ -276,7 +283,7 @@
                 let item = document.createElement('div');
                 item.className = 'video-item';
                 if(index === 0) item.classList.add('playing');
-                item.innerHTML = `<div class="thumb-box"><img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" onerror="handleImgError(this)" loading="lazy"></div>
+                item.innerHTML = `<div class="thumb-box"><img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" onload="onImgLoad(this)" onerror="handleImgError(this)" loading="lazy"></div>
                                   <div><div class="item-title">${v.t}</div><div style="font-size:11px; color:#888; margin-top:4px;">${v.m} • ${v.d}</div></div>`;
                 item.onclick = function() { play(v, item); };
                 listDiv.appendChild(item);
@@ -315,10 +322,7 @@
             document.getElementById('overlay').style.display = open ? 'block' : 'none';
         }
 
-        window.onpopstate = () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            if(!urlParams.get('l')) showHomeUI();
-        };
+        window.onpopstate = () => { if(!new URLSearchParams(window.location.search).get('l')) showHomeUI(); };
 
         window.addEventListener('scroll', function() {
             let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
