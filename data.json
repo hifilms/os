@@ -3,33 +3,34 @@
     {
       "id": "nba",
       "n": "NBA",
+      "g": "Basketball",
       "i": "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=500",
       "v": [
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY","dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE","dur": "05:40" },
-                { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "IWOY1lubIMM","dur": "05:40" },
-                        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY","dur": "05:40" },
-                                { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY","dur": "05:40" },
-                                        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY","dur": "05:40" }
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" },
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "IWOY1lubIMM", "dur": "05:40" },
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" }
       ]
     },
     {
       "id": "nfl",
       "n": "NFL",
+      "g": "American Football",
       "i": "https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=500",
       "v": [
-        { "m": "Wild Card", "d": "20 Jan", "t": "Chiefs vs Eagles", "id": "Z32fpsk4HXY","dur": "05:40" }
+        { "m": "Wild Card", "d": "20 Jan", "t": "Chiefs vs Eagles", "id": "Z32fpsk4HXY", "dur": "05:40" }
       ]
     },
     {
       "id": "nhl",
       "n": "NHL",
+      "g": "Ice Hockey",
       "i": "https://media.nhl.com/site/asset/public/images/2020/04/NewShield-02023704.jpg",
       "v": [
-        { "m": "Game 12", "d": "20 Jan", "t": "Bruins vs Canadiens", "id": "Z32fpsk4HXY","dur": "05:40" }
+        { "m": "Game 12", "d": "20 Jan", "t": "Bruins vs Canadiens", "id": "Z32fpsk4HXY", "dur": "05:40" }
       ]
     }
   ]
-
 }
-
