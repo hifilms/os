@@ -1,101 +1,105 @@
 {
   "l": [
     {
-      "id": "nba",
-      "n": "NBA",
-      "g": "Basketball",
+      "id": "live",
+      "n": "Live",
       "i": "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=500",
       "v": [
         { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "IWOY1lubIMM", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "IWOY1lubIMM", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "IWOY1lubIMM", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" }
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
       ]
     },
     {
-      "id": "nfl",
-      "n": "NFL",
-      "g": "American Football",
+      "id": "breaking",
+      "n": "Breaking News",
       "i": "https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=500",
       "v": [
         { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "IWOY1lubIMM", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "IWOY1lubIMM", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "IWOY1lubIMM", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" }
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
       ]
     },
     {
-      "id": "nhl",
-      "n": "NHL",
-      "g": "Ice Hockey",
+      "id": "politics",
+      "n": "Politics",
       "i": "https://media.nhl.com/site/asset/public/images/2020/04/NewShield-02023704.jpg",
       "v": [
         { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "IWOY1lubIMM", "dur": "05:40" },
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
+      ]
+    },
+     {
+      "id": "world",
+      "n": "World",
+      "i": "https://media.nhl.com/site/asset/public/images/2020/04/NewShield-02023704.jpg",
+      "v": [
         { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "IWOY1lubIMM", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "IWOY1lubIMM", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" }
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
       ]
     },
     {
-      "id": "mlb",
-      "n": "MLB",
-      "g": "Baseball",
+      "id": "us",
+      "n": "US",
+      "i": "https://media.nhl.com/site/asset/public/images/2020/04/NewShield-02023704.jpg",
+      "v": [
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
+      ]
+    },
+    {
+      "id": "sports",
+      "n": "Sports",
       "i": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Major_League_Baseball_logo.svg/langfr-250px-Major_League_Baseball_logo.svg.png",
       "v": [
         { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "IWOY1lubIMM", "dur": "05:40" },
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
+      ]
+    },
+    {
+      "id": "entertainment",
+      "n": "Entertainment",
+      "i": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Major_League_Baseball_logo.svg/langfr-250px-Major_League_Baseball_logo.svg.png",
+      "v": [
         { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
+      ]
+    },
+    {
+      "id": "technology",
+      "n": "Technology",
+      "i": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Major_League_Baseball_logo.svg/langfr-250px-Major_League_Baseball_logo.svg.png",
+      "v": [
         { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
+      ]
+    },
+    {
+      "id": "business",
+      "n": "Business",
+      "i": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Major_League_Baseball_logo.svg/langfr-250px-Major_League_Baseball_logo.svg.png",
+      "v": [
         { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "IWOY1lubIMM", "dur": "05:40" },
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
+      ]
+    },
+    {
+      "id": "science",
+      "n": "Science",
+      "i": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Major_League_Baseball_logo.svg/langfr-250px-Major_League_Baseball_logo.svg.png",
+      "v": [
         { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
+      ]
+    },
+    {
+      "id": "health",
+      "n": "Health",
+      "i": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Major_League_Baseball_logo.svg/langfr-250px-Major_League_Baseball_logo.svg.png",
+      "v": [
         { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "IWOY1lubIMM", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" }
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
       ]
     }
   ]
 }
+
 
