@@ -98,8 +98,18 @@
         { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
         { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
       ]
+    },
+    {
+      "id": "lifestyle",
+      "n": "Lifestyle",
+      "i": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Major_League_Baseball_logo.svg/langfr-250px-Major_League_Baseball_logo.svg.png",
+      "v": [
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
+        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
+      ]
     }
   ]
 }
+
 
 
