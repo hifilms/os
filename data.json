@@ -1,115 +1,259 @@
 {
   "l": [
     {
-      "id": "live",
-      "n": "Live",
+      "id": "nba",
+      "n": "NBA",
+      "g": "Basketball",
       "i": "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=500",
       "v": [
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
+        {
+          "m": "Match 19",
+          "d": "21 Jan",
+          "t": "BUCKS at HAWKS",
+          "id": "DWF361kZsac",
+          "dur": "18:17"
+        },
+        {
+          "m": "Match 18",
+          "d": "21 Jan",
+          "t": "THUNDER at CAVALIERS",
+          "id": "hjOva6tIhzA",
+          "dur": "16:33"
+        },
+        {
+          "m": "Match 17",
+          "d": "21 Jan",
+          "t": "CLIPPERS at WIZARDS",
+          "id": "XrIMsY8vaOI",
+          "dur": "15:05"
+        },
+        {
+          "m": "Match 16",
+          "d": "21 Jan",
+          "t": "JAZZ at SPURS",
+          "id": "49l2EKgFtK0",
+          "dur": "16:52"
+        },
+        {
+          "m": "Match 15",
+          "d": "21 Jan",
+          "t": "MAVERICKS at KNICKS",
+          "id": "o2lXXjrUjos",
+          "dur": "15:52"
+        },
+        {
+          "m": "Match 14",
+          "d": "21 Jan",
+          "t": "PACERS at 76ERS",
+          "id": "T_1bmNL7nPk",
+          "dur": "18:18"
+        },
+        {
+          "m": "Match 13",
+          "d": "21 Jan",
+          "t": "SUNS at NETS",
+          "id": "-HgamMayc20",
+          "dur": "16:09"
+        },
+        {
+          "m": "Match 12",
+          "d": "21 Jan",
+          "t": "CELTICS at PISTONS",
+          "id": "cQcFQ4NMUQs",
+          "dur": "15:31"
+        },
+        {
+          "m": "Match 11",
+          "d": "21 Jan",
+          "t": "EXTENDED: CELTICS at PISTONS",
+          "id": "56zcuN3CSB8",
+          "dur": "33:13"
+        },
+        {
+          "m": "Match 10",
+          "d": "21 Jan",
+          "t": "EXTENDED: BUCKS at HAWKS",
+          "id": "uZ1M7UExcwQ",
+          "dur": "37:51"
+        },
+        {
+          "m": "Match 9",
+          "d": "21 Jan",
+          "t": "HEAT at WARRIORS",
+          "id": "SY-0SX3RlvY",
+          "dur": "15:15"
+        },
+        {
+          "m": "Match 8",
+          "d": "21 Jan",
+          "t": "SUNS at 76ERS",
+          "id": "jAL5Y2EYCWU",
+          "dur": "16:08"
+        },
+        {
+          "m": "Match 7",
+          "d": "21 Jan",
+          "t": "CLIPPERS at BULLS",
+          "id": "L1QHLpLaGFk",
+          "dur": "17:03"
+        },
+        {
+          "m": "Match 6",
+          "d": "21 Jan",
+          "t": "SPURS at ROCKETS",
+          "id": "FGhc5khN8bs",
+          "dur": "16:09"
+        },
+        {
+          "m": "Match 5",
+          "d": "21 Jan",
+          "t": "TIMBERWOLVES at JAZZ",
+          "id": "XvO7e2gvx1k",
+          "dur": "18:36"
+        },
+        {
+          "m": "Match 4",
+          "d": "21 Jan",
+          "t": "HEAT at KINGS",
+          "id": "w3i0MOF3P-0",
+          "dur": "15:07"
+        },
+        {
+          "m": "Match 3",
+          "d": "21 Jan",
+          "t": "LAKERS at NUGGETS",
+          "id": "rx2bYAVKIHc",
+          "dur": "17:53"
+        },
+        {
+          "m": "Match 2",
+          "d": "21 Jan",
+          "t": "RAPTORS at WARRIORS",
+          "id": "XoVHZ4f2i54",
+          "dur": "16:19"
+        },
+        {
+          "m": "Match 1",
+          "d": "21 Jan",
+          "t": "EXTENDED: SPURS at ROCKETS",
+          "id": "mhpyXf3I18o",
+          "dur": "40:57"
+        }
       ]
     },
     {
-      "id": "breaking",
-      "n": "Breaking News",
+      "id": "nfl",
+      "n": "NFL",
+      "g": "American Football",
       "i": "https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=500",
       "v": [
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
+        {
+          "m": "Match 4",
+          "d": "21 Jan",
+          "t": "Buffalo Bills vs. Denver Broncos",
+          "id": "VqXRI7Mag3E",
+          "dur": "18:45"
+        },
+        {
+          "m": "Match 3",
+          "d": "21 Jan",
+          "t": "San Francisco 49ers vs. Seattle Seahawks",
+          "id": "QXxCbN48UE8",
+          "dur": "13:47"
+        },
+        {
+          "m": "Match 2",
+          "d": "21 Jan",
+          "t": "Houston Texans vs New England Patriots",
+          "id": "FI8w2O3k59I",
+          "dur": "16:56"
+        },
+        {
+          "m": "Match 1",
+          "d": "21 Jan",
+          "t": "Los Angeles Rams vs Chicago Bears",
+          "id": "jFX07LCTrSM",
+          "dur": "18:03"
+        }
       ]
     },
     {
-      "id": "politics",
-      "n": "Politics",
+      "id": "nhl",
+      "n": "NHL",
+      "g": "Ice Hockey",
       "i": "https://media.nhl.com/site/asset/public/images/2020/04/NewShield-02023704.jpg",
-      "v": [
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
-      ]
-    },
-     {
-      "id": "world",
-      "n": "World",
-      "i": "https://media.nhl.com/site/asset/public/images/2020/04/NewShield-02023704.jpg",
-      "v": [
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
-      ]
+      "v": []
     },
     {
-      "id": "us",
-      "n": "US",
-      "i": "https://media.nhl.com/site/asset/public/images/2020/04/NewShield-02023704.jpg",
-      "v": [
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
-      ]
-    },
-    {
-      "id": "sports",
-      "n": "Sports",
+      "id": "mlb",
+      "n": "MLB",
+      "g": "Baseball",
       "i": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Major_League_Baseball_logo.svg/langfr-250px-Major_League_Baseball_logo.svg.png",
       "v": [
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
-      ]
-    },
-    {
-      "id": "entertainment",
-      "n": "Entertainment",
-      "i": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Major_League_Baseball_logo.svg/langfr-250px-Major_League_Baseball_logo.svg.png",
-      "v": [
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
-      ]
-    },
-    {
-      "id": "technology",
-      "n": "Technology",
-      "i": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Major_League_Baseball_logo.svg/langfr-250px-Major_League_Baseball_logo.svg.png",
-      "v": [
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
-      ]
-    },
-    {
-      "id": "business",
-      "n": "Business",
-      "i": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Major_League_Baseball_logo.svg/langfr-250px-Major_League_Baseball_logo.svg.png",
-      "v": [
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
-      ]
-    },
-    {
-      "id": "science",
-      "n": "Science",
-      "i": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Major_League_Baseball_logo.svg/langfr-250px-Major_League_Baseball_logo.svg.png",
-      "v": [
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
-      ]
-    },
-    {
-      "id": "health",
-      "n": "Health",
-      "i": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Major_League_Baseball_logo.svg/langfr-250px-Major_League_Baseball_logo.svg.png",
-      "v": [
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
-      ]
-    },
-    {
-      "id": "lifestyle",
-      "n": "Lifestyle",
-      "i": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Major_League_Baseball_logo.svg/langfr-250px-Major_League_Baseball_logo.svg.png",
-      "v": [
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "Z32fpsk4HXY", "dur": "05:40" },
-        { "m": "Match 72", "d": "20 Jan", "t": "Lakers vs Warriors", "id": "6L2segjJHIE", "dur": "05:40" }
+        {
+          "m": "World Series",
+          "d": "21 Jan",
+          "t": "Over 40 minutes of Yoshinobu Yamamoto  from 2025! (2025 World Series MVP)",
+          "id": "O-YFB0dbc7c",
+          "dur": "41:20"
+        },
+        {
+          "m": "Match 8",
+          "d": "21 Jan",
+          "t": "Yusei Kikuchi's 2025  in his 1st season with the Angels! (2nd career All-Star)",
+          "id": "I1QRiXppWKc",
+          "dur": "12:37"
+        },
+        {
+          "m": "Match 7",
+          "d": "21 Jan",
+          "t": "Nolan Arenado career  ... SO FAR! (10x Gold Glove, 8x All-Star for Rockies & Cardinals 3B)",
+          "id": "HuztCw2-siY",
+          "dur": "26:55"
+        },
+        {
+          "m": "Match 6",
+          "d": "21 Jan",
+          "t": "Teoscar Hernández was a World Champion for the 2nd straight year! (2025  with the Dodgers)",
+          "id": "gglerih-IzM",
+          "dur": "14:04"
+        },
+        {
+          "m": "Match 5",
+          "d": "21 Jan",
+          "t": "from Max Fried's first season with the Yankees!",
+          "id": "9A2csMGgpLg",
+          "dur": "15:26"
+        },
+        {
+          "m": "Match 4",
+          "d": "21 Jan",
+          "t": "Hunter Greene continues to emerge as a top starter in ! 🔥 (2025 season )",
+          "id": "Sjph1hhwS9I",
+          "dur": "23:48"
+        },
+        {
+          "m": "Match 3",
+          "d": "21 Jan",
+          "t": "Seiya Suzuki's first 30-home run season in  (2025 season  for Cubs slugger) 🐻 鈴木誠也ハイライト",
+          "id": "IAFkPtX5Cps",
+          "dur": "22:35"
+        },
+        {
+          "m": "Match 2",
+          "d": "21 Jan",
+          "t": "Carlos Betrán's career ! 🇵🇷 (National Baseball Hall of Fame Class of 2026)",
+          "id": "7mbUAtPunlA",
+          "dur": "15:01"
+        },
+        {
+          "m": "Match 1",
+          "d": "21 Jan",
+          "t": "Andruw Jones has been elected to the Baseball Hall of Fame! (Career )",
+          "id": "J05yqpg0i28",
+          "dur": "14:38"
+        }
       ]
     }
   ]
 }
-
-
-
