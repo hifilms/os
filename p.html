@@ -4,69 +4,90 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: sans-serif; }
         #player { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
 
-        /* আমাদের কাস্টম বারগুলো - এগুলোর মাঝখানে কোনো লেয়ার নেই */
-        .custom-ui { position: absolute; z-index: 10; opacity: 0; transition: 0.4s; pointer-events: auto; }
-        .show { opacity: 1; }
+        /* উপরের কালো শেড ও কন্ট্রোল */
+        .top-bar {
+            position: absolute; top: 0; left: 0; width: 100%; height: 80px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            z-index: 10; opacity: 0; transition: opacity 0.4s;
+            display: flex; justify-content: space-between; align-items: flex-start;
+            padding: 15px 20px; box-sizing: border-box; pointer-events: none;
+        }
+        .show-top { opacity: 1; }
+        #time-info { color: #fff; font-size: 16px; font-weight: bold; pointer-events: auto; }
+        #fs-btn { background: none; border: none; cursor: pointer; pointer-events: auto; }
+        #fs-btn svg { width: 28px; height: 28px; fill: white; }
 
-        /* টাইম: বাম দিকে একদম উপরে */
-        #time-info { top: 10px; left: 15px; color: #fff; font-family: sans-serif; font-size: 14px; text-shadow: 1px 1px 2px #000; }
+        /* নিচের স্লাইডার কন্টেইনার */
+        .bottom-container {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 40px;
+            z-index: 10; display: flex; align-items: flex-end;
+        }
 
-        /* ফুলস্ক্রিন: ডান দিকে একদম উপরে */
-        #fs-btn { top: 10px; right: 15px; background: none; border: none; cursor: pointer; }
-        #fs-btn svg { width: 25px; height: 25px; fill: white; }
+        /* স্লাইডার স্টাইল */
+        #seek-bar {
+            width: 100%; height: 3px; /* শুরুতে খুব চিকন */
+            cursor: pointer; accent-color: red; margin: 0; padding: 0;
+            appearance: none; -webkit-appearance: none; 
+            background: rgba(255,255,255,0.2);
+            transition: height 0.2s; border: none; outline: none;
+        }
 
-        /* স্লাইডার বার: একদম নিচের সাথে সেঁটে থাকবে */
-        #bottom-bar { bottom: 0; left: 0; width: 100%; height: 5px; padding: 0; margin: 0; display: flex; }
-        #seek-bar { width: 100%; height: 5px; cursor: pointer; accent-color: red; margin: 0; padding: 0; border: none; outline: none; }
+        /* মাউস নিচে নিলে হাইট বেড়ে চওড়া হবে */
+        .bottom-container:hover #seek-bar { height: 12px; }
+
+        /* স্লাইডারের সেই গোল বাটনটি (Thumb) মুছে ফেলার কোড */
+        #seek-bar::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 0; height: 0; }
+        #seek-bar::-moz-range-thumb { width: 0; height: 0; border: none; }
     </style>
 </head>
 <body>
 
     <div id="player"></div>
 
-    <div id="time-info" class="custom-ui">0:00 / 0:00</div>
-    
-    <button id="fs-btn" class="custom-ui" onclick="toggleFS()">
-        <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
-    </button>
+    <div class="top-bar" id="top-ui">
+        <div id="time-info">0:00 / 0:00</div>
+        <button id="fs-btn" onclick="toggleFS()">
+            <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+        </button>
+    </div>
 
-    <div id="bottom-bar" class="custom-ui">
+    <div class="bottom-container">
         <input type="range" id="seek-bar" value="0" step="0.1">
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         let player, hideTimer;
-        const uiElements = document.querySelectorAll('.custom-ui');
+        const topUI = document.getElementById('top-ui');
 
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
-                videoId: 'qbN7DtPAKQo',
+                videoId: 'dQw4w9WgXcQ',
                 playerVars: { 'controls': 0, 'autoplay': 1, 'rel': 0, 'enablejsapi': 1 },
-                events: { 'onReady': () => { setInterval(update, 500); showUI(); } }
+                events: { 'onReady': () => { setInterval(update, 500); } }
             });
         }
 
-        // মাউস নড়ালে কন্ট্রোল দেখাবে
-        window.addEventListener('mousemove', showUI);
-        window.addEventListener('touchstart', showUI);
-
-        function showUI() {
-            uiElements.forEach(el => el.classList.add('show'));
+        window.addEventListener('mousemove', () => {
+            topUI.classList.add('show-top');
             clearTimeout(hideTimer);
             hideTimer = setTimeout(() => {
-                if(player.getPlayerState() === 1) uiElements.forEach(el => el.classList.remove('show'));
-            }, 4000);
-        }
+                if(player.getPlayerState() === 1) topUI.classList.remove('show-top');
+            }, 3000);
+        });
 
         function update() {
             if (player && player.getCurrentTime) {
                 let cur = player.getCurrentTime(), dur = player.getDuration();
                 document.getElementById('time-info').innerText = format(cur) + " / " + format(dur);
                 document.getElementById('seek-bar').value = (cur / dur) * 100;
+                
+                // স্লাইডারের কালার আপডেট (অপশনাল: প্রোগ্রেস বোঝাতে)
+                let p = (cur / dur) * 100;
+                document.getElementById('seek-bar').style.background = `linear-gradient(to right, red ${p}%, rgba(255,255,255,0.2) ${p}%)`;
             }
         }
 
