@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hi Music - Fast Player</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: sans-serif; }
+        #player-wrapper { position: relative; width: 100vw; height: 100vh; }
+        #youtube-frame { width: 100%; height: 100%; pointer-events: none; }
+        #interaction-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; cursor: pointer; }
+
+        /* পজ/প্লে আইকন এনিমেশন */
+        #status-icon {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5);
+            background: rgba(0, 0, 0, 0.5); border-radius: 50%; width: 70px; height: 70px;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; z-index: 15; pointer-events: none; transition: 0.3s ease;
+        }
+        #status-icon.animate { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+        #status-icon svg { width: 35px; height: 35px; fill: white; }
+
+        /* কন্ট্রোল বার */
+        .bottom-controls {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            padding: 30px 15px 20px; display: flex; align-items: center; gap: 12px;
+            box-sizing: border-box; z-index: 20;
+            opacity: 0; transform: translateY(100%); transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #player-wrapper.show-controls .bottom-controls { opacity: 1; transform: translateY(0); }
+
+        .time-text { color: #fff; font-size: 13px; font-weight: bold; min-width: 40px; }
+        #seek-bar { flex-grow: 1; height: 4px; cursor: pointer; accent-color: #ff0000; outline: none; }
+        .fs-btn { background: none; border: none; cursor: pointer; padding: 5px; }
+        .fs-btn svg { width: 20px; height: 20px; fill: #fff; }
+    </style>
+</head>
+<body>
+
+<div id="player-wrapper" class="show-controls">
+    <div id="status-icon"><svg id="icon-svg" viewBox="0 0 24 24"></svg></div>
+    <div id="interaction-layer"></div>
+    <div id="youtube-frame"></div>
+
+    <div class="bottom-controls">
+        <span id="current-time" class="time-text">0:00</span>
+        <input type="range" id="seek-bar" value="0" max="100" step="0.1">
+        <span id="total-duration" class="time-text">0:00</span>
+        <button class="fs-btn" id="fs-toggle">
+            <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+        </button>
+    </div>
+</div>
+
+<script>
+    let player, hideTimeout;
+    const wrapper = document.getElementById('player-wrapper');
+    const statusIcon = document.getElementById('status-icon');
+    const iconSvg = document.getElementById('icon-svg');
+
+    // ইউটিউব এপিআই লোড করা (দ্রুত লোডিংয়ের জন্য)
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+
+    function onYouTubeIframeAPIReady() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const vid = urlParams.get('id') || 'dQw4w9WgXcQ';
+
+        player = new YT.Player('youtube-frame', {
+            videoId: vid,
+            playerVars: { 
+                'autoplay': 1, 'controls': 0, 'modestbranding': 1, 
+                'rel': 0, 'playsinline': 1, 'enablejsapi': 1 
+            },
+            events: {
+                'onReady': (e) => {
+                    e.target.playVideo(); // রিলোড দিলে অটো-প্লে করার চেষ্টা
+                    setInterval(updateUI, 500);
+                    manageControls();
+                },
+                'onStateChange': manageControls
+            }
+        });
+    }
+
+    function manageControls() {
+        clearTimeout(hideTimeout);
+        wrapper.classList.add('show-controls');
+
+        // ভিডিও যদি পজ থাকে, তবে কন্ট্রোল বার হাইড হবে না
+        if (player && player.getPlayerState() === YT.PlayerState.PLAYING) {
+            hideTimeout = setTimeout(() => {
+                wrapper.classList.remove('show-controls');
+            }, 3000); // ৩ সেকেন্ড পর হাইড
+        }
+    }
+
+    document.getElementById('interaction-layer').addEventListener('click', () => {
+        if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+            player.pauseVideo();
+            showStatusIcon('pause');
+        } else {
+            player.playVideo();
+            showStatusIcon('play');
+        }
+    });
+
+    wrapper.addEventListener('mousemove', manageControls);
+    wrapper.addEventListener('touchstart', manageControls);
+
+    function showStatusIcon(type) {
+        iconSvg.innerHTML = (type === 'play') ? '<path d="M8 5v14l11-7z"/>' : '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+        statusIcon.classList.add('animate');
+        setTimeout(() => statusIcon.classList.remove('animate'), 400);
+    }
+
+    function updateUI() {
+        if (player && player.getCurrentTime) {
+            const cur = player.getCurrentTime(), dur = player.getDuration();
+            document.getElementById('current-time').innerText = formatTime(cur);
+            document.getElementById('total-duration').innerText = formatTime(dur);
+            document.getElementById('seek-bar').value = (cur / dur) * 100;
+        }
+    }
+
+    function formatTime(s) {
+        let m = Math.floor(s / 60), sec = Math.floor(s % 60);
+        return m + ":" + (sec < 10 ? '0' : '') + sec;
+    }
+
+    document.getElementById('seek-bar').addEventListener('input', function() {
+        player.seekTo(player.getDuration() * (this.value / 100));
+    });
+
+    document.getElementById('fs-toggle').addEventListener('click', () => {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+    });
+</script>
+
+</body>
+</html>
