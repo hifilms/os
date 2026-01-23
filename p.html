@@ -1,76 +1,72 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
-        #player { width: 100vw; height: 100vh; }
-        
-        /* কন্ট্রোল বার - শুরুতে নিচে লুকানো থাকবে */
-        .bar { 
-            position: absolute; bottom: 0; width: 100%; 
-            background: linear-gradient(transparent, rgba(0,0,0,0.9)); 
-            padding: 20px; display: flex; align-items: center; gap: 15px; 
-            z-index: 100; opacity: 0; transform: translateY(100%);
-            transition: all 0.4s ease; box-sizing: border-box;
-        }
-        
-        /* এই ক্লাস যোগ হলে বার দেখা যাবে */
-        .bar.show { opacity: 1; transform: translateY(0); }
-        
-        #seek { flex-grow: 1; accent-color: red; cursor: pointer; height: 5px; }
-        span { color: white; font-size: 14px; font-weight: bold; min-width: 45px; }
-        
-        /* নিচের ডিটেকশন এরিয়া - এখানে মাউস আনলেই বার দেখাবে */
-        #hover-zone {
-            position: absolute; bottom: 0; width: 100%; height: 80px; z-index: 50;
-        }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
+        #player { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
+
+        /* আমাদের কাস্টম বারগুলো - এগুলোর মাঝখানে কোনো লেয়ার নেই */
+        .custom-ui { position: absolute; z-index: 10; opacity: 0; transition: 0.4s; pointer-events: auto; }
+        .show { opacity: 1; }
+
+        /* টাইম: বাম দিকে একদম উপরে */
+        #time-info { top: 10px; left: 15px; color: #fff; font-family: sans-serif; font-size: 14px; text-shadow: 1px 1px 2px #000; }
+
+        /* ফুলস্ক্রিন: ডান দিকে একদম উপরে */
+        #fs-btn { top: 10px; right: 15px; background: none; border: none; cursor: pointer; }
+        #fs-btn svg { width: 25px; height: 25px; fill: white; }
+
+        /* স্লাইডার বার: একদম নিচের সাথে সেঁটে থাকবে */
+        #bottom-bar { bottom: 0; left: 0; width: 100%; height: 5px; padding: 0; margin: 0; display: flex; }
+        #seek-bar { width: 100%; height: 5px; cursor: pointer; accent-color: red; margin: 0; padding: 0; border: none; outline: none; }
     </style>
 </head>
 <body>
 
     <div id="player"></div>
-    
-    <div id="hover-zone"></div>
 
-    <div class="bar" id="ctrl-bar">
-        <span id="cur">0:00</span>
-        <input type="range" id="seek" value="0" step="0.1">
-        <span id="dur">0:00</span>
+    <div id="time-info" class="custom-ui">0:00 / 0:00</div>
+    
+    <button id="fs-btn" class="custom-ui" onclick="toggleFS()">
+        <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+    </button>
+
+    <div id="bottom-bar" class="custom-ui">
+        <input type="range" id="seek-bar" value="0" step="0.1">
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-        let player, timer;
-        const bar = document.getElementById('ctrl-bar');
-        const hoverZone = document.getElementById('hover-zone');
+        let player, hideTimer;
+        const uiElements = document.querySelectorAll('.custom-ui');
 
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
-                videoId: 'dQw4w9WgXcQ',
+                videoId: 'qbN7DtPAKQo',
                 playerVars: { 'controls': 0, 'autoplay': 1, 'rel': 0, 'enablejsapi': 1 },
-                events: { 'onReady': () => setInterval(update, 500) }
+                events: { 'onReady': () => { setInterval(update, 500); showUI(); } }
             });
         }
 
-        // মাউস এরিয়াতে আনলে বার শো করবে
-        hoverZone.addEventListener('mouseenter', () => {
-            clearTimeout(timer);
-            bar.classList.add('show');
-        });
+        // মাউস নড়ালে কন্ট্রোল দেখাবে
+        window.addEventListener('mousemove', showUI);
+        window.addEventListener('touchstart', showUI);
 
-        // মাউস বার থেকে সরিয়ে নিলে ৪ সেকেন্ড পর হাইড হবে
-        bar.addEventListener('mouseleave', () => {
-            timer = setTimeout(() => {
-                bar.classList.remove('show');
-            }, 4000); // ৪ সেকেন্ড পর হাইড
-        });
+        function showUI() {
+            uiElements.forEach(el => el.classList.add('show'));
+            clearTimeout(hideTimer);
+            hideTimer = setTimeout(() => {
+                if(player.getPlayerState() === 1) uiElements.forEach(el => el.classList.remove('show'));
+            }, 4000);
+        }
 
         function update() {
             if (player && player.getCurrentTime) {
-                let c = player.getCurrentTime(), d = player.getDuration();
-                document.getElementById('cur').innerText = format(c);
-                document.getElementById('dur').innerText = format(d);
-                document.getElementById('seek').value = (c / d) * 100;
+                let cur = player.getCurrentTime(), dur = player.getDuration();
+                document.getElementById('time-info').innerText = format(cur) + " / " + format(dur);
+                document.getElementById('seek-bar').value = (cur / dur) * 100;
             }
         }
 
@@ -79,9 +75,14 @@
             return m + ":" + (sec < 10 ? '0' : '') + sec;
         }
 
-        document.getElementById('seek').oninput = function() {
+        document.getElementById('seek-bar').oninput = function() {
             player.seekTo(player.getDuration() * (this.value / 100));
         };
+
+        function toggleFS() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else document.exitFullscreen();
+        }
     </script>
 </body>
 </html>
