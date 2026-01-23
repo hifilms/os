@@ -3,16 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hi Music - Ultimate Player</title>
+    <title>Hi Music - Pro Player (Final)</title>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: sans-serif; }
-        
         #player-wrapper { position: relative; width: 100vw; height: 100vh; cursor: none; }
         #player-wrapper.show-controls { cursor: default; }
-
         #youtube-frame { width: 100%; height: 100%; pointer-events: none; }
 
-        /* ক্লিক লেয়ার */
+        /* ক্লিক লেয়ার - যা সাজেশান কার্ড ব্লক করবে */
         #interaction-layer {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%; z-index: 10;
@@ -29,11 +27,11 @@
         #status-icon.animate { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
         #status-icon svg { width: 40px; height: 40px; fill: white; }
 
-        /* এক লাইনের মডার্ন কন্ট্রোল বার */
+        /* এক লাইনের কন্ট্রোল বার */
         .bottom-controls {
             position: absolute; bottom: 0; left: 0; width: 100%;
             background: linear-gradient(transparent, rgba(0,0,0,0.95));
-            padding: 30px 20px 20px; display: flex; align-items: center; gap: 15px;
+            padding: 35px 20px 20px; display: flex; align-items: center; gap: 15px;
             box-sizing: border-box; z-index: 20;
             opacity: 0; transform: translateY(100%);
             transition: all 0.5s ease;
@@ -44,6 +42,10 @@
         #seek-bar { flex-grow: 1; height: 5px; cursor: pointer; accent-color: #ff0000; outline: none; }
         .fs-btn { background: none; border: none; cursor: pointer; padding: 5px; display: flex; align-items: center; }
         .fs-btn svg { width: 22px; height: 22px; fill: #fff; }
+
+        /* ইউটিউব এড ডিটেক্ট হলে এই ক্লাসটি কাজে লাগবে */
+        .ad-active #interaction-layer { pointer-events: none !important; }
+        .ad-active #player-wrapper { cursor: default !important; }
     </style>
 </head>
 <body>
@@ -70,14 +72,13 @@
     const iconSvg = document.getElementById('icon-svg');
     const interactionLayer = document.getElementById('interaction-layer');
 
-    // ইউটিউব এপিআই লোড
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     document.head.appendChild(tag);
 
     function onYouTubeIframeAPIReady() {
         const urlParams = new URLSearchParams(window.location.search);
-        const videoId = urlParams.get('id') || 'dQw4w9WgXcQ';
+        const videoId = urlParams.get('id') || 'j9lS_8-692s';
 
         player = new YT.Player('youtube-frame', {
             videoId: videoId,
@@ -94,40 +95,58 @@
 
     function onPlayerReady(event) {
         event.target.playVideo();
-        setInterval(updateUI, 500);
+        setInterval(updatePlayerInfo, 500); // অ্যাড এবং টাইম চেকিং
         manageControls();
+    }
+
+    // অ্যাড ডিটেকশন এবং কন্ট্রোল লজিক (Hybrid)
+    function updatePlayerInfo() {
+        if (!player || !player.getVideoData) return;
+
+        // টাইম আপডেট
+        const cur = player.getCurrentTime();
+        const dur = player.getDuration();
+        document.getElementById('current-time').innerText = formatTime(cur);
+        document.getElementById('total-duration').innerText = formatTime(dur);
+        document.getElementById('seek-bar').value = (cur / dur) * 100;
+
+        // শক্তিশালী অ্যাড ডিটেকশন
+        const videoData = player.getVideoData();
+        const isAd = player.getAdState() === 1 || (videoData && videoData.adunit !== undefined);
+
+        if (isAd) {
+            document.body.classList.add('ad-active');
+            wrapper.classList.remove('show-controls');
+            interactionLayer.style.pointerEvents = 'none'; // লেয়ার অকেজো করা হলো
+        } else {
+            document.body.classList.remove('ad-active');
+            interactionLayer.style.pointerEvents = 'auto'; // লেয়ার ফিরে এলো
+        }
     }
 
     function onPlayerStateChange(event) {
         manageControls();
-
-        // অ্যাড ডিটেকশন লজিক
-        if (player.getAdState() === 1) {
-            // অ্যাড চললে সবকিছু অকেজো
-            interactionLayer.style.pointerEvents = 'none';
-            wrapper.classList.remove('show-controls');
-        } else {
-            // ভিডিও চললে আমাদের সিস্টেম সক্রিয়
-            interactionLayer.style.pointerEvents = 'auto';
-            if (event.data === YT.PlayerState.ENDED) {
-                // অটো-প্লে লজিক এখানে হবে
-            }
+        if (event.data === YT.PlayerState.ENDED) {
+            console.log("Next Video Logic Here");
         }
     }
 
     function manageControls() {
         clearTimeout(hideTimeout);
         wrapper.classList.add('show-controls');
+        wrapper.style.cursor = 'default';
 
-        // ভিডিও চললে ৩ সেকেন্ড পর হাইড হবে, পজ থাকলে হাইড হবে না
-        if (player && player.getPlayerState() === YT.PlayerState.PLAYING) {
+        if (player && player.getPlayerState() === YT.PlayerState.PLAYING && !document.body.classList.contains('ad-active')) {
             hideTimeout = setTimeout(() => {
                 wrapper.classList.remove('show-controls');
+                wrapper.style.cursor = 'none';
             }, 3000);
         }
     }
 
     interactionLayer.addEventListener('click', () => {
+        if (document.body.classList.contains('ad-active')) return;
+
         if (player.getPlayerState() === YT.PlayerState.PLAYING) {
             player.pauseVideo();
             showStatusIcon('pause');
@@ -147,15 +166,6 @@
         setTimeout(() => statusIcon.classList.remove('animate'), 400);
     }
 
-    function updateUI() {
-        if (player && player.getCurrentTime) {
-            const cur = player.getCurrentTime(), dur = player.getDuration();
-            document.getElementById('current-time').innerText = formatTime(cur);
-            document.getElementById('total-duration').innerText = formatTime(dur);
-            document.getElementById('seek-bar').value = (cur / dur) * 100;
-        }
-    }
-
     function formatTime(s) {
         let m = Math.floor(s / 60), sec = Math.floor(s % 60);
         return m + ":" + (sec < 10 ? '0' : '') + sec;
@@ -166,8 +176,14 @@
     });
 
     document.getElementById('fs-toggle').addEventListener('click', () => {
-        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-        else document.exitFullscreen();
+        const fsIcon = document.getElementById('fs-icon');
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+            fsIcon.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
+        } else {
+            document.exitFullscreen();
+            fsIcon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
+        }
     });
 </script>
 </body>
