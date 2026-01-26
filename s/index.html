@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>WhatsApp P2P</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Login Overlay -->
+        <div id="login-overlay" class="overlay">
+            <div class="login-box">
+                <div class="logo-svg">
+                    <svg width="72" height="72" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01C17.18 3.03 14.69 2 12.04 2m0 1.66c2.2 0 4.27.86 5.82 2.41 1.55 1.55 2.41 3.61 2.41 5.8 0 4.53-3.69 8.24-8.23 8.24-1.47 0-2.92-.39-4.18-1.14l-.3-.18-3.11.82.83-3.03-.2-.31a8.21 8.21 0 01-1.26-4.4c.01-4.54 3.7-8.24 8.24-8.24m-3.51 4.79c-.19 0-.52.07-.79.37-.27.3-1.03 1-1.03 2.44 0 1.44 1.05 2.84 1.19 3.04.15.19 2.07 3.16 5.03 4.44.7.31 1.25.49 1.68.63.71.22 1.35.19 1.86.11.57-.08 1.75-.72 2-1.41.25-.68.25-1.27.17-1.41-.07-.15-.27-.22-.57-.37-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07s-1.25-.46-2.38-1.47c-.88-.78-1.47-1.75-1.64-2.05-.17-.3-.02-.46.13-.61.13-.13.3-.34.44-.51.15-.17.2-.3.3-.5s.05-.37-.02-.51c-.07-.15-.67-1.61-.92-2.2-.24-.59-.49-.51-.67-.51" />
+                    </svg>
+                </div>
+                <h2>Welcome Back</h2>
+                <input type="text" id="login-mobile" placeholder="Your Mobile Number">
+                <input type="text" id="login-name" placeholder="Your Display Name">
+                <button id="btn-login" class="primary-btn">Get Started</button>
+            </div>
+        </div>
+
+        <div class="main-app" id="main-app" style="display: none;">
+            <!-- Sidebar: Contacts -->
+            <div class="sidebar" id="sidebar">
+                <div class="header">
+                    <div class="header-left">
+                        <div class="avatar" id="my-avatar"></div>
+                        <div class="user-details-header">
+                            <div id="my-name" style="font-size: 16px;">Me</div>
+                            <div id="my-mobile" style="font-size: 12px; color: var(--text-secondary);"></div>
+                        </div>
+                    </div>
+                    <div class="header-right">
+                        <button class="icon-btn" id="btn-add-contact">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </button>
+                        <div class="menu-container">
+                            <button class="icon-btn" id="btn-main-menu">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="1"></circle>
+                                    <circle cx="12" cy="5" r="1"></circle>
+                                    <circle cx="12" cy="19" r="1"></circle>
+                                </svg>
+                            </button>
+                            <div class="dropdown-menu" id="main-menu">
+                                <button id="btn-toggle-theme">Dark Mode</button>
+                                <button id="btn-show-blacklist">Blacklist</button>
+                                <button id="btn-logout" style="color: #ff5e5e;">Logout</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-list" id="contact-list"></div>
+            </div>
+
+            <!-- Chat Screen -->
+            <div class="chat-area" id="chat-area">
+                <div class="chat-header">
+                    <div class="chat-header-left">
+                        <button class="icon-btn" id="btn-back">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="19" y1="12" x2="5" y2="12"></line>
+                                <polyline points="12 19 5 12 12 5"></polyline>
+                            </svg>
+                        </button>
+                        <div class="avatar" id="header-avatar"></div>
+                        <div class="chat-info">
+                            <span class="chat-name" id="chat-name">User</span>
+                            <div class="chat-status" id="chat-status">offline</div>
+                        </div>
+                    </div>
+                    <div class="menu-container">
+                        <button class="icon-btn" id="btn-chat-menu">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="1"></circle>
+                                <circle cx="12" cy="5" r="1"></circle>
+                                <circle cx="12" cy="19" r="1"></circle>
+                            </svg>
+                        </button>
+                        <div class="dropdown-menu" id="chat-menu">
+                            <button id="btn-chat-rename">Rename</button>
+                            <button id="btn-chat-clear">Clear Chat</button>
+                            <button id="btn-chat-block" style="color: #ff9800;">Block Contact</button>
+                            <button id="btn-chat-delete" style="color: #ff5e5e;">Delete Contact</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="chat-messages"></div>
+
+                <div id="sheet-confirm-clear" class="modal">
+                    <div class="modal-content">
+                        <div class="sheet-handle"></div>
+                        <h3>Clear All Messages?</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 24px; text-align: center;">This action
+                            cannot be undone.</p>
+                        <div class="sheet-footer">
+                            <button class="sheet-item plain" onclick="closeSheets()">Cancel</button>
+                            <button class="sheet-item plain danger" id="btn-clear-confirm"
+                                style="font-weight: 600;">Clear</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <div class="input-capsule">
+                        <label for="file-input" class="icon-btn">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48">
+                                </path>
+                            </svg>
+                        </label>
+                        <input type="file" id="file-input" style="display: none;">
+                        <textarea id="msg-input" placeholder="Type a message" rows="1"></textarea>
+                    </div>
+                    <button class="icon-btn" id="btn-send">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Sheets (Bottom Sheets) -->
+    <div id="sheet-add-contact" class="modal">
+        <div class="modal-content">
+            <div class="sheet-handle"></div>
+            <h3>Add New Contact</h3>
+            <input type="text" id="contact-mobile" placeholder="Mobile Number">
+            <input type="text" id="contact-name" placeholder="Display Name">
+            <div class="sheet-footer">
+                <button class="sheet-item plain" onclick="closeSheets()">Cancel</button>
+                <button class="sheet-item plain" id="btn-save-contact"
+                    style="color: var(--primary-color); font-weight: 600;">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sheet-confirm-block" class="modal">
+        <div class="modal-content">
+            <div class="sheet-handle"></div>
+            <h3>Block Contact?</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 24px; text-align: center;">They won't be able to send
+                you messages or see your status.</p>
+            <div class="sheet-footer">
+                <button class="sheet-item plain" onclick="closeSheets()">Cancel</button>
+                <button class="sheet-item plain" id="btn-block-confirm"
+                    style="color: #ff9800; font-weight: 600;">Block</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sheet-confirm-delete-contact" class="modal">
+        <div class="modal-content">
+            <div class="sheet-handle"></div>
+            <h3>Delete Contact?</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 24px; text-align: center;">This will remove the
+                contact and all associated chat history.</p>
+            <div class="sheet-footer">
+                <button class="sheet-item plain" onclick="closeSheets()">Cancel</button>
+                <button class="sheet-item plain danger" id="btn-delete-contact-confirm"
+                    style="font-weight: 600;">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sheet-blacklist" class="modal">
+        <div class="modal-content">
+            <div class="sheet-handle"></div>
+            <h3 style="text-align: center;">Blocked Contacts</h3>
+            <div id="blacklist-container" style="margin-top: 10px;"></div>
+            <div class="sheet-footer">
+                <button class="sheet-item plain" onclick="closeSheets()"
+                    style="justify-content: center;">Cancel</button>
+                <button class="sheet-item plain" onclick="closeSheets()"
+                    style="justify-content: center; color: var(--primary-color); font-weight: 600;">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sheet-msg-actions" class="modal">
+        <div class="modal-content">
+            <div class="sheet-handle"></div>
+            <button class="sheet-item" id="sheet-btn-copy">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Copy Message
+            </button>
+            <button class="sheet-item" id="sheet-btn-forward">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 10 20 15 15 20"></polyline>
+                    <path d="M4 4v7a4 4 0 0 0 4 4h12"></path>
+                </svg>
+                Forward Message
+            </button>
+            <button class="sheet-item danger" id="sheet-btn-delete-msg">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                Delete for Me
+            </button>
+        </div>
+    </div>
+
+    <div id="sheet-forward" class="modal">
+        <div class="modal-content">
+            <div class="sheet-handle"></div>
+            <h3>Forward to...</h3>
+            <div id="forward-contact-list"></div>
+            <button class="sheet-item" onclick="closeSheets()"
+                style="justify-content: center; margin-top: 12px; background: rgba(255,255,255,0.05);">Cancel</button>
+        </div>
+    </div>
+
+    <div id="sheet-rename" class="modal">
+        <div class="modal-content">
+            <div class="sheet-handle"></div>
+            <h3>Rename Contact</h3>
+            <input type="text" id="rename-input" placeholder="New Name">
+            <div class="sheet-footer">
+                <button class="sheet-item plain" onclick="closeSheets()">Cancel</button>
+                <button class="sheet-item plain" id="btn-save-rename"
+                    style="color: var(--primary-color); font-weight: 600;">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sheet-logout" class="modal">
+        <div class="modal-content">
+            <div class="sheet-handle"></div>
+            <h3 style="text-align: center;">Log Out?</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 24px; text-align: center; font-size: 13px;">This will
+                remove all your chats and contacts from this device.</p>
+            <div class="sheet-footer">
+                <button class="sheet-item plain" onclick="closeSheets()"
+                    style="justify-content: center;">Cancel</button>
+                <button class="sheet-item plain danger" id="btn-confirm-logout"
+                    style="font-weight: 600; justify-content: center;">Logout</button>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="./src/app.js"></script>
+</body>
+
+</html>
