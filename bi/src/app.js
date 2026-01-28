@@ -351,7 +351,7 @@ async function loadContacts(query = '') {
         return { ...contact, lastMsg, isBlocked };
     }));
 
-    const contactData = contactDataRaw.filter(d => d !== null);
+    const contactData = contactDataRaw.filter(d => d !== null && !blacklist.includes(d.mobile));
 
     contactData.sort((a, b) => {
         const timeA = a.lastMsg ? a.lastMsg.timestamp : 0;
