@@ -1,4 +1,4 @@
-const SERVER_URL = "https://hifilms.github.io/os/as/";
+const SERVER_URL = "https://hifilms.github.io/os/as";
 const IMG_EXT = ".webp";
 const AUDIO_EXT = ".mp3";
 
@@ -453,3 +453,4 @@ async function deleteDownload() {
     renderHome(allData);
 
 }
+
