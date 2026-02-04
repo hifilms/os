@@ -1,0 +1,764 @@
+:root {
+    --bg-color: #080808;
+    --text-color: #ffffff;
+    --card-bg: #1c1c1e;
+    --accent-color: #ff4757;
+    --secondary-text: #888;
+    --border-color: #333;
+    --player-bg: rgba(28, 28, 30, 0.95);
+    --header-bg: rgba(18, 18, 18, 0.9);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-color);
+}
+
+[data-theme="light"] {
+    --bg-color: #f5f5f7;
+    --text-color: #1d1d1f;
+    --card-bg: #ffffff;
+    --accent-color: #ff4757;
+    --secondary-text: #666;
+    --border-color: #e0e0e0;
+    --player-bg: rgba(255, 255, 255, 0.95);
+    --header-bg: rgba(245, 245, 247, 0.9);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    overflow-x: hidden;
+    padding-bottom: 110px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* --- ২. হেডার ডিজাইন --- */
+header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    transition: 0.4s;
+    z-index: 1000;
+}
+
+header.scrolled {
+    background-color: var(--header-bg);
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    transition: transform 0.2s;
+    outline: none;
+}
+
+/* Modern Logo Style */
+.logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent-color), #ff8e53);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.logo span {
+    color: var(--text-color);
+    -webkit-text-fill-color: var(--text-color);
+}
+
+.icon-btn:active {
+    transform: scale(0.9);
+}
+
+.icon-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+.settings-dots span {
+    display: block;
+    width: 4px;
+    height: 4px;
+    background: var(--text-color);
+    margin: 3px;
+    border-radius: 50%;
+}
+
+/* --- ৩. হিরো স্লাইডার সেকশন --- */
+.hero {
+    position: relative;
+    width: 100%;
+    height: 380px;
+    overflow: hidden;
+    background: #000;
+    touch-action: pan-y;
+}
+
+.slider-wrapper {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.slide-img {
+    min-width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+}
+
+.hero-overlay-top {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 120px;
+    background: linear-gradient(to bottom, var(--bg-color), transparent);
+    z-index: 5;
+}
+
+.slider-counter {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: bold;
+    z-index: 10;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+}
+
+/* --- ৪. ক্যাটাগরি ও কার্ড ডিজাইন --- */
+.category-section {
+    margin-top: 25px;
+    padding-left: 15px;
+}
+
+.cat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-right: 15px;
+    margin-bottom: 15px;
+}
+
+.cat-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.see-more {
+    font-size: 12px;
+    color: var(--accent-color);
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.horizontal-slider {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+    scrollbar-width: none;
+    padding-bottom: 10px;
+}
+
+.horizontal-slider::-webkit-scrollbar {
+    display: none;
+}
+
+.card {
+    min-width: 140px;
+    height: 190px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--card-bg);
+    /* Fallback */
+    transition: transform 0.3s, border 0.3s, background-color 0.3s;
+    border: 2px solid transparent;
+}
+
+.card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card.active {
+    border-color: var(--accent-color);
+    transform: scale(0.96);
+    box-shadow: 0 0 15px rgba(255, 71, 87, 0.3);
+}
+
+/* --- ৫. গ্রিড ভিউ (See More Page) --- */
+.grid-header-fixed {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 60px;
+    background: var(--bg-color);
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    gap: 15px;
+    z-index: 1100;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#grid-view {
+    padding: 85px 12px 100px;
+}
+
+.grid-layout {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.grid-card {
+    width: 100%;
+    aspect-ratio: 3/4;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--card-bg);
+    border: 2px solid transparent;
+    transition: background-color 0.3s;
+}
+
+.grid-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.grid-card.active {
+    border-color: var(--accent-color);
+}
+
+/* --- ৬. মিনি প্লেয়ার (Bottom Bar ডিজাইন) --- */
+#player-container.mini {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    z-index: 2000;
+    background: var(--player-bg);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border-color);
+    transition: transform 0.4s ease;
+}
+
+.mini-progress-container {
+    position: absolute;
+    top: -2px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: rgba(128, 128, 128, 0.2);
+}
+
+.mini-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--accent-color);
+    transition: width 0.1s linear;
+}
+
+.m-card {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 8px 8px 0;
+}
+
+.m-img-wrapper {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    border: 2px solid var(--accent-color);
+    margin-right: 15px;
+    /* Added gap */
+    flex-shrink: 0;
+    background-color: var(--card-bg);
+    /* Fallback */
+}
+
+#m-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Rotating animation */
+@keyframes rotateImg {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+#m-img.playing {
+    animation: rotateImg 15s linear infinite;
+}
+
+.m-info {
+    margin-left: 0;
+    overflow: hidden;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    /* Left align */
+}
+
+#m-name {
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-color);
+}
+
+#m-cat {
+    font-size: 11px;
+    color: var(--accent-color);
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+.m-controls {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+}
+
+.m-controls .icon-btn svg {
+    width: 30px;
+    height: 30px;
+}
+
+/* --- ৭. ফুল স্ক্রিন প্লেয়ার --- */
+#player-container.full {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    /* Ensure full viewport height */
+    background: var(--bg-color);
+    z-index: 3000;
+    padding: 20px 25px 0;
+    /* Remove bottom padding */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    text-align: center;
+    animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    /* Prevent internal scroll */
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+#player-container.mini .full-content,
+#player-container.full .mini-content {
+    display: none;
+}
+
+.f-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: auto;
+    /* Push content to top */
+    padding-bottom: 20px;
+}
+
+.close-btn {
+    align-self: flex-start;
+}
+
+/* Full Player Layout Updates */
+/* Full Player Layout Updates Removed - Combined above */
+
+/* Full Player Internal Layout */
+#full-player-ui {
+    display: flex;
+    flex-direction: column;
+    /* justify-content: flex-end; Removed to keep header at top */
+    height: 100%;
+    width: 100%;
+}
+
+.f-middle-container {
+    flex: 0 0 auto;
+    /* Do not expand */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: auto;
+    /* Pushes this and everything below it to bottom */
+    padding-top: 20px;
+    margin-bottom: 20px;
+    /* Space between middle and bottom controls */
+}
+
+/* Vinyl Record Style */
+.f-img-wrapper {
+    width: 260px;
+    height: 260px;
+    margin-bottom: 30px;
+    position: relative;
+    border-radius: 50%;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+}
+
+.f-img-wrapper::after {
+    content: '';
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    background: #000;
+    border-radius: 50%;
+    border: 2px solid #333;
+    z-index: 10;
+}
+
+#f-img {
+    width: 95%;
+    /* Slightly smaller to show vinyl edge */
+    height: 95%;
+    object-fit: cover;
+    border-radius: 50%;
+    background-color: var(--card-bg);
+    /* Fallback */
+}
+
+#f-img.playing {
+    animation: rotateImg 20s linear infinite;
+}
+
+.f-text {
+    text-align: center;
+}
+
+#f-name {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+#f-cat {
+    margin-top: 0;
+}
+
+.f-bottom-controls {
+    width: 100%;
+    margin-top: auto;
+    padding-bottom: 20px;
+    /* Minimal safe area */
+    margin-bottom: 0;
+}
+
+/* Progress Row Styling */
+/* Progress Row Styling */
+.f-extras-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 0 5px;
+}
+
+/* Progress Bar Modern */
+.f-progress-section {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+input[type=range] {
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: var(--text-color);
+    /* Visible in both modes */
+    opacity: 0.2;
+    /* Subtle track */
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+}
+
+input[type=range] {
+    appearance: none;
+    width: 100%;
+    height: 3px;
+    /* Thinner track */
+    background: var(--text-color);
+    opacity: 0.2;
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+}
+
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    /* Slightly smaller thumb */
+    height: 14px;
+    background: #ff0000;
+    /* Red color */
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    transition: transform 0.2s;
+}
+
+input[type=range]::-webkit-slider-thumb:active {
+    transform: scale(1.2);
+}
+
+.time-info {
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--secondary-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.action-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color);
+    transition: background 0.2s;
+}
+
+.action-btn:active {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.f-main-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    width: 100%;
+}
+
+.f-main-controls .icon-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.f-main-controls .big-play {
+    width: 70px;
+    height: 70px;
+    background: var(--accent-color);
+    box-shadow: 0 8px 25px rgba(255, 71, 87, 0.4);
+}
+
+/* New Skip Button Design */
+.skip-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Settings Menu Styles */
+.settings-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 5000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.settings-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.settings-sheet {
+    background: var(--card-bg);
+    width: 100%;
+    border-radius: 20px 20px 0 0;
+    padding: 10px 0 30px;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.settings-overlay.active .settings-sheet {
+    transform: translateY(0);
+}
+
+.sheet-handle {
+    width: 40px;
+    height: 4px;
+    background: var(--border-color);
+    margin: 10px auto 20px;
+    border-radius: 10px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 25px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.menu-item:active {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.icon-box {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-color);
+    border-radius: 10px;
+    margin-right: 15px;
+    color: var(--accent-color);
+}
+
+.menu-item span {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* Download Loader */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.download-loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.download-loading::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--accent-color);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.big-play {
+    background: var(--accent-color) !important;
+    color: white !important;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    box-shadow: 0 10px 20px rgba(255, 71, 87, 0.4);
+}
+
+.big-play svg {
+    width: 35px !important;
+    height: 35px !important;
+}

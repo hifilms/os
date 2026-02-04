@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hi story</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="https://www.gstatic.com/lamda/images/gemini_sparkle_aurora_33f86dc0c0257da337c63.svg">
+</head>
+
+<body>
+
+    <header id="main-header">
+        <div class="logo">
+            <svg width="120" height="40" viewBox="0 0 150 50">
+                <rect x="5" y="5" width="40" height="40" rx="8" ry="8" fill="none" stroke="currentColor"
+                    stroke-width="3" />
+                <text x="12" y="34" font-family="Arial" font-size="24" font-weight="bold" fill="currentColor">Hi</text>
+                <text x="55" y="34" font-family="Arial" font-size="24" font-weight="bold"
+                    fill="currentColor">STORY</text>
+            </svg>
+        </div>
+        <div class="header-right">
+            <button id="theme-toggle" onclick="toggleTheme()" class="icon-btn">
+                <svg id="theme-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-3.03 0-5.5-2.47-5.5-5.5 0-1.82.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z" />
+                </svg>
+            </button>
+            <div class="settings-dots"><span></span><span></span><span></span></div>
+        </div>
+    </header>
+
+    <div id="home-page">
+        <section class="hero" id="hero-slider">
+            <div id="slider-wrapper" class="slider-wrapper"></div>
+            <div class="hero-overlay-top"></div>
+            <div id="slider-counter" class="slider-counter">1/10</div>
+        </section>
+        <!-- Download/Bookmark Playlist Section -->
+        <div id="offline-playlist-container"></div>
+        <main id="home-content"></main>
+    </div>
+
+    <section id="grid-view" style="display: none;">
+        <div class="grid-header-fixed">
+            <button onclick="backToHome()" class="icon-btn">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                </svg>
+            </button>
+            <h2 id="grid-title">Category</h2>
+        </div>
+        <div id="grid-container" class="grid-layout"></div>
+    </section>
+
+    <div id="player-container" class="mini">
+        <div class="mini-content" id="mini-player-ui" onclick="expandPlayer()">
+            <div class="mini-progress-container">
+                <div id="mini-progress-bar" class="mini-progress-bar"></div>
+            </div>
+            <div class="m-card">
+                <div class="m-img-wrapper">
+                    <img id="m-img" src="" alt="">
+                </div>
+                <div class="m-info">
+                    <p id="m-name">গল্প লোড হচ্ছে...</p>
+                    <p id="m-cat">CATEGORY</p>
+                </div>
+                <div class="m-controls">
+                    <button id="m-prev-btn" onclick="event.stopPropagation(); prevSong();" class="icon-btn">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+                        </svg>
+                    </button>
+                    <button id="m-play-btn" onclick="event.stopPropagation(); togglePlay();" class="icon-btn">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8 5v14l11-7z" />
+                        </svg>
+                    </button>
+                    <button id="m-next-btn" onclick="event.stopPropagation(); nextSong();" class="icon-btn">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="full-content" id="full-player-ui">
+            <div class="f-header">
+                <button class="minimize-btn icon-btn" onclick="minimizePlayer()">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" />
+                    </svg>
+                </button>
+                <span id="timer-display"
+                    style="font-weight: bold; color: var(--accent-color); font-variant-numeric: tabular-nums;"></span>
+                <button class="timer-btn icon-btn" onclick="toggleTimerMenu()">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="f-middle-container">
+                <div class="f-img-wrapper">
+                    <img id="f-img" src="" alt="">
+                </div>
+                <div class="f-title-area">
+                    <h2 id="f-name">গল্পের নাম</h2>
+                    <p id="f-cat">CATEGORY</p>
+                </div>
+            </div>
+
+            <div class="f-bottom-controls">
+
+                <!-- 1. Download & Bookmark Row -->
+                <div class="f-extras-row">
+                    <button id="download-btn" class="icon-btn action-btn" onclick="handleDownloadClick()">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                        </svg>
+                    </button>
+                    <button id="fav-btn" class="icon-btn action-btn" onclick="toggleBookmark()">
+                        <svg viewBox="0 0 24 24" fill="outline">
+                            <path
+                                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- 2. Progress Bar Section -->
+                <div class="f-progress-section">
+                    <input type="range" id="seek-bar" value="0" step="0.1">
+                    <div class="time-info">
+                        <span id="current-time">0:00</span>
+                        <span id="duration-time">0:00</span>
+                    </div>
+                </div>
+
+                <!-- 3. Main Controls (Absolute Bottom) -->
+                <div class="f-main-controls">
+                    <button id="f-prev-btn" class="icon-btn" onclick="prevSong()">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+                        </svg>
+                    </button>
+
+                    <button class="icon-btn skip-btn" onclick="skipTime(-15)">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z" opacity="0" />
+                            <path
+                                d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
+                            <text x="12" y="15" font-size="7" text-anchor="middle" fill="currentColor"
+                                font-weight="bold">15</text>
+                        </svg>
+                    </button>
+
+                    <button id="f-play-btn" class="big-play icon-btn" onclick="togglePlay()">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8 5v14l11-7z" />
+                        </svg>
+                    </button>
+
+                    <button class="icon-btn skip-btn" onclick="skipTime(15)">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z" />
+                            <text x="12" y="15" font-size="7" text-anchor="middle" fill="currentColor"
+                                font-weight="bold">15</text>
+                        </svg>
+                    </button>
+
+                    <button id="f-next-btn" class="icon-btn" onclick="nextSong()">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Menu Overlay -->
+    <div id="settings-overlay" class="settings-overlay" onclick="toggleSettings()">
+        <div class="settings-sheet" onclick="event.stopPropagation()">
+            <div class="sheet-handle"></div>
+            <div class="menu-item">
+                <div class="icon-box"><svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                    </svg></div>
+                <span>About Us</span>
+            </div>
+            <div class="menu-item">
+                <div class="icon-box"><svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" />
+                    </svg></div>
+                <span>Privacy Policy</span>
+            </div>
+            <div class="menu-item">
+                <div class="icon-box"><svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+                    </svg></div>
+                <span>Legal Info</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timer Menu Overlay -->
+    <div id="timer-overlay" class="settings-overlay" onclick="toggleTimerMenu()">
+        <div class="settings-sheet" onclick="event.stopPropagation()">
+            <div class="sheet-handle"></div>
+            <h3 style="padding: 0 25px 15px; color: var(--accent-color);">Sleep Timer</h3>
+            <div class="menu-item" onclick="setSleepTimer(15)"><span>15 Minutes</span></div>
+            <div class="menu-item" onclick="setSleepTimer(30)"><span>30 Minutes</span></div>
+            <div class="menu-item" onclick="setSleepTimer(45)"><span>45 Minutes</span></div>
+            <div class="menu-item" onclick="setSleepTimer(60)"><span>60 Minutes</span></div>
+            <div class="menu-item" onclick="setSleepTimer(0)"><span style="color: var(--accent-color);">Stop
+                    Timer</span></div>
+        </div>
+    </div>
+
+    <audio id="main-audio" preload="auto"></audio>
+    <script src="script.js"></script>
+</body>
+
+</html>
