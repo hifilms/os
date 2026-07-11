@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoIP অডিও কলিং অ্যাপ</title>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0f172a; display: flex; justify-content: center; align-items: center; height: 100vh; color: #fff; }
+        
+        .phone-container { background: #1e293b; width: 100%; max-width: 380px; height: 100vh; max-height: 700px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; padding: 24px; position: relative; }
+        @media (max-width: 400px) { .phone-container { height: 100vh; max-height: 100%; border-radius: 0; } }
+
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { font-size: 22px; color: #38bdf8; margin-bottom: 5px; }
+        
+        .my-id-box { background: #334155; padding: 12px; border-radius: 12px; font-size: 14px; text-align: center; border: 1px dashed #38bdf8; word-break: break-all; }
+        .my-id-box span { display: block; font-weight: bold; color: #38bdf8; margin-top: 4px; font-size: 16px; letter-spacing: 1px; }
+
+        .dial-section { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 15px; }
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
+        .input-group input { background: #334155; border: 2px solid #475569; padding: 14px; border-radius: 12px; color: #fff; font-size: 16px; text-align: center; outline: none; transition: 0.3s; }
+        .input-group input:focus { border-color: #38bdf8; }
+
+        /* কলিং স্ক্রিন ওভারলে */
+        .call-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 60px 24px; z-index: 10; transform: translateY(100%); transition: transform 0.4s ease-in-out; }
+        .call-overlay.active { transform: translateY(0); }
+
+        .avatar { width: 110px; height: 110px; background: #38bdf8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 45px; color: #0f172a; box-shadow: 0 0 30px rgba(56, 189, 248, 0.4); animation: pulse 2s infinite alternate; }
+        @keyframes pulse { 0% { box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); } 100% { box-shadow: 0 0 35px rgba(56, 189, 248, 0.7); } }
+
+        .call-status { text-align: center; }
+        .call-status h2 { font-size: 24px; margin-bottom: 8px; }
+        .call-status p { font-size: 14px; color: #94a3b8; letter-spacing: 1px; }
+
+        .action-buttons { display: flex; gap: 25px; justify-content: center; width: 100%; }
+        .btn { width: 65px; height: 65px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.2s; color: white; }
+        .btn:active { transform: scale(0.9); }
+        
+        .btn-call { background: #22c55e; width: 100%; border-radius: 12px; height: 50px; font-size: 16px; font-weight: bold; gap: 10px; }
+        .btn-hangup { background: #ef4444; }
+        .btn-accept { background: #22c55e; animation: bounce 1s infinite; }
+        .btn-mute { background: #334155; font-size: 20px; }
+        .btn-mute.active { background: #f59e0b; }
+
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        
+        .incoming-actions { display: none; gap: 40px; }
+        .ongoing-actions { display: flex; }
+    </style>
+</head>
+<body>
+
+    <div class="phone-container">
+        <div class="header">
+            <h1>P2P অডিও ফোন</h1>
+            <p style="color: #94a3b8; font-size: 12px;">সম্পূর্ণ ফ্রি ও আনলিমিটেড</p>
+        </div>
+
+        <div class="my-id-box">
+            আপনার কলিং আইডি
+            <span id="my-id-display"><i class="fas fa-spinner fa-spin"></i> তৈরি হচ্ছে...</span>
+        </div>
+
+        <div class="dial-section">
+            <div class="input-group">
+                <label style="font-size: 13px; color: #94a3b8;">বন্ধুর আইডিতে কল করুন:</label>
+                <input type="text" id="remote-id-input" placeholder="বন্ধুর আইডি এখানে লিখুন" autocomplete="off">
+            </div>
+            <button class="btn btn-call" onclick="startCall()"><i class="fas fa-phone"></i> কল করুন</button>
+        </div>
+
+        <div class="call-overlay" id="call-overlay">
+            <div class="avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            
+            <div class="call-status">
+                <h2 id="caller-name">অজানা ইউজার</h2>
+                <p id="status-text">কল করা হচ্ছে...</p>
+            </div>
+
+            <div class="action-buttons incoming-actions" id="incoming-buttons">
+                <button class="btn btn-hangup" onclick="endCall()"><i class="fas fa-phone-slash"></i></button>
+                <button class="btn btn-accept" onclick="acceptCall()"><i class="fas fa-phone"></i></button>
+            </div>
+
+            <div class="action-buttons ongoing-actions" id="ongoing-buttons">
+                <button class="btn btn-mute" id="mute-btn" onclick="toggleMute()"><i class="fas fa-microphone"></i></button>
+                <button class="btn btn-hangup" onclick="endCall()"><i class="fas fa-phone-slash"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="remote-audio" autoplay></audio>
+
+    <script>
+        // গুগলের ফ্রি STUN সার্ভার কনফিগারেশন
+        const peer = new Peer({
+            config: { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] }
+        });
+
+        let localStream = null;
+        let currentCall = null;
+        let incomingCallInstance = null;
+        let isMuted = false;
+
+        // নিজের আইডি জেনারেট হওয়া
+        peer.on('open', (id) => {
+            document.getElementById('my-id-display').innerText = id;
+        });
+
+        // ইনকামিং কল আসা
+        peer.on('call', (call) => {
+            incomingCallInstance = call;
+            showCallScreen("ইনকামিং কল...", "কেউ একজন", true);
+            startBeep();
+        });
+
+        // নিজে কাউকে কল দেওয়ার ফাংশন
+        function startCall() {
+            const remoteId = document.getElementById('remote-id-input').value.trim();
+            if (!remoteId) return alert("দয়া করে আপনার বন্ধুর আইডিটি সঠিকভাবে দিন।");
+
+            showCallScreen("মাইক্রোফোন চেক করা হচ্ছে...", remoteId, false);
+
+            // ইউজার বাটনে ক্লিক করার পরই কেবল মাইক্রোফোন চাওয়া হচ্ছে
+            navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+            .then((stream) => {
+                localStream = stream;
+                document.getElementById('status-text').innerText = "কল যাচ্ছে...";
+                const call = peer.call(remoteId, stream);
+                setupCallEvents(call);
+            }).catch(err => {
+                alert("ত্রুটি: ব্রাউজার মাইক্রোফোন অ্যাক্সেস করতে দেয়নি। দয়া করে URL বারের লক আইকনে ক্লিক করে পারমিশন Allow করুন।");
+                endCall();
+            });
+        }
+
+        // ইনকামিং কল রিসিভ করার ফাংশন
+        function acceptCall() {
+            stopBeep();
+            document.getElementById('status-text').innerText = "মাইক্রোফোন চেক করা হচ্ছে...";
+
+            navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+            .then((stream) => {
+                localStream = stream;
+                incomingCallInstance.answer(stream);
+                setupCallEvents(incomingCallInstance);
+                
+                document.getElementById('incoming-buttons').style.display = 'none';
+                document.getElementById('ongoing-buttons').style.display = 'flex';
+            }).catch(err => {
+                alert("ত্রুটি: মাইক্রোফোন পারমিশন ছাড়া কল রিসিভ করা সম্ভব নয়।");
+                endCall();
+            });
+        }
+
+        // কলের কানেকশন হ্যান্ডেল করা
+        function setupCallEvents(call) {
+            currentCall = call;
+            
+            call.on('stream', (remoteStream) => {
+                document.getElementById('remote-audio').srcObject = remoteStream;
+                document.getElementById('status-text').innerText = "চলমান কল (Connected)";
+            });
+
+            // যদি অপর প্রান্ত থেকে কল কেটে দেয়
+            call.on('close', () => {
+                resetCallUI();
+            });
+            
+            // নেটওয়ার্ক সমস্যার কারণে কেটে গেলে
+            call.on('error', () => {
+                resetCallUI();
+            });
+        }
+
+        // কল কেটে দেওয়ার ফাংশন
+        function endCall() {
+            stopBeep();
+            if (currentCall) currentCall.close();
+            if (incomingCallInstance) incomingCallInstance.close();
+            resetCallUI();
+        }
+
+        // মিউট/আনমিউট লজিক
+        function toggleMute() {
+            if (localStream) {
+                isMuted = !isMuted;
+                localStream.getAudioTracks()[0].enabled = !isMuted;
+                const muteBtn = document.getElementById('mute-btn');
+                if (isMuted) {
+                    muteBtn.classList.add('active');
+                    muteBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+                } else {
+                    muteBtn.classList.remove('active');
+                    muteBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                }
+            }
+        }
+
+        // UI কন্ট্রোল ফাংশনসমূহ
+        function showCallScreen(status, name, isIncoming) {
+            document.getElementById('call-overlay').classList.add('active');
+            document.getElementById('status-text').innerText = status;
+            document.getElementById('caller-name').innerText = name;
+
+            if (isIncoming) {
+                document.getElementById('incoming-buttons').style.display = 'flex';
+                document.getElementById('ongoing-buttons').style.display = 'none';
+            } else {
+                document.getElementById('incoming-buttons').style.display = 'none';
+                document.getElementById('ongoing-buttons').style.display = 'flex';
+            }
+        }
+
+        function resetCallUI() {
+            document.getElementById('call-overlay').classList.remove('active');
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            isMuted = false;
+            const muteBtn = document.getElementById('mute-btn');
+            muteBtn.classList.remove('active');
+            muteBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+        }
+
+        // ফ্রি রিংটোন সাউন্ড
+        let audioCtx;
+        let oscillator;
+        function startBeep() {
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                oscillator = audioCtx.createOscillator();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
+                oscillator.connect(audioCtx.destination);
+                oscillator.start();
+            } catch(e) {}
+        }
+        function stopBeep() {
+            if(oscillator) {
+                try { oscillator.stop(); } catch(e){}
+            }
+        }
+    </script>
+</body>
+</html>
