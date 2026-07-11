@@ -3,250 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VoIP অডিও কলিং অ্যাপ</title>
+    <title>P2P অডিও কল ও ফাইল ট্রান্সফার</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: #0f172a; display: flex; justify-content: center; align-items: center; height: 100vh; color: #fff; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: #0f172a; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
         
-        .phone-container { background: #1e293b; width: 100%; max-width: 380px; height: 100vh; max-height: 700px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; padding: 24px; position: relative; }
-        @media (max-width: 400px) { .phone-container { height: 100vh; max-height: 100%; border-radius: 0; } }
-
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h1 { font-size: 22px; color: #38bdf8; margin-bottom: 5px; }
+        .app-container { background: #1e293b; width: 100%; max-width: 450px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .header h1 { font-size: 20px; color: #38bdf8; text-align: center; }
         
-        .my-id-box { background: #334155; padding: 12px; border-radius: 12px; font-size: 14px; text-align: center; border: 1px dashed #38bdf8; word-break: break-all; }
-        .my-id-box span { display: block; font-weight: bold; color: #38bdf8; margin-top: 4px; font-size: 16px; letter-spacing: 1px; }
+        .id-section { background: #334155; padding: 12px; border-radius: 12px; text-align: center; border: 1px dashed #38bdf8; font-size: 14px; }
+        .id-section span { display: block; font-weight: bold; color: #38bdf8; font-size: 16px; margin-top: 5px; }
 
-        .dial-section { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 15px; }
-        .input-group { display: flex; flex-direction: column; gap: 8px; }
-        .input-group input { background: #334155; border: 2px solid #475569; padding: 14px; border-radius: 12px; color: #fff; font-size: 16px; text-align: center; outline: none; transition: 0.3s; }
-        .input-group input:focus { border-color: #38bdf8; }
+        .connect-box { display: flex; flex-direction: column; gap: 10px; }
+        .connect-box input { background: #334155; border: 1px solid #475569; padding: 12px; border-radius: 8px; color: #fff; text-align: center; outline: none; }
+        .connect-box input:focus { border-color: #38bdf8; }
+        
+        .btn-group { display: flex; gap: 10px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-connect { background: #0284c7; }
+        .btn-call { background: #22c55e; }
+        
+        .chat-section { background: #0f172a; border-radius: 12px; height: 250px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #334155; }
+        .chat-messages { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
+        .msg { padding: 8px 12px; border-radius: 8px; max-width: 80%; word-break: break-all; }
+        .msg.sent { background: #0369a1; align-self: flex-end; }
+        .msg.received { background: #334155; align-self: flex-start; }
+        
+        .input-bar { display: flex; padding: 5px; background: #1e293b; gap: 5px; }
+        .input-bar input { flex: 1; background: #334155; border: none; padding: 10px; color: #fff; border-radius: 6px; outline: none; }
+        
+        .file-label { background: #475569; width: 40px; display: flex; align-items: center; justify-content: center; border-radius: 6px; cursor: pointer; }
+        .file-label input { display: none; }
 
-        /* কলিং স্ক্রিন ওভারলে */
-        .call-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 60px 24px; z-index: 10; transform: translateY(100%); transition: transform 0.4s ease-in-out; }
+        /* কল স্ক্রিন ওভারলে */
+        .call-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; transform: translateY(100%); transition: transform 0.3s ease; z-index: 100; }
         .call-overlay.active { transform: translateY(0); }
-
-        .avatar { width: 110px; height: 110px; background: #38bdf8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 45px; color: #0f172a; box-shadow: 0 0 30px rgba(56, 189, 248, 0.4); animation: pulse 2s infinite alternate; }
-        @keyframes pulse { 0% { box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); } 100% { box-shadow: 0 0 35px rgba(56, 189, 248, 0.7); } }
-
-        .call-status { text-align: center; }
-        .call-status h2 { font-size: 24px; margin-bottom: 8px; }
-        .call-status p { font-size: 14px; color: #94a3b8; letter-spacing: 1px; }
-
-        .action-buttons { display: flex; gap: 25px; justify-content: center; width: 100%; }
-        .btn { width: 65px; height: 65px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.2s; color: white; }
-        .btn:active { transform: scale(0.9); }
-        
-        .btn-call { background: #22c55e; width: 100%; border-radius: 12px; height: 50px; font-size: 16px; font-weight: bold; gap: 10px; }
-        .btn-hangup { background: #ef4444; }
-        .btn-accept { background: #22c55e; animation: bounce 1s infinite; }
-        .btn-mute { background: #334155; font-size: 20px; }
-        .btn-mute.active { background: #f59e0b; }
-
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-        
-        .incoming-actions { display: none; gap: 40px; }
-        .ongoing-actions { display: flex; }
+        .avatar { width: 100px; height: 100px; background: #38bdf8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; color: #0f172a; }
+        .btn-hangup { background: #ef4444; width: 60px; height: 60px; border-radius: 50%; font-size: 24px; }
     </style>
 </head>
 <body>
 
-    <div class="phone-container">
+    <div class="app-container">
         <div class="header">
-            <h1>P2P অডিও ফোন</h1>
-            <p style="color: #94a3b8; font-size: 12px;">সম্পূর্ণ ফ্রি ও আনলিমিটেড</p>
+            <h1>P2P কল ও ফাইল ট্রান্সফার</h1>
         </div>
 
-        <div class="my-id-box">
-            আপনার কলিং আইডি
-            <span id="my-id-display"><i class="fas fa-spinner fa-spin"></i> তৈরি হচ্ছে...</span>
+        <div class="id-section">
+            আপনার আইডি: <span id="my-id"><i class="fas fa-spinner fa-spin"></i> লোড হচ্ছে...</span>
         </div>
 
-        <div class="dial-section">
-            <div class="input-group">
-                <label style="font-size: 13px; color: #94a3b8;">বন্ধুর আইডিতে কল করুন:</label>
-                <input type="text" id="remote-id-input" placeholder="বন্ধুর আইডি এখানে লিখুন" autocomplete="off">
-            </div>
-            <button class="btn btn-call" onclick="startCall()"><i class="fas fa-phone"></i> কল করুন</button>
-        </div>
-
-        <div class="call-overlay" id="call-overlay">
-            <div class="avatar">
-                <i class="fas fa-user"></i>
-            </div>
-            
-            <div class="call-status">
-                <h2 id="caller-name">অজানা ইউজার</h2>
-                <p id="status-text">কল করা হচ্ছে...</p>
-            </div>
-
-            <div class="action-buttons incoming-actions" id="incoming-buttons">
-                <button class="btn btn-hangup" onclick="endCall()"><i class="fas fa-phone-slash"></i></button>
-                <button class="btn btn-accept" onclick="acceptCall()"><i class="fas fa-phone"></i></button>
-            </div>
-
-            <div class="action-buttons ongoing-actions" id="ongoing-buttons">
-                <button class="btn btn-mute" id="mute-btn" onclick="toggleMute()"><i class="fas fa-microphone"></i></button>
-                <button class="btn btn-hangup" onclick="endCall()"><i class="fas fa-phone-slash"></i></button>
+        <div class="connect-box">
+            <input type="text" id="remote-id" placeholder="বন্ধুর আইডি এখানে দিন">
+            <div class="btn-group">
+                <button class="btn btn-connect" onclick="connectToPeer()"><i class="fas fa-link"></i> চ্যাট কানেক্ট</button>
+                <button class="btn btn-call" onclick="startAudioCall()"><i class="fas fa-phone"></i> অডিও কল</button>
             </div>
         </div>
+
+        <div class="chat-section">
+            <div class="chat-messages" id="chat-messages">
+                <div class="msg received" style="align-self: center; background: transparent; color: #64748b;">কানেক্ট হওয়ার পর মেসেজ বা ফাইল পাঠান</div>
+            </div>
+            <div class="input-bar">
+                <label class="file-label">
+                    <i class="fas fa-paperclip"></i>
+                    <input type="file" id="file-input" onchange="sendFile()">
+                </label>
+                <input type="text" id="msg-input" placeholder="মেসেজ লিখুন..." onkeypress="if(event.key==='Enter') sendTextMessage()">
+                <button class="btn" style="background:#38bdf8; flex:none; width:40px;" onclick="sendTextMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="call-overlay" id="call-overlay">
+        <div class="avatar"><i class="fas fa-user"></i></div>
+        <h2 id="call-status">কল করা হচ্ছে...</h2>
+        <button class="btn btn-hangup" onclick="endCall()"><i class="fas fa-phone-slash"></i></button>
     </div>
 
     <audio id="remote-audio" autoplay></audio>
 
     <script>
-        // গুগলের ফ্রি STUN সার্ভার কনফিগারেশন
-        const peer = new Peer({
-            config: { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] }
-        });
-
+        const peer = new Peer({ config: { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] } });
+        let conn = null; // ডাটা কানেকশনের জন্য (Text/File)
+        let currentCall = null; // অডিও কলের জন্য
         let localStream = null;
-        let currentCall = null;
-        let incomingCallInstance = null;
-        let isMuted = false;
 
-        // নিজের আইডি জেনারেট হওয়া
-        peer.on('open', (id) => {
-            document.getElementById('my-id-display').innerText = id;
+        peer.on('open', id => document.getElementById('my-id').innerText = id);
+
+        // ১. ইনকামিং টেক্সট/ফাইল কানেকশন রিসিভ করা
+        peer.on('connection', connection => {
+            conn = connection;
+            setupDataEvents();
         });
 
-        // ইনকামিং কল আসা
-        peer.on('call', (call) => {
-            incomingCallInstance = call;
-            showCallScreen("ইনকামিং কল...", "কেউ একজন", true);
-            startBeep();
-        });
-
-        // নিজে কাউকে কল দেওয়ার ফাংশন
-        function startCall() {
-            const remoteId = document.getElementById('remote-id-input').value.trim();
-            if (!remoteId) return alert("দয়া করে আপনার বন্ধুর আইডিটি সঠিকভাবে দিন।");
-
-            showCallScreen("মাইক্রোফোন চেক করা হচ্ছে...", remoteId, false);
-
-            // ইউজার বাটনে ক্লিক করার পরই কেবল মাইক্রোফোন চাওয়া হচ্ছে
-            navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-            .then((stream) => {
-                localStream = stream;
-                document.getElementById('status-text').innerText = "কল যাচ্ছে...";
-                const call = peer.call(remoteId, stream);
-                setupCallEvents(call);
-            }).catch(err => {
-                alert("ত্রুটি: ব্রাউজার মাইক্রোফোন অ্যাক্সেস করতে দেয়নি। দয়া করে URL বারের লক আইকনে ক্লিক করে পারমিশন Allow করুন।");
-                endCall();
-            });
-        }
-
-        // ইনকামিং কল রিসিভ করার ফাংশন
-        function acceptCall() {
-            stopBeep();
-            document.getElementById('status-text').innerText = "মাইক্রোফোন চেক করা হচ্ছে...";
-
-            navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-            .then((stream) => {
-                localStream = stream;
-                incomingCallInstance.answer(stream);
-                setupCallEvents(incomingCallInstance);
-                
-                document.getElementById('incoming-buttons').style.display = 'none';
-                document.getElementById('ongoing-buttons').style.display = 'flex';
-            }).catch(err => {
-                alert("ত্রুটি: মাইক্রোফোন পারমিশন ছাড়া কল রিসিভ করা সম্ভব নয়।");
-                endCall();
-            });
-        }
-
-        // কলের কানেকশন হ্যান্ডেল করা
-        function setupCallEvents(call) {
-            currentCall = call;
-            
-            call.on('stream', (remoteStream) => {
-                document.getElementById('remote-audio').srcObject = remoteStream;
-                document.getElementById('status-text').innerText = "চলমান কল (Connected)";
-            });
-
-            // যদি অপর প্রান্ত থেকে কল কেটে দেয়
-            call.on('close', () => {
-                resetCallUI();
-            });
-            
-            // নেটওয়ার্ক সমস্যার কারণে কেটে গেলে
-            call.on('error', () => {
-                resetCallUI();
-            });
-        }
-
-        // কল কেটে দেওয়ার ফাংশন
-        function endCall() {
-            stopBeep();
-            if (currentCall) currentCall.close();
-            if (incomingCallInstance) incomingCallInstance.close();
-            resetCallUI();
-        }
-
-        // মিউট/আনমিউট লজিক
-        function toggleMute() {
-            if (localStream) {
-                isMuted = !isMuted;
-                localStream.getAudioTracks()[0].enabled = !isMuted;
-                const muteBtn = document.getElementById('mute-btn');
-                if (isMuted) {
-                    muteBtn.classList.add('active');
-                    muteBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
-                } else {
-                    muteBtn.classList.remove('active');
-                    muteBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-                }
-            }
-        }
-
-        // UI কন্ট্রোল ফাংশনসমূহ
-        function showCallScreen(status, name, isIncoming) {
-            document.getElementById('call-overlay').classList.add('active');
-            document.getElementById('status-text').innerText = status;
-            document.getElementById('caller-name').innerText = name;
-
-            if (isIncoming) {
-                document.getElementById('incoming-buttons').style.display = 'flex';
-                document.getElementById('ongoing-buttons').style.display = 'none';
+        // ২. ইনকামিং অডিও কল রিসিভ করা
+        peer.on('call', call => {
+            if(confirm("ইনকামিং অডিও কল! রিসিভ করবেন?")) {
+                navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                    localStream = stream;
+                    call.answer(stream);
+                    showCallScreen("কথা বলুন (Connected)");
+                    
+                    call.on('stream', remoteStream => {
+                        document.getElementById('remote-audio').srcObject = remoteStream;
+                    });
+                    currentCall = call;
+                    call.on('close', resetCallUI);
+                }).catch(() => alert("মাইক্রোফোন পারমিশন পাওয়া যায়নি।"));
             } else {
-                document.getElementById('incoming-buttons').style.display = 'none';
-                document.getElementById('ongoing-buttons').style.display = 'flex';
+                call.close();
             }
+        });
+
+        // ৩. টেক্সট চ্যাটের জন্য কানেক্ট করা
+        function connectToPeer() {
+            const remoteId = document.getElementById('remote-id').value.trim();
+            if(!remoteId) return alert("আইডি দিন");
+            
+            conn = peer.connect(remoteId);
+            setupDataEvents();
+        }
+
+        // ডাটা আদান-প্রদানের ইভেন্ট হ্যান্ডলার
+        function setupDataEvents() {
+            conn.on('open', () => {
+                appendMessage("ਸਿਸਟਮ", "কানেকশন সফল! এখন চ্যাট ও ফাইল পাঠাতে পারবেন।", 'received');
+            });
+
+            conn.on('data', data => {
+                if (data.type === 'text') {
+                    appendMessage("বন্ধু", data.content, 'received');
+                } else if (data.type === 'file') {
+                    // ফাইল রিসিভ করা
+                    const blob = new Blob([data.fileData], { type: data.fileType });
+                    const url = URL.createObjectURL(blob);
+                    const fileLink = `<a href="${url}" download="${data.fileName}" style="color:#38bdf8;"><i class="fas fa-download"></i> ${data.fileName} (${(data.fileSize/1024).toFixed(1)} KB)</a>`;
+                    appendMessage("বন্ধু (ফাইল)", fileLink, 'received');
+                }
+            });
+        }
+
+        // ৪. টেক্সট মেসেজ পাঠানো
+        function sendTextMessage() {
+            const input = document.getElementById('msg-input');
+            const msg = input.value.trim();
+            if(!msg || !conn) return alert("প্রথমে কানেক্ট করুন বা মেসেজ লিখুন");
+
+            conn.send({ type: 'text', content: msg });
+            appendMessage("আপনি", msg, 'sent');
+            input.value = '';
+        }
+
+        // ৫. ফাইল বা টেক্সট ফাইল ট্রান্সফার করা
+        function sendFile() {
+            const fileInput = document.getElementById('file-input');
+            const file = fileInput.files[0];
+            if(!file || !conn) return alert("প্রথমে কানেক্ট করুন এবং ফাইল সিলেক্ট করুন");
+
+            appendMessage("সিস্টেম", `ফাইল পাঠানো হচ্ছে: ${file.name}...`, 'sent');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                conn.send({
+                    type: 'file',
+                    fileName: file.name,
+                    fileType: file.type,
+                    fileSize: file.size,
+                    fileData: e.target.result
+                });
+                appendMessage("আপনি (ফাইল)", `<i class="fas fa-file"></i> ${file.name} পাঠানো হয়েছে`, 'sent');
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // ৬. অডিও কল শুরু করা
+        function startAudioCall() {
+            const remoteId = document.getElementById('remote-id').value.trim();
+            if(!remoteId) return alert("আইডি দিন");
+
+            showCallScreen("কল যাচ্ছে...");
+
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                localStream = stream;
+                const call = peer.call(remoteId, stream);
+                currentCall = call;
+                
+                call.on('stream', remoteStream => {
+                    document.getElementById('remote-audio').srcObject = remoteStream;
+                    document.getElementById('call-status').innerText = "কথা বলুন (Connected)";
+                });
+                call.on('close', resetCallUI);
+            }).catch(() => {
+                alert("মাইক্রোফোন পারমিশন পাওয়া যায়নি।");
+                endCall();
+            });
+        }
+
+        function endCall() {
+            if(currentCall) currentCall.close();
+            resetCallUI();
         }
 
         function resetCallUI() {
             document.getElementById('call-overlay').classList.remove('active');
-            if (localStream) {
+            if(localStream) {
                 localStream.getTracks().forEach(track => track.stop());
                 localStream = null;
             }
-            isMuted = false;
-            const muteBtn = document.getElementById('mute-btn');
-            muteBtn.classList.remove('active');
-            muteBtn.innerHTML = '<i class="fas fa-microphone"></i>';
         }
 
-        // ফ্রি রিংটোন সাউন্ড
-        let audioCtx;
-        let oscillator;
-        function startBeep() {
-            try {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                oscillator = audioCtx.createOscillator();
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
-                oscillator.connect(audioCtx.destination);
-                oscillator.start();
-            } catch(e) {}
+        function showCallScreen(status) {
+            document.getElementById('call-overlay').classList.add('active');
+            document.getElementById('call-status').innerText = status;
         }
-        function stopBeep() {
-            if(oscillator) {
-                try { oscillator.stop(); } catch(e){}
-            }
+
+        function appendMessage(sender, message, type) {
+            const box = document.getElementById('chat-messages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `msg ${type}`;
+            msgDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
+            box.appendChild(msgDiv);
+            box.scrollTop = box.scrollHeight;
         }
     </script>
 </body>
