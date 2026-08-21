@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Social App</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Main App Header -->
+    <header id="appHeader" class="app-header hidden">
+        <div class="header-user-info" id="headerProfileBtn">
+            <div class="avatar-container">
+                <svg id="headerDefaultAvatar" class="svg-avatar" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-3.8-1.04-4.83-2.61.03-1.6 3.22-2.47 4.83-2.47s4.8 1.87 4.83 2.47C15.8 18.96 14.03 20 12 20z"/>
+                </svg>
+                <img id="headerUserImg" class="user-avatar hidden" alt="Profile">
+            </div>
+            <div class="user-text-details">
+                <span id="headerUsername" class="username-text">User Name</span>
+                <span id="headerMobile" class="mobile-text">01700000000</span>
+            </div>
+        </div>
+        <button id="headerExploreBtn" class="icon-btn" title="Explore">
+            <svg viewBox="0 0 24 24" class="svg-icon">
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+        </button>
+    </header>
+
+    <!-- Page 1: Auth Page -->
+    <section id="authPage" class="page-section">
+        <div class="auth-card">
+            <h2 id="authTitle">Register Account</h2>
+            <form id="authForm">
+                <div class="input-group" id="usernameGroup">
+                    <label>Username</label>
+                    <input type="text" id="authUsername" placeholder="Enter full name">
+                </div>
+                <div class="input-group">
+                    <label>Mobile Number</label>
+                    <input type="tel" id="authMobile" placeholder="e.g. 01700000000" required>
+                </div>
+                <div class="input-group">
+                    <label>Date of Birth (Password)</label>
+                    <input type="date" id="authDob" required>
+                </div>
+                <div class="input-group" id="privacyGroup">
+                    <label>Account Privacy</label>
+                    <select id="authPrivacy" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 14px;">
+                        <option value="public">Public (Everyone can see profile & posts)</option>
+                        <option value="private">Private (Only you can see your profile & posts)</option>
+                    </select>
+                </div>
+                <div class="input-group" id="profilePicGroup">
+                    <label>Profile Picture</label>
+                    <input type="file" id="authProfilePic" accept="image/*">
+                </div>
+                <button type="submit" id="authSubmitBtn" class="btn primary-btn" style="width: 100%; border-radius: 8px; padding: 12px;">Register</button>
+            </form>
+            <p style="text-align: center; margin-top: 15px; font-size: 13px; color: var(--text-secondary);">
+                <span id="authToggleMsg">Already registered?</span>
+                <a href="#" id="authToggleBtn" style="color: var(--primary); text-decoration: none; font-weight: 600;">Login</a>
+            </p>
+        </div>
+    </section>
+
+    <!-- Page 2: Home Page -->
+    <section id="homePage" class="page-section hidden">
+        <div class="feed-tabs">
+            <button id="tabFeed" class="tab-btn active">Feed</button>
+            <button id="tabFollowing" class="tab-btn">Following</button>
+        </div>
+
+        <div id="feedView" class="tab-content">
+            <div id="pinterestGrid" class="pinterest-grid"></div>
+        </div>
+
+        <div id="followingView" class="tab-content hidden">
+            <div id="followingList" class="user-list"></div>
+        </div>
+
+        <label for="imageUploadInput" class="floating-upload-btn" title="Upload Image">
+            <svg viewBox="0 0 24 24" class="svg-icon">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+            <input type="file" id="imageUploadInput" accept="image/*" class="hidden">
+        </label>
+    </section>
+
+    <!-- Page 3: Profile Page -->
+    <section id="profilePage" class="page-section hidden">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button id="profileBackBtn" class="icon-btn">
+                    <svg viewBox="0 0 24 24" class="svg-icon">
+                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                    </svg>
+                </button>
+                <div class="avatar-container" id="profilePageAvatar">
+                    <svg class="svg-avatar" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-3.8-1.04-4.83-2.61.03-1.6 3.22-2.47 4.83-2.47s4.8 1.87 4.83 2.47C15.8 18.96 14.03 20 12 20z"/>
+                    </svg>
+                    <img id="profilePageImg" class="user-avatar hidden" alt="Profile">
+                </div>
+                <div class="user-text-details">
+                    <h3 id="profilePageName" class="username-text">User Name</h3>
+                    <p id="profilePageMobile" class="mobile-text">01700000000</p>
+                </div>
+            </div>
+            <div>
+                <button id="followActionBtn" class="btn primary-btn hidden">Follow</button>
+                <button id="editProfileBtn" class="btn secondary-btn hidden">Edit Profile</button>
+            </div>
+        </div>
+        <div id="profileGallery" class="pinterest-grid"></div>
+    </section>
+
+    <!-- Page 4: Explore Page -->
+    <section id="explorePage" class="page-section hidden">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <button id="exploreBackBtn" class="icon-btn">
+                <svg viewBox="0 0 24 24" class="svg-icon">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+            </button>
+            <div class="input-group" style="flex: 1; margin: 0;">
+                <input type="text" id="searchInput" placeholder="Search users...">
+            </div>
+        </div>
+        <div id="exploreList" class="user-list"></div>
+    </section>
+
+    <!-- Custom Bottom-Sheet Modal Container -->
+    <div id="customModalOverlay" class="custom-modal-overlay hidden">
+        <div class="custom-modal-content">
+            <div id="modalTitle" class="modal-title">Notification</div>
+            <div id="modalBody" class="modal-body">Message text...</div>
+            <div id="modalFormContainer" class="hidden"></div>
+            <div id="modalActions" class="modal-actions"></div>
+        </div>
+    </div>
+
+    <!-- Process Status Dialog (Downloading / Uploading) -->
+    <div id="processToastDialog" class="process-toast-dialog hidden">
+        <span id="processToastMsg">Processing...</span>
+    </div>
+
+    <!-- Firebase & Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="db.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
