@@ -1,0 +1,1719 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Math Studio — Whiteboard & Slide Presentation</title>
+
+  <!-- Tailwind CSS for clean, responsive UI -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Inter & Hind Siliguri for crisp English & Bengali rendering -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --font-sans: 'Inter', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: var(--font-sans);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f8fafc;
+      color: #0f172a;
+      overflow-x: hidden;
+    }
+
+    /* Subtle dot-grid background for the math whiteboard solving zone */
+    .whiteboard-grid {
+      background-color: #ffffff;
+      background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* Custom clean scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Prevent touch scrolling on drawing canvas */
+    #drawingCanvas {
+      touch-action: none;
+      cursor: crosshair;
+    }
+
+    /* Smooth transitions */
+    .btn-transition {
+      transition: all 0.16s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-transition:active {
+      transform: scale(0.97);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-indigo-100 selection:text-indigo-900">
+
+  <!-- ===================================================================== -->
+  <!-- TOAST NOTIFICATION / STATUS MESSAGE (Replaces alert/confirm)          -->
+  <!-- ===================================================================== -->
+  <div id="toastContainer" class="fixed top-5 right-5 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ===================================================================== -->
+  <!-- CUSTOM MODAL DIALOG (New Project / Delete Confirmation)               -->
+  <!-- ===================================================================== -->
+  <div id="customModal" class="fixed inset-0 z-[9990] hidden items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 transform transition-all">
+      <h3 id="modalTitle" class="text-xl font-bold text-slate-900 mb-2">New Chapter / Project</h3>
+      <p id="modalDesc" class="text-sm text-slate-500 mb-4">Enter a name for your math chapter or presentation folder.</p>
+      <div id="modalInputWrapper" class="mb-5">
+        <input
+          type="text"
+          id="modalInput"
+          placeholder="e.g., Chapter 1: Trigonometry Part 1"
+          class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 font-medium"
+        />
+      </div>
+      <div class="flex items-center justify-end gap-3">
+        <button id="modalCancelBtn" class="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 btn-transition">
+          Cancel
+        </button>
+        <button id="modalConfirmBtn" class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm btn-transition">
+          Create Project
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- VIEW 1: MULTI-PROJECT DASHBOARD (HOME SCREEN)                         -->
+  <!-- ===================================================================== -->
+  <div id="dashboardView" class="flex-1 flex flex-col max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Top Studio Header -->
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-8 border-b border-slate-200">
+      <div class="flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-200">
+          <!-- Math Studio Icon -->
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Math Studio & Whiteboard</h1>
+          <p class="text-sm text-slate-500">Create math chapters, solve live on whiteboard, and store offline in IndexedDB</p>
+        </div>
+      </div>
+
+      <!-- Global Actions -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Brand Logo Uploader (Global Default) -->
+        <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-300 hover:bg-slate-50 text-slate-700 text-sm font-semibold shadow-xs btn-transition">
+          <img id="dashLogoPreview" src="" alt="Logo" class="w-5 h-5 rounded object-contain hidden" />
+          <svg id="dashLogoIcon" class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span id="dashLogoText">Channel Logo</span>
+          <input type="file" id="globalLogoInput" accept="image/*" class="hidden" />
+        </label>
+
+        <!-- Import Project JSON -->
+        <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-semibold shadow-xs btn-transition">
+          <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          <span>Import JSON</span>
+          <input type="file" id="importProjectInput" accept=".json,application/json" class="hidden" />
+        </label>
+
+        <!-- New Project Button -->
+        <button id="createNewProjectBtn" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm shadow-indigo-200 btn-transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>New Project</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Projects Grid Section -->
+    <main class="flex-1 py-8">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-lg font-bold text-slate-800">Saved Chapters & Folders</h2>
+        <span id="projectCountBadge" class="text-xs font-semibold px-3 py-1 rounded-full bg-slate-200/70 text-slate-700">0 Projects</span>
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyProjectsState" class="hidden flex-col items-center justify-center text-center py-20 px-4 bg-white rounded-3xl border border-dashed border-slate-300">
+        <div class="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold text-slate-900 mb-1">No Chapters Created Yet</h3>
+        <p class="text-sm text-slate-500 max-w-md mb-6">
+          Create your first math chapter folder to add title slides, math problems (text or pasted images), and teach live on the whiteboard.
+        </p>
+        <button id="emptyCreateBtn" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-md shadow-indigo-200 btn-transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Create First Chapter</span>
+        </button>
+      </div>
+
+      <!-- Project Cards Grid -->
+      <div id="projectsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </main>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- VIEW 2: EDITOR VIEW (NOTE & SLIDE CREATION)                           -->
+  <!-- ===================================================================== -->
+  <div id="editorView" class="hidden flex-col h-screen overflow-hidden bg-slate-50">
+    <!-- Editor Top Navbar -->
+    <header class="h-16 bg-white border-b border-slate-200 px-4 lg:px-6 flex items-center justify-between shrink-0 z-20">
+      <div class="flex items-center gap-3 min-w-0">
+        <button id="backToProjectsBtn" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 btn-transition shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          <span>All Projects</span>
+        </button>
+
+        <div class="h-5 w-px bg-slate-200 shrink-0"></div>
+
+        <!-- Editable Project Name -->
+        <input
+          type="text"
+          id="editorProjectTitle"
+          class="text-base sm:text-lg font-bold text-slate-900 bg-transparent hover:bg-slate-100 focus:bg-white px-2.5 py-1 rounded-lg border border-transparent focus:border-indigo-400 focus:outline-none truncate max-w-[180px] sm:max-w-xs md:max-w-md"
+          title="Click to rename project"
+        />
+        <span id="saveIndicator" class="hidden sm:inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full shrink-0">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Saved
+        </span>
+      </div>
+
+      <!-- Right Controls: Logo, Export, Start Class -->
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        <!-- Channel Logo Upload / Remove -->
+        <div class="flex items-center gap-1">
+          <label class="cursor-pointer inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200/70 text-slate-700 text-xs sm:text-sm font-semibold btn-transition" title="Upload Channel Watermark Logo">
+            <img id="editorLogoPreview" src="" alt="Logo" class="w-5 h-5 rounded object-contain hidden" />
+            <svg id="editorLogoIcon" class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span class="hidden md:inline">Logo</span>
+            <input type="file" id="editorLogoInput" accept="image/*" class="hidden" />
+          </label>
+          <button id="removeLogoBtn" class="hidden p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 btn-transition" title="Remove Logo">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Export JSON -->
+        <button id="editorExportBtn" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold btn-transition" title="Download Backup File">
+          <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          <span class="hidden md:inline">Download</span>
+        </button>
+
+        <!-- Start Fullscreen Presentation Button -->
+        <button id="startPresentationBtn" class="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-md shadow-indigo-200 btn-transition">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+          <span>Start Class (Fullscreen)</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Editor Workspace: Left Sidebar + Main Slide Canvas -->
+    <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+      <!-- Left Sidebar: Slides List & Template Adder -->
+      <aside class="w-full md:w-72 lg:w-80 bg-white border-b md:border-b-0 md:border-r border-slate-200 flex flex-col shrink-0 max-h-[38vh] md:max-h-none">
+        <!-- Add Slide Template Buttons -->
+        <div class="p-3.5 border-b border-slate-200 bg-slate-50/70 space-y-2">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">Add New Slide</p>
+          <div class="grid grid-cols-2 md:grid-cols-1 gap-2">
+            <button id="addTitleSlideBtn" class="flex items-center gap-2.5 w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 text-left text-xs sm:text-sm font-semibold text-slate-800 shadow-2xs btn-transition">
+              <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold shrink-0">T</span>
+              <span class="truncate">Title / Thank You</span>
+            </button>
+            <button id="addMathSlideBtn" class="flex items-center gap-2.5 w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 text-left text-xs sm:text-sm font-semibold text-slate-800 shadow-2xs btn-transition">
+              <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold shrink-0">∑</span>
+              <span class="truncate">Math Problem / MCQ</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Slide Thumbnails List -->
+        <div id="slidesListContainer" class="flex-1 overflow-y-auto p-3 space-y-2"></div>
+      </aside>
+
+      <!-- Main Slide Editor Form -->
+      <main class="flex-1 overflow-y-auto p-4 sm:p-8 flex justify-center items-start bg-slate-100/60">
+        <!-- Template 1 Form: Title / Cover / Thank You -->
+        <div id="titleSlideEditor" class="hidden w-full max-w-2xl bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div class="flex items-center gap-2.5">
+              <span class="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 text-xs font-bold">Template 1</span>
+              <h2 class="text-lg font-bold text-slate-900">Title / Chapter / Thank You Slide</h2>
+            </div>
+            <span id="titleSlideNumberBadge" class="text-xs font-semibold text-slate-400">Slide #1</span>
+          </div>
+
+          <div class="space-y-5">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Main Title (Chapter Name or Thank You)</label>
+              <input
+                type="text"
+                id="inputMainTitle"
+                placeholder="উদাহরণ: ত্রিকোণমিতি - পর্ব ১  অথবা  Thank You!"
+                class="w-full px-4 py-3.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg font-bold text-slate-900"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Subtitle / Description (Optional)</label>
+              <textarea
+                id="inputSubTitle"
+                rows="3"
+                placeholder="উদাহরণ: গুরুত্বপূর্ণ MCQ ও সমাধান | ক্লাস ১০"
+                class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-slate-700"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Template 2 Form: Math Problem (Question + Image Paste/Upload + 4 MCQ Options) -->
+        <div id="mathSlideEditor" class="hidden w-full max-w-3xl bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div class="flex items-center gap-2.5">
+              <span class="px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 text-xs font-bold">Template 2</span>
+              <h2 class="text-lg font-bold text-slate-900">Math Question & MCQ Slide</h2>
+            </div>
+            <div class="flex items-center gap-3">
+              <button id="clearSlideInkEditorBtn" class="text-xs font-semibold text-rose-600 hover:bg-rose-50 px-2.5 py-1 rounded-lg transition hidden">
+                Clear Saved Pen Ink
+              </button>
+              <span id="mathSlideNumberBadge" class="text-xs font-semibold text-slate-400">Slide #2</span>
+            </div>
+          </div>
+
+          <!-- Question Text Input -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Math Question Text <span class="text-slate-400 font-normal">(You can also paste a question screenshot below using Ctrl+V)</span>
+            </label>
+            <textarea
+              id="inputMathQuestion"
+              rows="3"
+              placeholder="প্রশ্নটি এখানে লিখুন... (যেমন: যদি sin θ = 3/5 হয়, তবে tan θ এর মান কত?)"
+              class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base font-medium text-slate-900"
+            ></textarea>
+          </div>
+
+          <!-- Math Diagram / Screenshot Image Uploader & Clipboard Paste Box -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="block text-sm font-semibold text-slate-700">Math Image / Geometry Diagram / Screenshot</label>
+              <label class="cursor-pointer inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                <span>Choose Image File</span>
+                <input type="file" id="mathImageInput" accept="image/*" class="hidden" />
+              </label>
+            </div>
+
+            <!-- Drop / Paste Zone -->
+            <div
+              id="imagePasteZone"
+              tabindex="0"
+              class="relative border-2 border-dashed border-slate-300 hover:border-indigo-400 focus:border-indigo-500 focus:outline-none rounded-2xl p-4 text-center bg-slate-50/70 transition"
+            >
+              <div id="imageEmptyPrompt" class="py-4">
+                <svg class="w-8 h-8 mx-auto text-slate-400 mb-2" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <p class="text-sm font-semibold text-slate-600">
+                  Press <kbd class="px-2 py-0.5 bg-white border border-slate-300 rounded text-xs font-bold shadow-2xs">Ctrl + V</kbd> anywhere here to paste screenshot
+                </p>
+                <p class="text-xs text-slate-400 mt-1">Or click "Choose Image File" above</p>
+              </div>
+
+              <!-- Uploaded Image Preview -->
+              <div id="imagePreviewContainer" class="hidden relative">
+                <img id="mathImagePreview" src="" alt="Math Problem" class="max-h-60 mx-auto rounded-xl border border-slate-200 shadow-xs object-contain bg-white" />
+                <button
+                  type="button"
+                  id="removeMathImageBtn"
+                  class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-semibold transition"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Remove Image
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 MCQ Options (Optional: empty options hide automatically in presentation) -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="block text-sm font-semibold text-slate-700">MCQ Options (Optional)</label>
+              <span class="text-xs text-slate-400">Leave blank if not an MCQ question</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div class="flex items-center gap-2.5 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200 focus-within:border-indigo-500 focus-within:bg-white">
+                <span class="w-7 h-7 rounded-lg bg-indigo-600 text-white text-xs font-bold flex items-center justify-center shrink-0">A</span>
+                <input type="text" id="inputOptA" placeholder="Option A" class="w-full bg-transparent focus:outline-none text-sm font-medium text-slate-900" />
+              </div>
+              <div class="flex items-center gap-2.5 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200 focus-within:border-indigo-500 focus-within:bg-white">
+                <span class="w-7 h-7 rounded-lg bg-indigo-600 text-white text-xs font-bold flex items-center justify-center shrink-0">B</span>
+                <input type="text" id="inputOptB" placeholder="Option B" class="w-full bg-transparent focus:outline-none text-sm font-medium text-slate-900" />
+              </div>
+              <div class="flex items-center gap-2.5 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200 focus-within:border-indigo-500 focus-within:bg-white">
+                <span class="w-7 h-7 rounded-lg bg-indigo-600 text-white text-xs font-bold flex items-center justify-center shrink-0">C</span>
+                <input type="text" id="inputOptC" placeholder="Option C" class="w-full bg-transparent focus:outline-none text-sm font-medium text-slate-900" />
+              </div>
+              <div class="flex items-center gap-2.5 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200 focus-within:border-indigo-500 focus-within:bg-white">
+                <span class="w-7 h-7 rounded-lg bg-indigo-600 text-white text-xs font-bold flex items-center justify-center shrink-0">D</span>
+                <input type="text" id="inputOptD" placeholder="Option D" class="w-full bg-transparent focus:outline-none text-sm font-medium text-slate-900" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- VIEW 3: 100% FULLSCREEN PRESENTATION & WHITEBOARD MODE                -->
+  <!-- ===================================================================== -->
+  <div id="presentationView" class="hidden fixed inset-0 z-50 bg-white select-none overflow-hidden">
+    <!-- Floating Brand / Channel Logo (Top-Right Corner) -->
+    <div id="presLogoContainer" class="hidden fixed top-5 right-6 z-30 pointer-events-none flex items-center gap-2 bg-white/85 backdrop-blur-xs px-3 py-1.5 rounded-xl border border-slate-200/70 shadow-xs">
+      <img id="presLogoImg" src="" alt="Channel Logo" class="h-9 sm:h-11 w-auto object-contain" />
+    </div>
+
+    <!-- Slide Content Layer (Underneath Canvas) -->
+    <div id="presSlideContent" class="w-full h-full relative z-10">
+      <!-- Layout A: Title / Thank You Slide -->
+      <div id="presTitleLayout" class="hidden w-full h-full flex flex-col items-center justify-center text-center px-8 sm:px-16 whiteboard-grid">
+        <div class="max-w-4xl space-y-6">
+          <div class="inline-block px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-sm font-bold tracking-wide uppercase">
+            Math Class Presentation
+          </div>
+          <h1 id="presMainTitle" class="text-4xl sm:text-6xl lg:text-7xl font-bold text-slate-900 leading-tight tracking-tight"></h1>
+          <p id="presSubTitle" class="text-xl sm:text-2xl lg:text-3xl text-slate-600 font-medium leading-relaxed"></p>
+        </div>
+      </div>
+
+      <!-- Layout B: Smart Split Math Layout (~34% Left Question Card + ~66% Right Open Whiteboard) -->
+      <div id="presMathLayout" class="hidden w-full h-full flex flex-col md:flex-row">
+        <!-- Left Question Panel -->
+        <div class="w-full md:w-[35%] lg:w-[33%] h-auto max-h-[42vh] md:max-h-none md:h-full bg-slate-50/95 border-b md:border-b-0 md:border-r border-slate-200/90 p-5 sm:p-7 flex flex-col justify-between overflow-y-auto">
+          <div class="space-y-4">
+            <!-- Question Badge -->
+            <div class="flex items-center gap-2">
+              <span id="presQuestionBadge" class="px-3 py-1 rounded-lg bg-indigo-600 text-white text-xs sm:text-sm font-bold shadow-2xs">
+                Q. 1
+              </span>
+            </div>
+
+            <!-- Question Text -->
+            <div id="presQuestionText" class="text-lg sm:text-xl lg:text-[22px] font-bold text-slate-900 leading-snug whitespace-pre-line"></div>
+
+            <!-- Question Image (if present) -->
+            <div id="presQuestionImageWrapper" class="hidden pt-1">
+              <img id="presQuestionImage" src="" alt="Diagram" class="max-h-52 sm:max-h-64 w-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-2xs object-contain" />
+            </div>
+
+            <!-- MCQ Options Grid (Only populated options are shown) -->
+            <div id="presOptionsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2.5 pt-2"></div>
+          </div>
+
+          <div class="hidden md:block pt-6 text-xs text-slate-400 font-medium">
+            Solve on the right whiteboard area →
+          </div>
+        </div>
+
+        <!-- Right Open Whiteboard Solving Zone -->
+        <div class="flex-1 h-full whiteboard-grid relative"></div>
+      </div>
+    </div>
+
+    <!-- Transparent Full-Viewport HTML5 Drawing Canvas Overlay -->
+    <canvas id="drawingCanvas" class="fixed inset-0 w-full h-full z-20"></canvas>
+
+    <!-- Bottom-Center Floating Pill Toolbar (Non-intrusive, High Contrast) -->
+    <div class="fixed bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 sm:gap-2 bg-slate-900/95 text-white px-3 sm:px-4 py-2 rounded-full shadow-2xl border border-slate-700/80 backdrop-blur-md">
+      <!-- Previous Slide -->
+      <button id="presPrevBtn" class="p-2 rounded-full hover:bg-slate-800 disabled:opacity-35 disabled:pointer-events-none transition" title="Previous Slide (Left Arrow)">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      <!-- Slide Counter -->
+      <span id="presSlideCounter" class="text-xs sm:text-sm font-bold px-2 tabular-nums text-slate-200">
+        1 / 1
+      </span>
+
+      <!-- Next Slide -->
+      <button id="presNextBtn" class="p-2 rounded-full hover:bg-slate-800 disabled:opacity-35 disabled:pointer-events-none transition" title="Next Slide (Right Arrow)">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+
+      <div class="h-5 w-px bg-slate-700 mx-0.5"></div>
+
+      <!-- Fixed Pen Ink 1: Deep Blue / Navy (Primary Solving Ink) -->
+      <button id="penBlueBtn" class="w-8 h-8 rounded-full flex items-center justify-center ring-2 ring-white bg-blue-600 transition" title="Solving Pen (Blue)">
+        <span class="w-2.5 h-2.5 rounded-full bg-white"></span>
+      </button>
+
+      <!-- Fixed Pen Ink 2: Crimson Red (Answer Highlight / Step Marking) -->
+      <button id="penRedBtn" class="w-8 h-8 rounded-full flex items-center justify-center opacity-75 hover:opacity-100 bg-rose-600 transition" title="Highlight Pen (Red)">
+        <span class="w-2.5 h-2.5 rounded-full bg-white opacity-0"></span>
+      </button>
+
+      <div class="h-5 w-px bg-slate-700 mx-0.5"></div>
+
+      <!-- Undo Stroke -->
+      <button id="presUndoBtn" class="p-2 rounded-full hover:bg-slate-800 disabled:opacity-35 disabled:pointer-events-none transition" title="Undo (Ctrl+Z)">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+        </svg>
+      </button>
+
+      <!-- Redo Stroke -->
+      <button id="presRedoBtn" class="p-2 rounded-full hover:bg-slate-800 disabled:opacity-35 disabled:pointer-events-none transition" title="Redo (Ctrl+Y)">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" />
+        </svg>
+      </button>
+
+      <!-- Clear Current Slide Ink -->
+      <button id="presClearBtn" class="p-2 rounded-full hover:bg-rose-900/60 text-rose-300 hover:text-rose-200 transition" title="Clear Slide Ink">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+      </button>
+
+      <div class="h-5 w-px bg-slate-700 mx-0.5"></div>
+
+      <!-- Exit Fullscreen / Presentation -->
+      <button id="exitPresentationBtn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 transition" title="Exit Presentation (Esc)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        <span class="hidden sm:inline">Exit</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION LOGIC (IndexedDB + Multi-Project + Whiteboard Engine)     -->
+  <!-- ===================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* -------------------------------------------------------------------
+       * 1. INDEXED-DB STORAGE MANAGER
+       * Stores multiple projects ("projects" store) and global app settings
+       * such as the user's Channel Brand Logo ("settings" store).
+       * ------------------------------------------------------------------- */
+      const DB_NAME = 'MathStudioWhiteboardDB';
+      const DB_VERSION = 1;
+      let dbInstance = null;
+
+      function openDatabase() {
+        return new Promise((resolve, reject) => {
+          if (dbInstance) return resolve(dbInstance);
+          const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+          request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains('projects')) {
+              db.createObjectStore('projects', { keyPath: 'id' });
+            }
+            if (!db.objectStoreNames.contains('settings')) {
+              db.createObjectStore('settings', { keyPath: 'key' });
+            }
+          };
+
+          request.onsuccess = (event) => {
+            dbInstance = event.target.result;
+            resolve(dbInstance);
+          };
+
+          request.onerror = (event) => {
+            console.error('IndexedDB error:', event.target.error);
+            reject(event.target.error);
+          };
+        });
+      }
+
+      async function getAllProjects() {
+        const db = await openDatabase();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction('projects', 'readonly');
+          const store = tx.objectStore('projects');
+          const req = store.getAll();
+          req.onsuccess = () => {
+            const list = req.result || [];
+            list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+            resolve(list);
+          };
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      async function saveProjectToDB(project) {
+        project.updatedAt = Date.now();
+        const db = await openDatabase();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction('projects', 'readwrite');
+          const store = tx.objectStore('projects');
+          const req = store.put(project);
+          req.onsuccess = () => resolve(project);
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      async function deleteProjectFromDB(projectId) {
+        const db = await openDatabase();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction('projects', 'readwrite');
+          const store = tx.objectStore('projects');
+          const req = store.delete(projectId);
+          req.onsuccess = () => resolve();
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      async function getSetting(key) {
+        const db = await openDatabase();
+        return new Promise((resolve) => {
+          const tx = db.transaction('settings', 'readonly');
+          const store = tx.objectStore('settings');
+          const req = store.get(key);
+          req.onsuccess = () => resolve(req.result ? req.result.value : null);
+          req.onerror = () => resolve(null);
+        });
+      }
+
+      async function setSetting(key, value) {
+        const db = await openDatabase();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction('settings', 'readwrite');
+          const store = tx.objectStore('settings');
+          const req = store.put({ key, value });
+          req.onsuccess = () => resolve();
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      /* -------------------------------------------------------------------
+       * 2. APPLICATION STATE
+       * ------------------------------------------------------------------- */
+      let projects = [];
+      let currentProject = null;
+      let activeSlideIndex = 0;
+      let globalBrandLogo = null; // Base64 DataURL stored in IndexedDB
+
+      // Whiteboard Canvas State (Vector strokes per slide for crisp resizing & Undo/Redo)
+      // Each slide stores `strokes: Array<{ color: string, width: number, points: Array<{x, y}> }>`
+      // Normalized coordinates (0..1 relative to viewport) ensure drawings align on any screen size!
+      let redoStack = [];
+      let isDrawing = false;
+      let currentStroke = null;
+      let currentPenColor = '#1d4ed8'; // Default Deep Blue solving ink
+      const FIXED_PEN_WIDTH = 3.2;
+
+      /* -------------------------------------------------------------------
+       * 3. UI UTILITIES (Toast Notifications & Custom Modal)
+       * ------------------------------------------------------------------- */
+      function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        const colors = {
+          info: 'bg-slate-900 text-white border-slate-700',
+          success: 'bg-emerald-600 text-white border-emerald-500',
+          error: 'bg-rose-600 text-white border-rose-500'
+        };
+        toast.className = `px-4 py-3 rounded-xl shadow-lg border text-sm font-semibold transition-all transform translate-y-0 opacity-100 ${colors[type] || colors.info}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(-8px)';
+          setTimeout(() => toast.remove(), 220);
+        }, 2600);
+      }
+
+      function openCustomModal({ title, desc, showInput = false, defaultValue = '', confirmText = 'Confirm', isDanger = false }) {
+        return new Promise((resolve) => {
+          const modal = document.getElementById('customModal');
+          const titleEl = document.getElementById('modalTitle');
+          const descEl = document.getElementById('modalDesc');
+          const inputWrap = document.getElementById('modalInputWrapper');
+          const inputEl = document.getElementById('modalInput');
+          const cancelBtn = document.getElementById('modalCancelBtn');
+          const confirmBtn = document.getElementById('modalConfirmBtn');
+
+          titleEl.textContent = title;
+          descEl.textContent = desc;
+          confirmBtn.textContent = confirmText;
+          confirmBtn.className = isDanger
+            ? 'px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-sm btn-transition'
+            : 'px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm btn-transition';
+
+          if (showInput) {
+            inputWrap.classList.remove('hidden');
+            inputEl.value = defaultValue;
+          } else {
+            inputWrap.classList.add('hidden');
+          }
+
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+          if (showInput) setTimeout(() => inputEl.focus(), 50);
+
+          const cleanup = (result) => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            cancelBtn.onclick = null;
+            confirmBtn.onclick = null;
+            inputEl.onkeydown = null;
+            resolve(result);
+          };
+
+          cancelBtn.onclick = () => cleanup(null);
+          confirmBtn.onclick = () => cleanup(showInput ? inputEl.value.trim() : true);
+          inputEl.onkeydown = (e) => {
+            if (e.key === 'Enter') cleanup(inputEl.value.trim());
+            if (e.key === 'Escape') cleanup(null);
+          };
+        });
+      }
+
+      /* -------------------------------------------------------------------
+       * 4. HELPER FUNCTIONS (IDs, Image Compression, Brand Logo)
+       * ------------------------------------------------------------------- */
+      function generateId(prefix = 'id') {
+        return `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+      }
+
+      function formatDate(timestamp) {
+        if (!timestamp) return 'Just now';
+        return new Date(timestamp).toLocaleDateString('en-IN', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric'
+        });
+      }
+
+      function readImageFileAsDataURL(file, maxWidth = 1400) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+              // Resize only if huge so IndexedDB & JSON export stay ultra-fast
+              let w = img.width;
+              let h = img.height;
+              if (w > maxWidth) {
+                h = Math.round((h * maxWidth) / w);
+                w = maxWidth;
+              }
+              const offCanvas = document.createElement('canvas');
+              offCanvas.width = w;
+              offCanvas.height = h;
+              const ctx = offCanvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, w, h);
+              resolve(offCanvas.toDataURL('image/png', 0.92));
+            };
+            img.onerror = reject;
+            img.src = e.target.result;
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function updateLogoUI() {
+        const effectiveLogo = (currentProject && currentProject.logo) || globalBrandLogo;
+
+        // Dashboard preview
+        const dashImg = document.getElementById('dashLogoPreview');
+        const dashIcon = document.getElementById('dashLogoIcon');
+        const dashText = document.getElementById('dashLogoText');
+        if (globalBrandLogo) {
+          dashImg.src = globalBrandLogo;
+          dashImg.classList.remove('hidden');
+          dashIcon.classList.add('hidden');
+          dashText.textContent = 'Change Logo';
+        } else {
+          dashImg.classList.add('hidden');
+          dashIcon.classList.remove('hidden');
+          dashText.textContent = 'Channel Logo';
+        }
+
+        // Editor preview
+        const edImg = document.getElementById('editorLogoPreview');
+        const edIcon = document.getElementById('editorLogoIcon');
+        const removeBtn = document.getElementById('removeLogoBtn');
+        if (effectiveLogo) {
+          edImg.src = effectiveLogo;
+          edImg.classList.remove('hidden');
+          edIcon.classList.add('hidden');
+          removeBtn.classList.remove('hidden');
+        } else {
+          edImg.classList.add('hidden');
+          edIcon.classList.remove('hidden');
+          removeBtn.classList.add('hidden');
+        }
+
+        // Presentation floating logo
+        const presWrap = document.getElementById('presLogoContainer');
+        const presImg = document.getElementById('presLogoImg');
+        if (effectiveLogo) {
+          presImg.src = effectiveLogo;
+          presWrap.classList.remove('hidden');
+        } else {
+          presWrap.classList.add('hidden');
+        }
+      }
+
+      /* -------------------------------------------------------------------
+       * 5. VIEW SWITCHING & DASHBOARD RENDERING
+       * ------------------------------------------------------------------- */
+      const dashboardView = document.getElementById('dashboardView');
+      const editorView = document.getElementById('editorView');
+      const presentationView = document.getElementById('presentationView');
+
+      function showDashboardView() {
+        currentProject = null;
+        editorView.classList.add('hidden');
+        editorView.classList.remove('flex');
+        presentationView.classList.add('hidden');
+        dashboardView.classList.remove('hidden');
+        dashboardView.classList.add('flex');
+        renderDashboard();
+      }
+
+      function showEditorView(project) {
+        currentProject = project;
+        if (!currentProject.slides || currentProject.slides.length === 0) {
+          currentProject.slides = [createDefaultTitleSlide(currentProject.title)];
+        }
+        activeSlideIndex = 0;
+
+        dashboardView.classList.add('hidden');
+        dashboardView.classList.remove('flex');
+        presentationView.classList.add('hidden');
+        editorView.classList.remove('hidden');
+        editorView.classList.add('flex');
+
+        document.getElementById('editorProjectTitle').value = currentProject.title;
+        updateLogoUI();
+        renderEditorSidebar();
+        renderActiveSlideForm();
+      }
+
+      function createDefaultTitleSlide(chapterName = 'Chapter 1: Mathematics') {
+        return {
+          id: generateId('slide'),
+          type: 'title',
+          title: chapterName,
+          subtitle: 'Important Questions & Live Solutions',
+          strokes: []
+        };
+      }
+
+      function createDefaultMathSlide() {
+        return {
+          id: generateId('slide'),
+          type: 'math',
+          question: '',
+          image: '',
+          options: { A: '', B: '', C: '', D: '' },
+          strokes: []
+        };
+      }
+
+      async function renderDashboard() {
+        projects = await getAllProjects();
+        const grid = document.getElementById('projectsGrid');
+        const emptyState = document.getElementById('emptyProjectsState');
+        const countBadge = document.getElementById('projectCountBadge');
+
+        countBadge.textContent = `${projects.length} ${projects.length === 1 ? 'Project' : 'Projects'}`;
+        grid.innerHTML = '';
+
+        if (projects.length === 0) {
+          emptyState.classList.remove('hidden');
+          emptyState.classList.add('flex');
+          return;
+        }
+
+        emptyState.classList.add('hidden');
+        emptyState.classList.remove('flex');
+
+        projects.forEach((proj) => {
+          const slideCount = (proj.slides || []).length;
+          const solvedCount = (proj.slides || []).filter((s) => s.strokes && s.strokes.length > 0).length;
+
+          const card = document.createElement('div');
+          card.className = 'bg-white rounded-2xl border border-slate-200 hover:border-indigo-300 shadow-xs hover:shadow-md transition p-5 flex flex-col justify-between group';
+
+          card.innerHTML = `
+            <div>
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <div class="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                  </svg>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button data-action="export" class="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition" title="Export JSON Backup">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                  </button>
+                  <button data-action="delete" class="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="Delete Project">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <h3 class="text-lg font-bold text-slate-900 line-clamp-1 mb-1">${escapeHTML(proj.title)}</h3>
+              <p class="text-xs text-slate-500 mb-4">Updated ${formatDate(proj.updatedAt)}</p>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                <span class="px-2.5 py-1 rounded-md bg-slate-100">${slideCount} Slides</span>
+                ${solvedCount > 0 ? `<span class="px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700">${solvedCount} Solved</span>` : ''}
+              </div>
+              <button data-action="open" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-2xs btn-transition">
+                Open Folder
+              </button>
+            </div>
+          `;
+
+          card.querySelector('[data-action="open"]').onclick = () => showEditorView(proj);
+          card.querySelector('[data-action="export"]').onclick = () => exportProjectJSON(proj);
+          card.querySelector('[data-action="delete"]').onclick = async () => {
+            const confirmed = await openCustomModal({
+              title: 'Delete Chapter Folder?',
+              desc: `Are you sure you want to permanently delete "${proj.title}" and all its slides & drawings?`,
+              showInput: false,
+              confirmText: 'Delete Forever',
+              isDanger: true
+            });
+            if (confirmed) {
+              await deleteProjectFromDB(proj.id);
+              showToast('Project deleted from IndexedDB', 'info');
+              renderDashboard();
+            }
+          };
+
+          grid.appendChild(card);
+        });
+      }
+
+      function escapeHTML(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      async function handleCreateNewProject() {
+        const name = await openCustomModal({
+          title: 'Create New Chapter / Folder',
+          desc: 'Enter a chapter title (e.g., Algebra Part 1, Geometry MCQ).',
+          showInput: true,
+          defaultValue: '',
+          confirmText: 'Create & Open'
+        });
+        if (!name) return;
+
+        const newProj = {
+          id: generateId('proj'),
+          title: name,
+          logo: null,
+          updatedAt: Date.now(),
+          slides: [createDefaultTitleSlide(name)]
+        };
+
+        await saveProjectToDB(newProj);
+        showToast('New chapter folder created!', 'success');
+        showEditorView(newProj);
+      }
+
+      function exportProjectJSON(proj) {
+        const exportPayload = {
+          app: 'MathStudioWhiteboard',
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          project: proj
+        };
+        const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const safeName = (proj.title || 'math-chapter').replace(/[^a-z0-9\u0980-\u09FF_-]+/gi, '_');
+        a.href = url;
+        a.download = `${safeName}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Project downloaded as JSON!', 'success');
+      }
+
+      /* -------------------------------------------------------------------
+       * 6. EDITOR VIEW LOGIC (SIDEBAR, FORMS, CLIPBOARD IMAGE PASTE)
+       * ------------------------------------------------------------------- */
+      let autoSaveTimer = null;
+      function triggerAutoSave() {
+        const indicator = document.getElementById('saveIndicator');
+        indicator.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Saving...`;
+        indicator.className = 'hidden sm:inline-flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full shrink-0';
+
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(async () => {
+          if (!currentProject) return;
+          await saveProjectToDB(currentProject);
+          indicator.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Saved`;
+          indicator.className = 'hidden sm:inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full shrink-0';
+        }, 250);
+      }
+
+      function renderEditorSidebar() {
+        const container = document.getElementById('slidesListContainer');
+        container.innerHTML = '';
+
+        currentProject.slides.forEach((slide, idx) => {
+          const isActive = idx === activeSlideIndex;
+          const isTitle = slide.type === 'title';
+          const previewLabel = isTitle
+            ? (slide.title || 'Untitled Cover / Thank You')
+            : (slide.question || (slide.image ? '[Image Math Problem]' : 'Empty Math Question'));
+
+          const hasInk = slide.strokes && slide.strokes.length > 0;
+
+          const item = document.createElement('div');
+          item.className = `group flex items-center justify-between gap-2 p-2.5 rounded-xl border cursor-pointer transition ${
+            isActive
+              ? 'bg-indigo-50/90 border-indigo-500 shadow-2xs'
+              : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+          }`;
+
+          item.innerHTML = `
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <span class="w-6 h-6 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${
+                isActive
+                  ? 'bg-indigo-600 text-white'
+                  : isTitle
+                    ? 'bg-amber-100 text-amber-800'
+                    : 'bg-slate-100 text-slate-600'
+              }">
+                ${idx + 1}
+              </span>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[10px] font-bold uppercase tracking-wider ${isTitle ? 'text-amber-600' : 'text-indigo-600'}">
+                    ${isTitle ? 'Title / End' : 'Math'}
+                  </span>
+                  ${hasInk ? '<span class="w-2 h-2 rounded-full bg-emerald-500" title="Has saved whiteboard ink"></span>' : ''}
+                </div>
+                <p class="text-xs font-semibold text-slate-800 truncate">${escapeHTML(previewLabel)}</p>
+              </div>
+            </div>
+
+            <!-- Reorder & Delete Slide Controls -->
+            <div class="flex items-center gap-0.5 opacity-80 group-hover:opacity-100 shrink-0">
+              <button data-move="up" class="p-1 rounded hover:bg-slate-200/70 text-slate-500 disabled:opacity-30" ${idx === 0 ? 'disabled' : ''} title="Move Up">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
+              </button>
+              <button data-move="down" class="p-1 rounded hover:bg-slate-200/70 text-slate-500 disabled:opacity-30" ${idx === currentProject.slides.length - 1 ? 'disabled' : ''} title="Move Down">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+              <button data-delete="true" class="p-1 rounded hover:bg-rose-100 text-slate-400 hover:text-rose-600" title="Delete Slide">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+          `;
+
+          item.onclick = (e) => {
+            if (e.target.closest('button')) return;
+            activeSlideIndex = idx;
+            renderEditorSidebar();
+            renderActiveSlideForm();
+          };
+
+          item.querySelector('[data-move="up"]').onclick = (e) => {
+            e.stopPropagation();
+            if (idx === 0) return;
+            const temp = currentProject.slides[idx - 1];
+            currentProject.slides[idx - 1] = currentProject.slides[idx];
+            currentProject.slides[idx] = temp;
+            activeSlideIndex = idx - 1;
+            triggerAutoSave();
+            renderEditorSidebar();
+            renderActiveSlideForm();
+          };
+
+          item.querySelector('[data-move="down"]').onclick = (e) => {
+            e.stopPropagation();
+            if (idx >= currentProject.slides.length - 1) return;
+            const temp = currentProject.slides[idx + 1];
+            currentProject.slides[idx + 1] = currentProject.slides[idx];
+            currentProject.slides[idx] = temp;
+            activeSlideIndex = idx + 1;
+            triggerAutoSave();
+            renderEditorSidebar();
+            renderActiveSlideForm();
+          };
+
+          item.querySelector('[data-delete="true"]').onclick = (e) => {
+            e.stopPropagation();
+            if (currentProject.slides.length <= 1) {
+              showToast('A project must have at least 1 slide.', 'error');
+              return;
+            }
+            currentProject.slides.splice(idx, 1);
+            if (activeSlideIndex >= currentProject.slides.length) {
+              activeSlideIndex = currentProject.slides.length - 1;
+            }
+            triggerAutoSave();
+            renderEditorSidebar();
+            renderActiveSlideForm();
+          };
+
+          container.appendChild(item);
+        });
+      }
+
+      function renderActiveSlideForm() {
+        const slide = currentProject.slides[activeSlideIndex];
+        const titleForm = document.getElementById('titleSlideEditor');
+        const mathForm = document.getElementById('mathSlideEditor');
+
+        if (slide.type === 'title') {
+          mathForm.classList.add('hidden');
+          titleForm.classList.remove('hidden');
+          document.getElementById('titleSlideNumberBadge').textContent = `Slide #${activeSlideIndex + 1}`;
+          document.getElementById('inputMainTitle').value = slide.title || '';
+          document.getElementById('inputSubTitle').value = slide.subtitle || '';
+        } else {
+          titleForm.classList.add('hidden');
+          mathForm.classList.remove('hidden');
+          document.getElementById('mathSlideNumberBadge').textContent = `Slide #${activeSlideIndex + 1}`;
+          document.getElementById('inputMathQuestion').value = slide.question || '';
+          document.getElementById('inputOptA').value = (slide.options && slide.options.A) || '';
+          document.getElementById('inputOptB').value = (slide.options && slide.options.B) || '';
+          document.getElementById('inputOptC').value = (slide.options && slide.options.C) || '';
+          document.getElementById('inputOptD').value = (slide.options && slide.options.D) || '';
+
+          const clearInkBtn = document.getElementById('clearSlideInkEditorBtn');
+          if (slide.strokes && slide.strokes.length > 0) {
+            clearInkBtn.classList.remove('hidden');
+          } else {
+            clearInkBtn.classList.add('hidden');
+          }
+
+          updateMathImagePreviewUI(slide.image);
+        }
+      }
+
+      function updateMathImagePreviewUI(dataUrl) {
+        const emptyPrompt = document.getElementById('imageEmptyPrompt');
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        const previewImg = document.getElementById('mathImagePreview');
+
+        if (dataUrl) {
+          previewImg.src = dataUrl;
+          emptyPrompt.classList.add('hidden');
+          previewContainer.classList.remove('hidden');
+        } else {
+          previewImg.src = '';
+          previewContainer.classList.add('hidden');
+          emptyPrompt.classList.remove('hidden');
+        }
+      }
+
+      /* -------------------------------------------------------------------
+       * 7. FULLSCREEN PRESENTATION & WHITEBOARD CANVAS ENGINE
+       * ------------------------------------------------------------------- */
+      const canvas = document.getElementById('drawingCanvas');
+      const ctx = canvas.getContext('2d');
+
+      function resizeDrawingCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = presentationView.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+
+        canvas.width = Math.round(rect.width * dpr);
+        canvas.height = Math.round(rect.height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        redrawCurrentSlideStrokes();
+      }
+
+      function redrawCurrentSlideStrokes() {
+        const rect = presentationView.getBoundingClientRect();
+        ctx.clearRect(0, 0, rect.width, rect.height);
+
+        if (!currentProject || !currentProject.slides[activeSlideIndex]) return;
+        const strokes = currentProject.slides[activeSlideIndex].strokes || [];
+
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        for (const stroke of strokes) {
+          if (!stroke.points || stroke.points.length === 0) continue;
+          ctx.strokeStyle = stroke.color;
+          ctx.lineWidth = stroke.width;
+          ctx.beginPath();
+
+          const p0 = stroke.points[0];
+          ctx.moveTo(p0.x * rect.width, p0.y * rect.height);
+
+          if (stroke.points.length === 1) {
+            ctx.lineTo(p0.x * rect.width + 0.1, p0.y * rect.height + 0.1);
+          } else {
+            for (let i = 1; i < stroke.points.length; i++) {
+              const pt = stroke.points[i];
+              ctx.lineTo(pt.x * rect.width, pt.y * rect.height);
+            }
+          }
+          ctx.stroke();
+        }
+      }
+
+      function updatePresentationUndoRedoUI() {
+        const slide = currentProject.slides[activeSlideIndex];
+        const hasStrokes = slide && slide.strokes && slide.strokes.length > 0;
+        document.getElementById('presUndoBtn').disabled = !hasStrokes;
+        document.getElementById('presRedoBtn').disabled = redoStack.length === 0;
+      }
+
+      function renderPresentationSlide() {
+        const slide = currentProject.slides[activeSlideIndex];
+        const total = currentProject.slides.length;
+
+        // Update Navigation Controls
+        document.getElementById('presSlideCounter').textContent = `${activeSlideIndex + 1} / ${total}`;
+        document.getElementById('presPrevBtn').disabled = activeSlideIndex === 0;
+        document.getElementById('presNextBtn').disabled = activeSlideIndex === total - 1;
+
+        const titleLayout = document.getElementById('presTitleLayout');
+        const mathLayout = document.getElementById('presMathLayout');
+
+        if (slide.type === 'title') {
+          mathLayout.classList.add('hidden');
+          titleLayout.classList.remove('hidden');
+          document.getElementById('presMainTitle').textContent = slide.title || currentProject.title;
+          const subEl = document.getElementById('presSubTitle');
+          if (slide.subtitle && slide.subtitle.trim()) {
+            subEl.textContent = slide.subtitle;
+            subEl.classList.remove('hidden');
+          } else {
+            subEl.classList.add('hidden');
+          }
+        } else {
+          titleLayout.classList.add('hidden');
+          mathLayout.classList.remove('hidden');
+
+          // Compute Math Question Number (counting only math slides up to current)
+          let mathNum = 0;
+          for (let i = 0; i <= activeSlideIndex; i++) {
+            if (currentProject.slides[i].type === 'math') mathNum++;
+          }
+          document.getElementById('presQuestionBadge').textContent = `Question ${mathNum}`;
+
+          const qTextEl = document.getElementById('presQuestionText');
+          if (slide.question && slide.question.trim()) {
+            qTextEl.textContent = slide.question;
+            qTextEl.classList.remove('hidden');
+          } else {
+            qTextEl.classList.add('hidden');
+          }
+
+          const imgWrap = document.getElementById('presQuestionImageWrapper');
+          const imgEl = document.getElementById('presQuestionImage');
+          if (slide.image) {
+            imgEl.src = slide.image;
+            imgWrap.classList.remove('hidden');
+          } else {
+            imgWrap.classList.add('hidden');
+          }
+
+          // Render only filled MCQ Options
+          const optGrid = document.getElementById('presOptionsGrid');
+          optGrid.innerHTML = '';
+          const opts = slide.options || {};
+          ['A', 'B', 'C', 'D'].forEach((key) => {
+            const val = (opts[key] || '').trim();
+            if (!val) return;
+            const optCard = document.createElement('div');
+            optCard.className = 'flex items-center gap-3 bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 shadow-2xs';
+            optCard.innerHTML = `
+              <span class="w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs sm:text-sm font-bold flex items-center justify-center shrink-0">${key}</span>
+              <span class="text-sm sm:text-base font-semibold text-slate-800 leading-snug">${escapeHTML(val)}</span>
+            `;
+            optGrid.appendChild(optCard);
+          });
+        }
+
+        redoStack = [];
+        updatePresentationUndoRedoUI();
+        redrawCurrentSlideStrokes();
+      }
+
+      async function enterPresentationMode() {
+        editorView.classList.add('hidden');
+        editorView.classList.remove('flex');
+        presentationView.classList.remove('hidden');
+        updateLogoUI();
+
+        // Attempt true browser fullscreen (gracefully degrades if iframe restricts fullscreen)
+        try {
+          if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+            await document.documentElement.requestFullscreen();
+          }
+        } catch (err) {
+          console.warn('Native fullscreen blocked by environment, using full-viewport overlay.', err);
+        }
+
+        resizeDrawingCanvas();
+        renderPresentationSlide();
+      }
+
+      async function exitPresentationMode() {
+        try {
+          if (document.fullscreenElement && document.exitFullscreen) {
+            await document.exitFullscreen();
+          }
+        } catch (err) {
+          // Ignore exit fullscreen error
+        }
+
+        await saveProjectToDB(currentProject);
+        presentationView.classList.add('hidden');
+        editorView.classList.remove('hidden');
+        editorView.classList.add('flex');
+        renderEditorSidebar();
+        renderActiveSlideForm();
+      }
+
+      /* -------------------------------------------------------------------
+       * 8. POINTER DRAWING HANDLERS (Mouse, Touch, Stylus)
+       * ------------------------------------------------------------------- */
+      function getNormalizedCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+          x: (e.clientX - rect.left) / rect.width,
+          y: (e.clientY - rect.top) / rect.height
+        };
+      }
+
+      canvas.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0 && e.pointerType === 'mouse') return;
+        canvas.setPointerCapture(e.pointerId);
+        isDrawing = true;
+
+        const slide = currentProject.slides[activeSlideIndex];
+        if (!slide.strokes) slide.strokes = [];
+
+        const pt = getNormalizedCoords(e);
+        currentStroke = {
+          color: currentPenColor,
+          width: FIXED_PEN_WIDTH,
+          points: [pt]
+        };
+        slide.strokes.push(currentStroke);
+        redoStack = [];
+        redrawCurrentSlideStrokes();
+      });
+
+      canvas.addEventListener('pointermove', (e) => {
+        if (!isDrawing || !currentStroke) return;
+        const rect = canvas.getBoundingClientRect();
+        const pt = getNormalizedCoords(e);
+        const prevPt = currentStroke.points[currentStroke.points.length - 1];
+        currentStroke.points.push(pt);
+
+        // Incremental smooth line segment draw for zero latency
+        ctx.strokeStyle = currentStroke.color;
+        ctx.lineWidth = currentStroke.width;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(prevPt.x * rect.width, prevPt.y * rect.height);
+        ctx.lineTo(pt.x * rect.width, pt.y * rect.height);
+        ctx.stroke();
+      });
+
+      function finishStroke(e) {
+        if (!isDrawing) return;
+        isDrawing = false;
+        currentStroke = null;
+        if (e && e.pointerId !== undefined) {
+          try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+        }
+        updatePresentationUndoRedoUI();
+        saveProjectToDB(currentProject);
+      }
+
+      canvas.addEventListener('pointerup', finishStroke);
+      canvas.addEventListener('pointercancel', finishStroke);
+
+      /* -------------------------------------------------------------------
+       * 9. EVENT LISTENERS BINDING
+       * ------------------------------------------------------------------- */
+      // Dashboard Actions
+      document.getElementById('createNewProjectBtn').onclick = handleCreateNewProject;
+      document.getElementById('emptyCreateBtn').onclick = handleCreateNewProject;
+
+      // Global Logo Upload
+      document.getElementById('globalLogoInput').onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        globalBrandLogo = await readImageFileAsDataURL(file, 400);
+        await setSetting('globalBrandLogo', globalBrandLogo);
+        updateLogoUI();
+        showToast('Channel logo saved!', 'success');
+        e.target.value = '';
+      };
+
+      // Import Project JSON
+      document.getElementById('importProjectInput').onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          try {
+            const parsed = JSON.parse(ev.target.result);
+            const importedProj = parsed.project ? parsed.project : parsed;
+            if (!importedProj || !Array.isArray(importedProj.slides)) {
+              throw new Error('Invalid project format');
+            }
+            importedProj.id = generateId('proj');
+            importedProj.title = importedProj.title || 'Imported Chapter';
+            importedProj.updatedAt = Date.now();
+            await saveProjectToDB(importedProj);
+            showToast('Project imported successfully!', 'success');
+            renderDashboard();
+          } catch (err) {
+            showToast('Invalid JSON project file.', 'error');
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+      };
+
+      // Editor Header Actions
+      document.getElementById('backToProjectsBtn').onclick = async () => {
+        if (currentProject) await saveProjectToDB(currentProject);
+        showDashboardView();
+      };
+
+      document.getElementById('editorProjectTitle').oninput = (e) => {
+        currentProject.title = e.target.value.trim() || 'Untitled Chapter';
+        triggerAutoSave();
+      };
+
+      document.getElementById('editorLogoInput').onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const logoData = await readImageFileAsDataURL(file, 400);
+        currentProject.logo = logoData;
+        globalBrandLogo = logoData;
+        await setSetting('globalBrandLogo', logoData);
+        triggerAutoSave();
+        updateLogoUI();
+        showToast('Channel logo updated!', 'success');
+        e.target.value = '';
+      };
+
+      document.getElementById('removeLogoBtn').onclick = async () => {
+        if (currentProject) currentProject.logo = null;
+        globalBrandLogo = null;
+        await setSetting('globalBrandLogo', null);
+        triggerAutoSave();
+        updateLogoUI();
+        showToast('Logo removed.', 'info');
+      };
+
+      document.getElementById('editorExportBtn').onclick = () => {
+        if (currentProject) exportProjectJSON(currentProject);
+      };
+
+      document.getElementById('startPresentationBtn').onclick = enterPresentationMode;
+
+      // Add Slides
+      document.getElementById('addTitleSlideBtn').onclick = () => {
+        const isLast = activeSlideIndex === currentProject.slides.length - 1;
+        const newSlide = createDefaultTitleSlide(isLast ? 'Thank You!' : 'New Section');
+        if (isLast) newSlide.subtitle = 'Like, Share & Subscribe for more Math Classes';
+        currentProject.slides.splice(activeSlideIndex + 1, 0, newSlide);
+        activeSlideIndex++;
+        triggerAutoSave();
+        renderEditorSidebar();
+        renderActiveSlideForm();
+      };
+
+      document.getElementById('addMathSlideBtn').onclick = () => {
+        const newSlide = createDefaultMathSlide();
+        currentProject.slides.splice(activeSlideIndex + 1, 0, newSlide);
+        activeSlideIndex++;
+        triggerAutoSave();
+        renderEditorSidebar();
+        renderActiveSlideForm();
+      };
+
+      // Title Slide Form Inputs
+      document.getElementById('inputMainTitle').oninput = (e) => {
+        currentProject.slides[activeSlideIndex].title = e.target.value;
+        triggerAutoSave();
+        renderEditorSidebar();
+      };
+
+      document.getElementById('inputSubTitle').oninput = (e) => {
+        currentProject.slides[activeSlideIndex].subtitle = e.target.value;
+        triggerAutoSave();
+      };
+
+      // Math Slide Form Inputs
+      document.getElementById('inputMathQuestion').oninput = (e) => {
+        currentProject.slides[activeSlideIndex].question = e.target.value;
+        triggerAutoSave();
+        renderEditorSidebar();
+      };
+
+      ['A', 'B', 'C', 'D'].forEach((key) => {
+        document.getElementById(`inputOpt${key}`).oninput = (e) => {
+          const slide = currentProject.slides[activeSlideIndex];
+          if (!slide.options) slide.options = {};
+          slide.options[key] = e.target.value;
+          triggerAutoSave();
+        };
+      });
+
+      // Math Image File Input
+      document.getElementById('mathImageInput').onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const dataUrl = await readImageFileAsDataURL(file, 1400);
+        currentProject.slides[activeSlideIndex].image = dataUrl;
+        updateMathImagePreviewUI(dataUrl);
+        triggerAutoSave();
+        renderEditorSidebar();
+        showToast('Math image added!', 'success');
+        e.target.value = '';
+      };
+
+      // Clipboard Paste Support (Ctrl+V anywhere in Editor when Math slide is open)
+      window.addEventListener('paste', async (e) => {
+        if (editorView.classList.contains('hidden')) return;
+        const slide = currentProject && currentProject.slides[activeSlideIndex];
+        if (!slide || slide.type !== 'math') return;
+
+        const items = (e.clipboardData || e.originalEvent.clipboardData)?.items;
+        if (!items) return;
+
+        for (const item of items) {
+          if (item.type.indexOf('image') !== -1) {
+            e.preventDefault();
+            const blob = item.getAsFile();
+            const dataUrl = await readImageFileAsDataURL(blob, 1400);
+            slide.image = dataUrl;
+            updateMathImagePreviewUI(dataUrl);
+            triggerAutoSave();
+            renderEditorSidebar();
+            showToast('Screenshot pasted from clipboard!', 'success');
+            break;
+          }
+        }
+      });
+
+      document.getElementById('removeMathImageBtn').onclick = () => {
+        currentProject.slides[activeSlideIndex].image = '';
+        updateMathImagePreviewUI('');
+        triggerAutoSave();
+        renderEditorSidebar();
+      };
+
+      document.getElementById('clearSlideInkEditorBtn').onclick = () => {
+        currentProject.slides[activeSlideIndex].strokes = [];
+        triggerAutoSave();
+        renderEditorSidebar();
+        renderActiveSlideForm();
+        showToast('Saved pen ink cleared for this slide.', 'info');
+      };
+
+      // Presentation Toolbar Controls
+      document.getElementById('presPrevBtn').onclick = () => {
+        if (activeSlideIndex > 0) {
+          activeSlideIndex--;
+          renderPresentationSlide();
+        }
+      };
+
+      document.getElementById('presNextBtn').onclick = () => {
+        if (activeSlideIndex < currentProject.slides.length - 1) {
+          activeSlideIndex++;
+          renderPresentationSlide();
+        }
+      };
+
+      const penBlueBtn = document.getElementById('penBlueBtn');
+      const penRedBtn = document.getElementById('penRedBtn');
+
+      function selectPenColor(color) {
+        currentPenColor = color;
+        if (color === '#1d4ed8') {
+          penBlueBtn.classList.add('ring-2', 'ring-white', 'opacity-100');
+          penBlueBtn.classList.remove('opacity-75');
+          penBlueBtn.querySelector('span').classList.remove('opacity-0');
+
+          penRedBtn.classList.remove('ring-2', 'ring-white', 'opacity-100');
+          penRedBtn.classList.add('opacity-75');
+          penRedBtn.querySelector('span').classList.add('opacity-0');
+        } else {
+          penRedBtn.classList.add('ring-2', 'ring-white', 'opacity-100');
+          penRedBtn.classList.remove('opacity-75');
+          penRedBtn.querySelector('span').classList.remove('opacity-0');
+
+          penBlueBtn.classList.remove('ring-2', 'ring-white', 'opacity-100');
+          penBlueBtn.classList.add('opacity-75');
+          penBlueBtn.querySelector('span').classList.add('opacity-0');
+        }
+      }
+
+      penBlueBtn.onclick = () => selectPenColor('#1d4ed8');
+      penRedBtn.onclick = () => selectPenColor('#e11d48');
+
+      function undoStroke() {
+        const slide = currentProject.slides[activeSlideIndex];
+        if (!slide.strokes || slide.strokes.length === 0) return;
+        const popped = slide.strokes.pop();
+        redoStack.push(popped);
+        redrawCurrentSlideStrokes();
+        updatePresentationUndoRedoUI();
+        saveProjectToDB(currentProject);
+      }
+
+      function redoStroke() {
+        if (redoStack.length === 0) return;
+        const slide = currentProject.slides[activeSlideIndex];
+        if (!slide.strokes) slide.strokes = [];
+        const restored = redoStack.pop();
+        slide.strokes.push(restored);
+        redrawCurrentSlideStrokes();
+        updatePresentationUndoRedoUI();
+        saveProjectToDB(currentProject);
+      }
+
+      document.getElementById('presUndoBtn').onclick = undoStroke;
+      document.getElementById('presRedoBtn').onclick = redoStroke;
+
+      document.getElementById('presClearBtn').onclick = () => {
+        const slide = currentProject.slides[activeSlideIndex];
+        if (!slide.strokes || slide.strokes.length === 0) return;
+        slide.strokes = [];
+        redoStack = [];
+        redrawCurrentSlideStrokes();
+        updatePresentationUndoRedoUI();
+        saveProjectToDB(currentProject);
+        showToast('Slide ink cleared', 'info');
+      };
+
+      document.getElementById('exitPresentationBtn').onclick = exitPresentationMode;
+
+      // Keyboard Shortcuts during Presentation (Arrow Keys, Ctrl+Z, Ctrl+Y)
+      window.addEventListener('keydown', (e) => {
+        if (presentationView.classList.contains('hidden')) return;
+
+        if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+          e.preventDefault();
+          if (activeSlideIndex < currentProject.slides.length - 1) {
+            activeSlideIndex++;
+            renderPresentationSlide();
+          }
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+          e.preventDefault();
+          if (activeSlideIndex > 0) {
+            activeSlideIndex--;
+            renderPresentationSlide();
+          }
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+          e.preventDefault();
+          if (e.shiftKey) redoStroke();
+          else undoStroke();
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+          e.preventDefault();
+          redoStroke();
+        }
+      });
+
+      // Keep canvas crisp & proportional on window resize / fullscreen transitions
+      window.addEventListener('resize', () => {
+        if (!presentationView.classList.contains('hidden')) {
+          resizeDrawingCanvas();
+        }
+      });
+
+      document.addEventListener('fullscreenchange', () => {
+        if (!presentationView.classList.contains('hidden')) {
+          resizeDrawingCanvas();
+        }
+      });
+
+      /* -------------------------------------------------------------------
+       * 10. INITIALIZATION
+       * ------------------------------------------------------------------- */
+      window.addEventListener('DOMContentLoaded', async () => {
+        await openDatabase();
+        globalBrandLogo = await getSetting('globalBrandLogo');
+        updateLogoUI();
+        await renderDashboard();
+      });
+    })();
+  </script>
+</body>
+</html>
