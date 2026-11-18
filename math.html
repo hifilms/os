@@ -8,6 +8,9 @@
   <!-- Tailwind CSS for clean, responsive UI -->
   <script src="https://cdn.tailwindcss.com"></script>
 
+  <!-- jsPDF for 16:9 Presentation Class Notes PDF Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <!-- Google Fonts: Inter & Hind Siliguri for crisp English & Bengali rendering -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -31,10 +34,10 @@
       overflow-x: hidden;
     }
 
-    /* Subtle dot-grid background for the math whiteboard solving zone */
+    /* Subtle dot-grid background for the single unified math whiteboard area */
     .whiteboard-grid {
       background-color: #ffffff;
-      background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+      background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
       background-size: 24px 24px;
     }
 
@@ -54,7 +57,7 @@
       background: #94a3b8;
     }
 
-    /* Prevent touch scrolling on drawing canvas */
+    /* Drawing canvas optimization */
     #drawingCanvas {
       touch-action: none;
       cursor: crosshair;
@@ -67,12 +70,37 @@
     .btn-transition:active {
       transform: scale(0.97);
     }
+
+    /* Strict 16:9 Aspect Ratio Presentation Frame with Subtle Border */
+    .stage-16-9 {
+      aspect-ratio: 16 / 9;
+      width: min(100vw, calc(100vh * 16 / 9));
+      height: min(100vh, calc(100vw * 9 / 16));
+    }
+
+    /* Dynamic Uniform Responsive Typography */
+    .pres-uniform-text {
+      font-size: var(--pres-font-size, 24px);
+      line-height: 1.4;
+    }
+    .pres-year-text {
+      font-size: calc(var(--pres-font-size, 24px) * 0.62);
+      line-height: 1.2;
+    }
+
+    @keyframes fadeInSlide {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+      animation: fadeInSlide 0.18s ease-out forwards;
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-indigo-100 selection:text-indigo-900">
 
   <!-- ===================================================================== -->
-  <!-- TOAST NOTIFICATION / STATUS MESSAGE (Replaces alert/confirm)          -->
+  <!-- TOAST NOTIFICATION / STATUS MESSAGE                                   -->
   <!-- ===================================================================== -->
   <div id="toastContainer" class="fixed top-5 right-5 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
 
@@ -103,27 +131,61 @@
   </div>
 
   <!-- ===================================================================== -->
+  <!-- INTERACTIVE IMAGE CROP & RESIZE MODAL                                 -->
+  <!-- ===================================================================== -->
+  <div id="cropModal" class="fixed inset-0 z-[9995] hidden items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden">
+      <div class="px-5 py-3.5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <h3 class="text-base font-bold text-slate-800">Crop & Resize Question Screenshot</h3>
+        </div>
+        <span class="text-xs text-slate-500 font-medium">Drag on image to select crop area</span>
+      </div>
+
+      <!-- Cropper Canvas Area -->
+      <div class="flex-1 bg-slate-900 p-4 flex items-center justify-center overflow-hidden relative select-none">
+        <canvas id="cropCanvas" class="max-w-full max-h-[60vh] object-contain shadow-lg cursor-crosshair"></canvas>
+      </div>
+
+      <!-- Cropper Controls -->
+      <div class="px-5 py-3.5 border-t border-slate-200 flex items-center justify-between bg-slate-50">
+        <button type="button" id="cropResetBtn" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-200 transition">
+          Reset (Full Image)
+        </button>
+        <div class="flex items-center gap-2.5">
+          <button type="button" id="cropCancelBtn" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-200 transition">
+            Cancel
+          </button>
+          <button type="button" id="cropApplyBtn" class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition">
+            Apply & Set Image
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
   <!-- VIEW 1: MULTI-PROJECT DASHBOARD (HOME SCREEN)                         -->
   <!-- ===================================================================== -->
   <div id="dashboardView" class="flex-1 flex flex-col max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Top Studio Header -->
     <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-8 border-b border-slate-200">
       <div class="flex items-center gap-3.5">
         <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-200">
-          <!-- Math Studio Icon -->
           <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
           </svg>
         </div>
         <div>
           <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Math Studio & Whiteboard</h1>
-          <p class="text-sm text-slate-500">Create math chapters, solve live on whiteboard, and store offline in IndexedDB</p>
+          <p class="text-sm text-slate-500">Create math chapters, solve live on 16:9 whiteboard, record 1080p lectures, and export notes</p>
         </div>
       </div>
 
-      <!-- Global Actions -->
       <div class="flex flex-wrap items-center gap-3">
-        <!-- Brand Logo Uploader (Global Default) -->
+        <!-- Brand Logo Uploader -->
         <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-300 hover:bg-slate-50 text-slate-700 text-sm font-semibold shadow-xs btn-transition">
           <img id="dashLogoPreview" src="" alt="Logo" class="w-5 h-5 rounded object-contain hidden" />
           <svg id="dashLogoIcon" class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -159,7 +221,6 @@
         <span id="projectCountBadge" class="text-xs font-semibold px-3 py-1 rounded-full bg-slate-200/70 text-slate-700">0 Projects</span>
       </div>
 
-      <!-- Empty State -->
       <div id="emptyProjectsState" class="hidden flex-col items-center justify-center text-center py-20 px-4 bg-white rounded-3xl border border-dashed border-slate-300">
         <div class="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4">
           <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -168,7 +229,7 @@
         </div>
         <h3 class="text-xl font-bold text-slate-900 mb-1">No Chapters Created Yet</h3>
         <p class="text-sm text-slate-500 max-w-md mb-6">
-          Create your first math chapter folder to add title slides, math problems (text or pasted images), and teach live on the whiteboard.
+          Create your first math chapter folder to add title slides, math problems with exam year tags, and solve live.
         </p>
         <button id="emptyCreateBtn" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-md shadow-indigo-200 btn-transition">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
@@ -178,7 +239,6 @@
         </button>
       </div>
 
-      <!-- Project Cards Grid -->
       <div id="projectsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </main>
   </div>
@@ -187,7 +247,6 @@
   <!-- VIEW 2: EDITOR VIEW (NOTE & SLIDE CREATION)                           -->
   <!-- ===================================================================== -->
   <div id="editorView" class="hidden flex-col h-screen overflow-hidden bg-slate-50">
-    <!-- Editor Top Navbar -->
     <header class="h-16 bg-white border-b border-slate-200 px-4 lg:px-6 flex items-center justify-between shrink-0 z-20">
       <div class="flex items-center gap-3 min-w-0">
         <button id="backToProjectsBtn" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 btn-transition shrink-0">
@@ -199,23 +258,51 @@
 
         <div class="h-5 w-px bg-slate-200 shrink-0"></div>
 
-        <!-- Editable Project Name -->
         <input
           type="text"
           id="editorProjectTitle"
-          class="text-base sm:text-lg font-bold text-slate-900 bg-transparent hover:bg-slate-100 focus:bg-white px-2.5 py-1 rounded-lg border border-transparent focus:border-indigo-400 focus:outline-none truncate max-w-[180px] sm:max-w-xs md:max-w-md"
+          class="text-base sm:text-lg font-bold text-slate-900 bg-transparent hover:bg-slate-100 focus:bg-white px-2.5 py-1 rounded-lg border border-transparent focus:border-indigo-400 focus:outline-none truncate max-w-[140px] sm:max-w-xs"
           title="Click to rename project"
         />
-        <span id="saveIndicator" class="hidden sm:inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full shrink-0">
+
+        <!-- Editable Project Font Size Number Input with Preset Click Dropdown -->
+        <div class="relative hidden sm:inline-flex items-center ml-1" id="fontSizeControlWrapper">
+          <span class="text-[11px] font-bold text-slate-500 uppercase mr-1.5">Size:</span>
+          <div class="relative">
+            <input
+              type="number"
+              id="projectFontSizeInput"
+              min="14"
+              max="48"
+              class="w-16 px-2 py-1 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer text-center"
+              title="Type number or click to choose preset"
+            />
+            <!-- Dropdown Presets -->
+            <div id="fontSizeDropdown" class="hidden absolute top-full left-0 mt-1 w-28 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-30">
+              <div class="px-2.5 py-0.5 text-[10px] font-bold text-slate-400 uppercase">Presets</div>
+              <div class="grid grid-cols-2 gap-1 px-1.5 pt-1">
+                <button type="button" class="fsize-preset-item px-2 py-1 rounded-md text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 text-center" data-val="18">18</button>
+                <button type="button" class="fsize-preset-item px-2 py-1 rounded-md text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 text-center" data-val="20">20</button>
+                <button type="button" class="fsize-preset-item px-2 py-1 rounded-md text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 text-center" data-val="22">22</button>
+                <button type="button" class="fsize-preset-item px-2 py-1 rounded-md text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 text-center" data-val="24">24</button>
+                <button type="button" class="fsize-preset-item px-2 py-1 rounded-md text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 text-center" data-val="26">26</button>
+                <button type="button" class="fsize-preset-item px-2 py-1 rounded-md text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 text-center" data-val="28">28</button>
+                <button type="button" class="fsize-preset-item px-2 py-1 rounded-md text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 text-center" data-val="32">32</button>
+                <button type="button" class="fsize-preset-item px-2 py-1 rounded-md text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 text-center" data-val="36">36</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <span id="saveIndicator" class="hidden md:inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full shrink-0">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Saved
         </span>
       </div>
 
-      <!-- Right Controls: Logo, Export, Start Class -->
-      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+      <div class="flex items-center gap-2 sm:gap-2.5 shrink-0">
         <!-- Channel Logo Upload / Remove -->
         <div class="flex items-center gap-1">
-          <label class="cursor-pointer inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200/70 text-slate-700 text-xs sm:text-sm font-semibold btn-transition" title="Upload Channel Watermark Logo">
+          <label class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200/70 text-slate-700 text-xs sm:text-sm font-semibold btn-transition" title="Upload Channel Watermark Logo">
             <img id="editorLogoPreview" src="" alt="Logo" class="w-5 h-5 rounded object-contain hidden" />
             <svg id="editorLogoIcon" class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -230,12 +317,20 @@
           </button>
         </div>
 
+        <!-- Download PDF Notes Button -->
+        <button id="editorPdfBtn" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs sm:text-sm font-semibold border border-rose-200 transition" title="Download Complete Notes as PDF">
+          <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          <span class="hidden md:inline">PDF</span>
+        </button>
+
         <!-- Export JSON -->
         <button id="editorExportBtn" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold btn-transition" title="Download Backup File">
           <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
-          <span class="hidden md:inline">Download</span>
+          <span class="hidden md:inline">JSON</span>
         </button>
 
         <!-- Start Fullscreen Presentation Button -->
@@ -243,22 +338,20 @@
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
             <path d="M8 5v14l11-7z" />
           </svg>
-          <span>Start Class (Fullscreen)</span>
+          <span>Start Class (16:9)</span>
         </button>
       </div>
     </header>
 
     <!-- Editor Workspace: Left Sidebar + Main Slide Canvas -->
     <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
-      <!-- Left Sidebar: Slides List & Template Adder -->
       <aside class="w-full md:w-72 lg:w-80 bg-white border-b md:border-b-0 md:border-r border-slate-200 flex flex-col shrink-0 max-h-[38vh] md:max-h-none">
-        <!-- Add Slide Template Buttons -->
         <div class="p-3.5 border-b border-slate-200 bg-slate-50/70 space-y-2">
           <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">Add New Slide</p>
           <div class="grid grid-cols-2 md:grid-cols-1 gap-2">
             <button id="addTitleSlideBtn" class="flex items-center gap-2.5 w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 text-left text-xs sm:text-sm font-semibold text-slate-800 shadow-2xs btn-transition">
               <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold shrink-0">T</span>
-              <span class="truncate">Title / Thank You</span>
+              <span class="truncate">Title / Chapter Name</span>
             </button>
             <button id="addMathSlideBtn" class="flex items-center gap-2.5 w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 text-left text-xs sm:text-sm font-semibold text-slate-800 shadow-2xs btn-transition">
               <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold shrink-0">∑</span>
@@ -267,51 +360,52 @@
           </div>
         </div>
 
-        <!-- Slide Thumbnails List -->
         <div id="slidesListContainer" class="flex-1 overflow-y-auto p-3 space-y-2"></div>
       </aside>
 
       <!-- Main Slide Editor Form -->
       <main class="flex-1 overflow-y-auto p-4 sm:p-8 flex justify-center items-start bg-slate-100/60">
-        <!-- Template 1 Form: Title / Cover / Thank You -->
+        <!-- Template 1 Form: Title / Chapter Name / Thank You -->
         <div id="titleSlideEditor" class="hidden w-full max-w-2xl bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
           <div class="flex items-center justify-between border-b border-slate-100 pb-4">
             <div class="flex items-center gap-2.5">
-              <span class="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 text-xs font-bold">Template 1</span>
-              <h2 class="text-lg font-bold text-slate-900">Title / Chapter / Thank You Slide</h2>
+              <span class="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 text-xs font-bold">Slide #1 (Title / Chapter)</span>
+              <h2 class="text-lg font-bold text-slate-900">Chapter Title & Description</h2>
             </div>
             <span id="titleSlideNumberBadge" class="text-xs font-semibold text-slate-400">Slide #1</span>
           </div>
 
           <div class="space-y-5">
             <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-2">Main Title (Chapter Name or Thank You)</label>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">
+                Chapter / Section Title <span class="text-indigo-600 font-normal">(This will appear on the top header of all slides)</span>
+              </label>
               <input
                 type="text"
                 id="inputMainTitle"
-                placeholder="উদাহরণ: ত্রিকোণমিতি - পর্ব ১  অথবা  Thank You!"
+                placeholder="উদাহরণ: ত্রিকোণমিতি - পর্ব ১ (অথবা Thank You!)"
                 class="w-full px-4 py-3.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg font-bold text-slate-900"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-2">Subtitle / Description (Optional)</label>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Subtitle / Class Info (Optional)</label>
               <textarea
                 id="inputSubTitle"
                 rows="3"
-                placeholder="উদাহরণ: গুরুত্বপূর্ণ MCQ ও সমাধান | ক্লাস ১০"
+                placeholder="উদাহরণ: গুরুত্বপূর্ণ বিগত বছরের MCQ ও সমাধান | ক্লাস ১০"
                 class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base text-slate-700"
               ></textarea>
             </div>
           </div>
         </div>
 
-        <!-- Template 2 Form: Math Problem (Question + Image Paste/Upload + 4 MCQ Options) -->
+        <!-- Template 2 Form: Math Problem Details -->
         <div id="mathSlideEditor" class="hidden w-full max-w-3xl bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
           <div class="flex items-center justify-between border-b border-slate-100 pb-4">
             <div class="flex items-center gap-2.5">
               <span class="px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-800 text-xs font-bold">Template 2</span>
-              <h2 class="text-lg font-bold text-slate-900">Math Question & MCQ Slide</h2>
+              <h2 class="text-lg font-bold text-slate-900">Math Question & Options</h2>
             </div>
             <div class="flex items-center gap-3">
               <button id="clearSlideInkEditorBtn" class="text-xs font-semibold text-rose-600 hover:bg-rose-50 px-2.5 py-1 rounded-lg transition hidden">
@@ -324,7 +418,7 @@
           <!-- Question Text Input -->
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-2">
-              Math Question Text <span class="text-slate-400 font-normal">(You can also paste a question screenshot below using Ctrl+V)</span>
+              Math Question Text <span class="text-slate-400 font-normal">(ইমেজ আপলোড থাকলে ইমেজটি ১০০% ফুল উইডথ দেখাবে)</span>
             </label>
             <textarea
               id="inputMathQuestion"
@@ -334,15 +428,36 @@
             ></textarea>
           </div>
 
-          <!-- Math Diagram / Screenshot Image Uploader & Clipboard Paste Box -->
+          <!-- Question Year / Exam Name Input -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
+              <span>Exam / Year <span class="text-indigo-600 font-normal">(প্রশ্ন কোন সালের বা পরীক্ষার - ঐচ্ছিক)</span></span>
+              <span class="text-xs text-slate-400">ছোট ফন্টে প্রদর্শিত হবে</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                id="inputMathYear"
+                placeholder="যেমন: মাধ্যমিক ২০২০ / Madhyamik 2022 / WBCS 2021 / SSC CGL"
+                class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-semibold text-slate-900"
+              />
+            </div>
+          </div>
+
+          <!-- Math Diagram / Screenshot Image Uploader & Crop Trigger -->
           <div>
             <div class="flex items-center justify-between mb-2">
-              <label class="block text-sm font-semibold text-slate-700">Math Image / Geometry Diagram / Screenshot</label>
+              <label class="block text-sm font-semibold text-slate-700">Question Screenshot / Diagram Image</label>
               <label class="cursor-pointer inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                 </svg>
-                <span>Choose Image File</span>
+                <span>Upload & Crop Image</span>
                 <input type="file" id="mathImageInput" accept="image/*" class="hidden" />
               </label>
             </div>
@@ -358,33 +473,45 @@
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
                 <p class="text-sm font-semibold text-slate-600">
-                  Press <kbd class="px-2 py-0.5 bg-white border border-slate-300 rounded text-xs font-bold shadow-2xs">Ctrl + V</kbd> anywhere here to paste screenshot
+                  Press <kbd class="px-2 py-0.5 bg-white border border-slate-300 rounded text-xs font-bold shadow-2xs">Ctrl + V</kbd> to paste screenshot and crop
                 </p>
-                <p class="text-xs text-slate-400 mt-1">Or click "Choose Image File" above</p>
+                <p class="text-xs text-slate-400 mt-1">Image uploads will automatically open the Crop tool</p>
               </div>
 
-              <!-- Uploaded Image Preview -->
+              <!-- Uploaded Image Preview & Re-crop button -->
               <div id="imagePreviewContainer" class="hidden relative">
                 <img id="mathImagePreview" src="" alt="Math Problem" class="max-h-60 mx-auto rounded-xl border border-slate-200 shadow-xs object-contain bg-white" />
-                <button
-                  type="button"
-                  id="removeMathImageBtn"
-                  class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-semibold transition"
-                >
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  Remove Image
-                </button>
+                <div class="mt-3 flex items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    id="reCropMathImageBtn"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-semibold transition"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    Re-crop Image
+                  </button>
+                  <button
+                    type="button"
+                    id="removeMathImageBtn"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-semibold transition"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Remove Image
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- 4 MCQ Options (Optional: empty options hide automatically in presentation) -->
+          <!-- 4 MCQ Options (Used when text question mode is active) -->
           <div>
             <div class="flex items-center justify-between mb-2">
-              <label class="block text-sm font-semibold text-slate-700">MCQ Options (Optional)</label>
-              <span class="text-xs text-slate-400">Leave blank if not an MCQ question</span>
+              <label class="block text-sm font-semibold text-slate-700">MCQ Options (A, B, C, D)</label>
+              <span class="text-xs text-slate-400">ইমেজ মোডে এগুলো হাইড থাকবে</span>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div class="flex items-center gap-2.5 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200 focus-within:border-indigo-500 focus-within:bg-white">
@@ -411,134 +538,218 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- VIEW 3: 100% FULLSCREEN PRESENTATION & WHITEBOARD MODE                -->
+  <!-- VIEW 3: REDESIGNED 16:9 FULLSCREEN PRESENTATION & WHITEBOARD          -->
+  <!-- Exactly 2 Parts: Top Header + One Full Whiteboard Underneath          -->
   <!-- ===================================================================== -->
-  <div id="presentationView" class="hidden fixed inset-0 z-50 bg-white select-none overflow-hidden">
-    <!-- Floating Brand / Channel Logo (Top-Right Corner) -->
-    <div id="presLogoContainer" class="hidden fixed top-5 right-6 z-30 pointer-events-none flex items-center gap-2 bg-white/85 backdrop-blur-xs px-3 py-1.5 rounded-xl border border-slate-200/70 shadow-xs">
-      <img id="presLogoImg" src="" alt="Channel Logo" class="h-9 sm:h-11 w-auto object-contain" />
-    </div>
+  <div id="presentationView" class="hidden fixed inset-0 z-50 bg-[#090d16] select-none overflow-hidden flex items-center justify-center">
 
-    <!-- Slide Content Layer (Underneath Canvas) -->
-    <div id="presSlideContent" class="w-full h-full relative z-10">
-      <!-- Layout A: Title / Thank You Slide -->
-      <div id="presTitleLayout" class="hidden w-full h-full flex flex-col items-center justify-center text-center px-8 sm:px-16 whiteboard-grid">
-        <div class="max-w-4xl space-y-6">
-          <div class="inline-block px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-sm font-bold tracking-wide uppercase">
-            Math Class Presentation
-          </div>
-          <h1 id="presMainTitle" class="text-4xl sm:text-6xl lg:text-7xl font-bold text-slate-900 leading-tight tracking-tight"></h1>
-          <p id="presSubTitle" class="text-xl sm:text-2xl lg:text-3xl text-slate-600 font-medium leading-relaxed"></p>
+    <!-- 16:9 Centered Stage with Clean Subtle Border -->
+    <div id="presStage" class="stage-16-9 relative bg-white border border-slate-700/60 shadow-2xl overflow-hidden flex flex-col">
+
+      <!-- ================================================================= -->
+      <!-- PART 1: TOP HEADER WITH SUBTLE SOFT BACKGROUND COLOR              -->
+      <!-- Left: Chapter Title from Slide 1 | Right: Channel Brand Logo       -->
+      <!-- ================================================================= -->
+      <header class="w-full h-11 sm:h-12 bg-[#f1f5f9] border-b border-[#e2e8f0] px-5 sm:px-8 flex items-center justify-between shrink-0 z-30 shadow-2xs">
+        <div class="flex items-center gap-2.5 min-w-0 pr-4">
+          <span class="w-2.5 h-2.5 rounded-full bg-indigo-600 shrink-0"></span>
+          <h2 id="presChapterHeaderTitle" class="text-xs sm:text-sm font-bold text-slate-800 tracking-wide truncate">
+            অধ্যায়: গণিত ক্লাস
+          </h2>
         </div>
-      </div>
 
-      <!-- Layout B: Smart Split Math Layout (~34% Left Question Card + ~66% Right Open Whiteboard) -->
-      <div id="presMathLayout" class="hidden w-full h-full flex flex-col md:flex-row">
-        <!-- Left Question Panel -->
-        <div class="w-full md:w-[35%] lg:w-[33%] h-auto max-h-[42vh] md:max-h-none md:h-full bg-slate-50/95 border-b md:border-b-0 md:border-r border-slate-200/90 p-5 sm:p-7 flex flex-col justify-between overflow-y-auto">
-          <div class="space-y-4">
-            <!-- Question Badge -->
-            <div class="flex items-center gap-2">
-              <span id="presQuestionBadge" class="px-3 py-1 rounded-lg bg-indigo-600 text-white text-xs sm:text-sm font-bold shadow-2xs">
-                Q. 1
-              </span>
+        <div id="presHeaderLogoContainer" class="flex items-center shrink-0">
+          <img id="presHeaderLogoImg" src="" alt="Channel Logo" class="h-6 sm:h-7 w-auto object-contain hidden" />
+        </div>
+      </header>
+
+      <!-- ================================================================= -->
+      <!-- PART 2: SINGLE UNIFIED WHITEBOARD CANVAS UNDERNEATH               -->
+      <!-- No split panels or dividing boxes - Full dot-grid background      -->
+      <!-- ================================================================= -->
+      <div id="presSlideContent" class="flex-1 w-full min-h-0 relative z-10 whiteboard-grid flex flex-col overflow-hidden">
+
+        <!-- Layout A: Title / Cover Slide -->
+        <div id="presTitleLayout" class="hidden w-full h-full flex flex-col items-center justify-center text-center px-8 sm:px-16">
+          <div class="max-w-4xl space-y-6">
+            <div class="inline-block px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-sm font-bold tracking-wide uppercase">
+              Live Math Class
             </div>
-
-            <!-- Question Text -->
-            <div id="presQuestionText" class="text-lg sm:text-xl lg:text-[22px] font-bold text-slate-900 leading-snug whitespace-pre-line"></div>
-
-            <!-- Question Image (if present) -->
-            <div id="presQuestionImageWrapper" class="hidden pt-1">
-              <img id="presQuestionImage" src="" alt="Diagram" class="max-h-52 sm:max-h-64 w-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-2xs object-contain" />
-            </div>
-
-            <!-- MCQ Options Grid (Only populated options are shown) -->
-            <div id="presOptionsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2.5 pt-2"></div>
-          </div>
-
-          <div class="hidden md:block pt-6 text-xs text-slate-400 font-medium">
-            Solve on the right whiteboard area →
+            <h1 id="presMainTitle" class="text-4xl sm:text-6xl lg:text-7xl font-bold text-slate-900 leading-tight tracking-tight"></h1>
+            <p id="presSubTitle" class="text-xl sm:text-2xl lg:text-3xl text-slate-600 font-medium leading-relaxed"></p>
           </div>
         </div>
 
-        <!-- Right Open Whiteboard Solving Zone -->
-        <div class="flex-1 h-full whiteboard-grid relative"></div>
+        <!-- Layout B: Single Unified Math Layout -->
+        <div id="presMathLayout" class="hidden w-full h-full pl-6 sm:pl-10 pr-6 sm:pr-10 pt-4 pb-6 flex flex-col pointer-events-none overflow-hidden">
+          
+          <!-- Line 1: Question Number Badge & Question Text -->
+          <div class="w-full flex items-baseline gap-3 sm:gap-3.5">
+            <span id="presQuestionBadge" class="pres-uniform-text font-bold text-indigo-700 shrink-0 select-none">
+              Q. 1
+            </span>
+            <div id="presQuestionText" class="pres-uniform-text font-bold text-slate-900 break-words flex-1 select-none"></div>
+          </div>
+
+          <!-- Line 2: 100% Width Image Container (When image is uploaded) -->
+          <div id="presQuestionImageWrapper" class="hidden w-full pt-2.5 select-none">
+            <img id="presQuestionImage" src="" alt="Question Diagram" class="w-full max-h-[48vh] sm:max-h-[52vh] object-contain object-left rounded-lg shadow-2xs" />
+          </div>
+
+          <!-- Line 3: Exam / Year Badge (Under Question Line, Hidden in image mode) -->
+          <div id="presQuestionYearWrapper" class="hidden pt-1.5 pl-0.5 select-none">
+            <span class="inline-flex items-center gap-1.5 pres-year-text font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200/70">
+              <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span id="presQuestionYearText"></span>
+            </span>
+          </div>
+
+          <!-- Line 4: 4 MCQ Options (Simple, Clean, Same Font Size, Hidden in image mode) -->
+          <div id="presOptionsWrapper" class="pt-3.5 pl-2 sm:pl-3 max-w-lg space-y-2 select-none">
+            <div id="presOptionsGrid" class="flex flex-col gap-2"></div>
+          </div>
+
+          <!-- The entire remaining area to the right and bottom is 100% open whiteboard solving space! -->
+        </div>
+
       </div>
+
+      <!-- Transparent Vector Drawing Canvas Overlay (Covers the entire 16:9 stage) -->
+      <canvas id="drawingCanvas" class="absolute inset-0 w-full h-full z-20"></canvas>
     </div>
 
-    <!-- Transparent Full-Viewport HTML5 Drawing Canvas Overlay -->
-    <canvas id="drawingCanvas" class="fixed inset-0 w-full h-full z-20"></canvas>
-
-    <!-- Bottom-Center Floating Pill Toolbar (Non-intrusive, High Contrast) -->
-    <div class="fixed bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 sm:gap-2 bg-slate-900/95 text-white px-3 sm:px-4 py-2 rounded-full shadow-2xl border border-slate-700/80 backdrop-blur-md">
-      <!-- Previous Slide -->
-      <button id="presPrevBtn" class="p-2 rounded-full hover:bg-slate-800 disabled:opacity-35 disabled:pointer-events-none transition" title="Previous Slide (Left Arrow)">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+    <!-- ===================================================================== -->
+    <!-- VERTICAL TOOLBAR: Stuck flush to the Right Edge of the Screen        -->
+    <!-- 1080p Screen & Audio Recorder with Pause, Resume, Download, Delete   -->
+    <!-- ===================================================================== -->
+    <div id="presToolbar" class="fixed right-2 sm:right-3 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-1.5 bg-slate-900/95 text-white p-2 rounded-2xl shadow-2xl border border-slate-700/80 backdrop-blur-md">
+      <!-- Previous Slide (Up Arrow) -->
+      <button id="presPrevBtn" class="p-2 rounded-xl hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition" title="Previous Slide (Up / Left Arrow)">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
         </svg>
       </button>
 
-      <!-- Slide Counter -->
-      <span id="presSlideCounter" class="text-xs sm:text-sm font-bold px-2 tabular-nums text-slate-200">
-        1 / 1
-      </span>
+      <!-- Vertical Slide Counter (Current on top, dash, total on bottom) -->
+      <div class="flex flex-col items-center leading-none text-xs font-bold py-1 select-none tabular-nums text-slate-300">
+        <span id="presSlideCurrent" class="text-white text-xs">1</span>
+        <span class="w-3.5 h-px bg-slate-600 my-1"></span>
+        <span id="presSlideTotal" class="text-[10px] text-slate-400">1</span>
+      </div>
 
-      <!-- Next Slide -->
-      <button id="presNextBtn" class="p-2 rounded-full hover:bg-slate-800 disabled:opacity-35 disabled:pointer-events-none transition" title="Next Slide (Right Arrow)">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+      <!-- Next Slide (Down Arrow) -->
+      <button id="presNextBtn" class="p-2 rounded-xl hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition" title="Next Slide (Down / Right Arrow)">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
-      <div class="h-5 w-px bg-slate-700 mx-0.5"></div>
+      <div class="w-5 h-px bg-slate-700 my-0.5"></div>
 
-      <!-- Fixed Pen Ink 1: Deep Blue / Navy (Primary Solving Ink) -->
-      <button id="penBlueBtn" class="w-8 h-8 rounded-full flex items-center justify-center ring-2 ring-white bg-blue-600 transition" title="Solving Pen (Blue)">
-        <span class="w-2.5 h-2.5 rounded-full bg-white"></span>
+      <!-- Fixed Pen Ink 1: Deep Blue (Primary Solving Ink) -->
+      <button id="penBlueBtn" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ring-2 ring-white bg-blue-600 transition" title="Solving Pen (Blue)">
+        <span class="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-white"></span>
       </button>
 
       <!-- Fixed Pen Ink 2: Crimson Red (Answer Highlight / Step Marking) -->
-      <button id="penRedBtn" class="w-8 h-8 rounded-full flex items-center justify-center opacity-75 hover:opacity-100 bg-rose-600 transition" title="Highlight Pen (Red)">
-        <span class="w-2.5 h-2.5 rounded-full bg-white opacity-0"></span>
+      <button id="penRedBtn" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center opacity-75 hover:opacity-100 bg-rose-600 transition" title="Highlight Pen (Red)">
+        <span class="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-white opacity-0"></span>
       </button>
 
-      <div class="h-5 w-px bg-slate-700 mx-0.5"></div>
+      <div class="w-5 h-px bg-slate-700 my-0.5"></div>
 
       <!-- Undo Stroke -->
-      <button id="presUndoBtn" class="p-2 rounded-full hover:bg-slate-800 disabled:opacity-35 disabled:pointer-events-none transition" title="Undo (Ctrl+Z)">
+      <button id="presUndoBtn" class="p-2 rounded-xl hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition" title="Undo (Ctrl+Z)">
         <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
         </svg>
       </button>
 
       <!-- Redo Stroke -->
-      <button id="presRedoBtn" class="p-2 rounded-full hover:bg-slate-800 disabled:opacity-35 disabled:pointer-events-none transition" title="Redo (Ctrl+Y)">
+      <button id="presRedoBtn" class="p-2 rounded-xl hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition" title="Redo (Ctrl+Y)">
         <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" />
         </svg>
       </button>
 
       <!-- Clear Current Slide Ink -->
-      <button id="presClearBtn" class="p-2 rounded-full hover:bg-rose-900/60 text-rose-300 hover:text-rose-200 transition" title="Clear Slide Ink">
+      <button id="presClearBtn" class="p-2 rounded-xl hover:bg-rose-900/60 text-rose-300 hover:text-rose-200 transition" title="Clear Slide Ink">
         <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
         </svg>
       </button>
 
-      <div class="h-5 w-px bg-slate-700 mx-0.5"></div>
+      <div class="w-5 h-px bg-slate-700 my-0.5"></div>
+
+      <!-- ================================================================= -->
+      <!-- 1080p SCREEN & AUDIO RECORDER CONTROLS                            -->
+      <!-- State 1: Start ⏺️                                                 -->
+      <!-- State 2: Recording (Click to Pause ⏸️)                             -->
+      <!-- State 3: Paused (Click to Resume ▶️ | Below: Download 📥 & Del 🗑️)-->
+      <!-- ================================================================= -->
+      <div id="recControlGroup" class="flex flex-col items-center gap-1.5 w-full">
+        <!-- Main Record / Pause / Resume Button -->
+        <button id="presRecordBtn" class="p-2 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition flex flex-col items-center gap-0.5 group relative" title="Start 1080p Whiteboard & Audio Record">
+          <!-- State 1: Idle Icon (Red Record Circle) -->
+          <div id="recIconDefault" class="w-5 h-5 flex items-center justify-center text-rose-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+              <circle cx="12" cy="12" r="4" fill="currentColor"/>
+            </svg>
+          </div>
+
+          <!-- State 2: Active Recording State (Click to Pause) -->
+          <div id="recIconRecording" class="hidden flex-col items-center">
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping mb-0.5"></span>
+            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+            </svg>
+            <span id="recTimerText" class="text-[9px] font-bold text-rose-300 tabular-nums">00:00</span>
+          </div>
+
+          <!-- State 3: Paused State (Click to Resume) -->
+          <div id="recIconPaused" class="hidden flex-col items-center">
+            <span class="w-2 h-2 rounded-full bg-amber-400 mb-0.5"></span>
+            <svg class="w-4 h-4 text-amber-300 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            <span id="recPausedTimerText" class="text-[9px] font-bold text-amber-300 tabular-nums">00:00</span>
+          </div>
+        </button>
+
+        <!-- Paused Action Sub-bar: Download & Delete Buttons (Visible ONLY when Paused) -->
+        <div id="recPausedActions" class="hidden flex flex-col items-center gap-1.5 pt-1 border-t border-slate-700/80 w-full animate-fadeIn">
+          <!-- Download Button -->
+          <button id="recDownloadBtn" class="p-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-900/50 transition flex items-center justify-center" title="ভিডিও ডাউনলোড করুন (1080p Download)">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+          </button>
+
+          <!-- Delete / Discard Button -->
+          <button id="recDiscardBtn" class="p-2 rounded-xl bg-rose-600/90 hover:bg-rose-600 text-white shadow-md shadow-rose-900/50 transition flex items-center justify-center" title="রেকর্ডিং বাতিল / ডিলিট করুন (Discard)">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="w-5 h-px bg-slate-700 my-0.5"></div>
 
       <!-- Exit Fullscreen / Presentation -->
-      <button id="exitPresentationBtn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 transition" title="Exit Presentation (Esc)">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+      <button id="exitPresentationBtn" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition" title="Exit Presentation (Esc)">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
-        <span class="hidden sm:inline">Exit</span>
       </button>
     </div>
   </div>
 
   <!-- ===================================================================== -->
-  <!-- APPLICATION LOGIC (IndexedDB + Multi-Project + Whiteboard Engine)     -->
+  <!-- APPLICATION LOGIC                                                     -->
   <!-- ===================================================================== -->
   <script>
     (function () {
@@ -546,8 +757,6 @@
 
       /* -------------------------------------------------------------------
        * 1. INDEXED-DB STORAGE MANAGER
-       * Stores multiple projects ("projects" store) and global app settings
-       * such as the user's Channel Brand Logo ("settings" store).
        * ------------------------------------------------------------------- */
       const DB_NAME = 'MathStudioWhiteboardDB';
       const DB_VERSION = 1;
@@ -646,19 +855,32 @@
       let projects = [];
       let currentProject = null;
       let activeSlideIndex = 0;
-      let globalBrandLogo = null; // Base64 DataURL stored in IndexedDB
+      let globalBrandLogo = null;
 
-      // Whiteboard Canvas State (Vector strokes per slide for crisp resizing & Undo/Redo)
-      // Each slide stores `strokes: Array<{ color: string, width: number, points: Array<{x, y}> }>`
-      // Normalized coordinates (0..1 relative to viewport) ensure drawings align on any screen size!
       let redoStack = [];
       let isDrawing = false;
       let currentStroke = null;
-      let currentPenColor = '#1d4ed8'; // Default Deep Blue solving ink
+      let currentPenColor = '#1d4ed8';
       const FIXED_PEN_WIDTH = 3.2;
 
+      // 1080p Screen & Audio Recording State
+      let mediaRecorder = null;
+      let recordedChunks = [];
+      let recTimerInterval = null;
+      let recSeconds = 0;
+      let recordingState = 'idle'; // 'idle' | 'recording' | 'paused'
+      let screenCaptureStream = null;
+      let micAudioStream = null;
+      let audioContext = null;
+
+      // 16:9 Whiteboard Crop Engine Objects
+      let cropVideoEl = null;
+      let cropOffscreenCanvas = null;
+      let cropOffscreenCtx = null;
+      let cropAnimFrameId = null;
+
       /* -------------------------------------------------------------------
-       * 3. UI UTILITIES (Toast Notifications & Custom Modal)
+       * 3. UI UTILITIES
        * ------------------------------------------------------------------- */
       function showToast(message, type = 'info') {
         const container = document.getElementById('toastContainer');
@@ -726,7 +948,416 @@
       }
 
       /* -------------------------------------------------------------------
-       * 4. HELPER FUNCTIONS (IDs, Image Compression, Brand Logo)
+       * 4. INTERACTIVE IMAGE CROPPER ENGINE
+       * ------------------------------------------------------------------- */
+      const cropModal = document.getElementById('cropModal');
+      const cropCanvas = document.getElementById('cropCanvas');
+      const cropCtx = cropCanvas.getContext('2d');
+      let cropRawImg = null;
+      let cropRect = { x: 0, y: 0, w: 0, h: 0 };
+      let isCropDragging = false;
+      let cropStart = { x: 0, y: 0 };
+
+      function openCropper(dataUrl) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            cropRawImg = img;
+            cropCanvas.width = img.width;
+            cropCanvas.height = img.height;
+            cropRect = { x: 0, y: 0, w: img.width, h: img.height };
+            drawCropView();
+
+            cropModal.classList.remove('hidden');
+            cropModal.classList.add('flex');
+
+            const cleanup = (result) => {
+              cropModal.classList.add('hidden');
+              cropModal.classList.remove('flex');
+              document.getElementById('cropApplyBtn').onclick = null;
+              document.getElementById('cropCancelBtn').onclick = null;
+              document.getElementById('cropResetBtn').onclick = null;
+              resolve(result);
+            };
+
+            document.getElementById('cropApplyBtn').onclick = () => {
+              const w = Math.max(10, Math.round(cropRect.w));
+              const h = Math.max(10, Math.round(cropRect.h));
+              const off = document.createElement('canvas');
+              off.width = w;
+              off.height = h;
+              const offCtx = off.getContext('2d');
+              offCtx.drawImage(cropRawImg, cropRect.x, cropRect.y, w, h, 0, 0, w, h);
+              cleanup(off.toDataURL('image/png', 0.94));
+            };
+
+            document.getElementById('cropResetBtn').onclick = () => {
+              cropRect = { x: 0, y: 0, w: cropRawImg.width, h: cropRawImg.height };
+              drawCropView();
+            };
+
+            document.getElementById('cropCancelBtn').onclick = () => cleanup(null);
+          };
+          img.src = dataUrl;
+        });
+      }
+
+      function drawCropView() {
+        if (!cropRawImg) return;
+        cropCtx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
+        cropCtx.drawImage(cropRawImg, 0, 0);
+
+        cropCtx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+        cropCtx.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
+
+        cropCtx.clearRect(cropRect.x, cropRect.y, cropRect.w, cropRect.h);
+        cropCtx.drawImage(cropRawImg, cropRect.x, cropRect.y, cropRect.w, cropRect.h, cropRect.x, cropRect.y, cropRect.w, cropRect.h);
+
+        cropCtx.strokeStyle = '#6366f1';
+        cropCtx.lineWidth = Math.max(2, Math.round(cropCanvas.width / 400));
+        cropCtx.strokeRect(cropRect.x, cropRect.y, cropRect.w, cropRect.h);
+      }
+
+      function getCropCanvasCoords(e) {
+        const rect = cropCanvas.getBoundingClientRect();
+        const scaleX = cropCanvas.width / rect.width;
+        const scaleY = cropCanvas.height / rect.height;
+        return {
+          x: Math.max(0, Math.min(cropCanvas.width, (e.clientX - rect.left) * scaleX)),
+          y: Math.max(0, Math.min(cropCanvas.height, (e.clientY - rect.top) * scaleY))
+        };
+      }
+
+      cropCanvas.addEventListener('pointerdown', (e) => {
+        isCropDragging = true;
+        cropStart = getCropCanvasCoords(e);
+        cropRect = { x: cropStart.x, y: cropStart.y, w: 0, h: 0 };
+      });
+
+      window.addEventListener('pointermove', (e) => {
+        if (!isCropDragging) return;
+        const current = getCropCanvasCoords(e);
+        const x = Math.min(cropStart.x, current.x);
+        const y = Math.min(cropStart.y, current.y);
+        const w = Math.abs(current.x - cropStart.x);
+        const h = Math.abs(current.y - cropStart.y);
+        cropRect = { x, y, w, h };
+        drawCropView();
+      });
+
+      window.addEventListener('pointerup', () => {
+        if (!isCropDragging) return;
+        isCropDragging = false;
+        if (cropRect.w < 10 || cropRect.h < 10) {
+          cropRect = { x: 0, y: 0, w: cropRawImg.width, h: cropRawImg.height };
+        }
+        drawCropView();
+      });
+
+      /* -------------------------------------------------------------------
+       * 5. 16:9 WHITEBOARD-ONLY 1080p SCREEN & AUDIO RECORDER
+       * Features:
+       * - Strictly captures the 16:9 board area (no outer bars or toolbar)
+       * - Pause (⏸️) freezes recording without auto-downloading
+       * - Resume (▶️) seamlessly continues the same video recording
+       * - Download (📥) button appears underneath when paused
+       * - Discard/Delete (🗑️) button cancels recording if not wanted
+       * ------------------------------------------------------------------- */
+      function updateRecordUI() {
+        const btn = document.getElementById('presRecordBtn');
+        const iconDef = document.getElementById('recIconDefault');
+        const iconRec = document.getElementById('recIconRecording');
+        const iconPause = document.getElementById('recIconPaused');
+        const actionsGroup = document.getElementById('recPausedActions');
+
+        const formatTime = (secs) => {
+          const m = String(Math.floor(secs / 60)).padStart(2, '0');
+          const s = String(secs % 60).padStart(2, '0');
+          return `${m}:${s}`;
+        };
+
+        if (recordingState === 'recording') {
+          // Actively Recording -> Click to Pause
+          iconDef.classList.add('hidden');
+          iconRec.classList.remove('hidden');
+          iconRec.classList.add('flex');
+          iconPause.classList.add('hidden');
+          actionsGroup.classList.add('hidden');
+          actionsGroup.classList.remove('flex');
+
+          btn.className = 'p-2 rounded-xl ring-2 ring-rose-500 bg-rose-950/60 text-white transition flex flex-col items-center gap-0.5';
+          btn.title = 'রেকর্ডিং চলছে (পজ করতে ক্লিক করুন)';
+        } else if (recordingState === 'paused') {
+          // Paused -> Click to Resume; Show Download & Delete below
+          iconDef.classList.add('hidden');
+          iconRec.classList.add('hidden');
+          iconRec.classList.remove('flex');
+          iconPause.classList.remove('hidden');
+          iconPause.classList.add('flex');
+          document.getElementById('recPausedTimerText').textContent = formatTime(recSeconds);
+
+          actionsGroup.classList.remove('hidden');
+          actionsGroup.classList.add('flex');
+
+          btn.className = 'p-2 rounded-xl ring-2 ring-amber-500 bg-amber-950/60 text-amber-300 transition flex flex-col items-center gap-0.5';
+          btn.title = 'পজ করা আছে (পুনরায় রেকর্ড চালু করতে ক্লিক করুন)';
+        } else {
+          // Idle State
+          iconDef.classList.remove('hidden');
+          iconRec.classList.add('hidden');
+          iconRec.classList.remove('flex');
+          iconPause.classList.add('hidden');
+          iconPause.classList.remove('flex');
+          actionsGroup.classList.add('hidden');
+          actionsGroup.classList.remove('flex');
+
+          btn.className = 'p-2 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition flex flex-col items-center gap-0.5';
+          btn.title = 'Start 1080p Whiteboard & Audio Record';
+        }
+      }
+
+      function startTimer() {
+        clearInterval(recTimerInterval);
+        const timerText = document.getElementById('recTimerText');
+        recTimerInterval = setInterval(() => {
+          recSeconds++;
+          const mins = String(Math.floor(recSeconds / 60)).padStart(2, '0');
+          const secs = String(recSeconds % 60).padStart(2, '0');
+          timerText.textContent = `${mins}:${secs}`;
+        }, 1000);
+      }
+
+      function pauseTimer() {
+        clearInterval(recTimerInterval);
+      }
+
+      async function startScreenAndAudioRecording() {
+        try {
+          showToast('Select "This Tab" or "Window" for 1080p Board Recording...', 'info');
+
+          // 1. Capture Display Stream (1080p ideal)
+          screenCaptureStream = await navigator.mediaDevices.getDisplayMedia({
+            video: {
+              displaySurface: "browser",
+              width: { ideal: 1920, max: 1920 },
+              height: { ideal: 1080, max: 1080 },
+              frameRate: { ideal: 60, max: 60 }
+            },
+            audio: true
+          });
+
+          // 2. Capture Clean Teacher Voice with Noise Suppression
+          try {
+            micAudioStream = await navigator.mediaDevices.getUserMedia({
+              audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true,
+                sampleRate: 48000
+              }
+            });
+          } catch (micErr) {
+            console.warn('Microphone permission not granted or mic unavailable.', micErr);
+            showToast('Microphone not detected. Recording whiteboard video only.', 'info');
+          }
+
+          // 3. Setup Offscreen Video & 1920x1080 Crop Canvas
+          // This guarantees STRICT 16:9 WHITEBOARD ONLY recording (excludes black letterbox and toolbars)
+          cropVideoEl = document.createElement('video');
+          cropVideoEl.autoplay = true;
+          cropVideoEl.muted = true;
+          cropVideoEl.playsInline = true;
+          cropVideoEl.srcObject = screenCaptureStream;
+          await cropVideoEl.play();
+
+          cropOffscreenCanvas = document.createElement('canvas');
+          cropOffscreenCanvas.width = 1920;
+          cropOffscreenCanvas.height = 1080;
+          cropOffscreenCtx = cropOffscreenCanvas.getContext('2d', { alpha: false });
+
+          // Start continuous 60fps frame cropping loop
+          function renderCroppedBoardFrame() {
+            if (cropVideoEl && !cropVideoEl.paused && !cropVideoEl.ended && cropVideoEl.videoWidth > 0) {
+              const stage = document.getElementById('presStage');
+              if (stage) {
+                const stageRect = stage.getBoundingClientRect();
+                const winW = window.innerWidth;
+                const winH = window.innerHeight;
+
+                const scaleX = cropVideoEl.videoWidth / winW;
+                const scaleY = cropVideoEl.videoHeight / winH;
+
+                const sx = Math.max(0, stageRect.left * scaleX);
+                const sy = Math.max(0, stageRect.top * scaleY);
+                const sWidth = Math.min(cropVideoEl.videoWidth - sx, stageRect.width * scaleX);
+                const sHeight = Math.min(cropVideoEl.videoHeight - sy, stageRect.height * scaleY);
+
+                if (sWidth > 10 && sHeight > 10) {
+                  cropOffscreenCtx.drawImage(
+                    cropVideoEl,
+                    sx, sy, sWidth, sHeight,
+                    0, 0, 1920, 1080
+                  );
+                }
+              }
+            }
+            cropAnimFrameId = requestAnimationFrame(renderCroppedBoardFrame);
+          }
+          renderCroppedBoardFrame();
+
+          // 4. Audio Mixing via AudioContext
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const destNode = audioContext.createMediaStreamDestination();
+          let hasAudio = false;
+
+          if (micAudioStream && micAudioStream.getAudioTracks().length > 0) {
+            const micSource = audioContext.createMediaStreamSource(micAudioStream);
+            micSource.connect(destNode);
+            hasAudio = true;
+          }
+
+          if (screenCaptureStream.getAudioTracks().length > 0) {
+            const screenAudioSource = audioContext.createMediaStreamSource(screenCaptureStream);
+            screenAudioSource.connect(destNode);
+            hasAudio = true;
+          }
+
+          // 5. Final Mixed Stream: 1920x1080 Board Canvas Stream + Mixed Audio Track
+          const boardStream = cropOffscreenCanvas.captureStream(60);
+          const finalTracks = [...boardStream.getVideoTracks()];
+          if (hasAudio && destNode.stream.getAudioTracks().length > 0) {
+            finalTracks.push(destNode.stream.getAudioTracks()[0]);
+          }
+
+          const mixedStream = new MediaStream(finalTracks);
+
+          // 6. MediaRecorder with 8 Mbps Bitrate for Crystal Clear 1080p
+          let selectedMime = 'video/webm;codecs=vp9,opus';
+          if (!MediaRecorder.isTypeSupported(selectedMime)) {
+            selectedMime = 'video/webm;codecs=vp8,opus';
+            if (!MediaRecorder.isTypeSupported(selectedMime)) {
+              selectedMime = 'video/webm';
+            }
+          }
+
+          recordedChunks = [];
+          mediaRecorder = new MediaRecorder(mixedStream, {
+            mimeType: selectedMime,
+            videoBitsPerSecond: 8000000 // 8 Mbps
+          });
+
+          mediaRecorder.ondataavailable = (e) => {
+            if (e.data && e.data.size > 0) {
+              recordedChunks.push(e.data);
+            }
+          };
+
+          // Native browser "Stop Sharing" button listener
+          screenCaptureStream.getVideoTracks()[0].onended = () => {
+            if (recordingState === 'recording' || recordingState === 'paused') {
+              pauseRecordingSession();
+              showToast('Screen sharing stopped by browser.', 'info');
+            }
+          };
+
+          mediaRecorder.start(1000);
+          recSeconds = 0;
+          recordingState = 'recording';
+          updateRecordUI();
+          startTimer();
+          showToast('🔴 16:9 হোয়াইটবোর্ড ও অডিও রেকর্ড শুরু হয়েছে!', 'success');
+
+        } catch (err) {
+          console.error('Error starting recording:', err);
+          showToast('Recording cancelled or not supported by browser.', 'error');
+          recordingState = 'idle';
+          updateRecordUI();
+        }
+      }
+
+      function pauseRecordingSession() {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+          mediaRecorder.pause();
+          pauseTimer();
+          recordingState = 'paused';
+          updateRecordUI();
+          showToast('⏸️ রেকর্ডিং পজ হয়েছে। পুনরায় চালাতে ▶️ চাপুন, বা নিচে ডাউনলোড/ডিলিট করুন।', 'info');
+        }
+      }
+
+      function resumeRecordingSession() {
+        if (mediaRecorder && mediaRecorder.state === 'paused') {
+          mediaRecorder.resume();
+          startTimer();
+          recordingState = 'recording';
+          updateRecordUI();
+          showToast('▶️ রেকর্ডিং পুনরায় চালু হয়েছে!', 'info');
+        }
+      }
+
+      function stopAndFinishSession(shouldDownload = true) {
+        pauseTimer();
+        if (cropAnimFrameId) {
+          cancelAnimationFrame(cropAnimFrameId);
+          cropAnimFrameId = null;
+        }
+
+        // Clean up video element
+        if (cropVideoEl) {
+          try {
+            cropVideoEl.pause();
+            cropVideoEl.srcObject = null;
+          } catch (_) {}
+          cropVideoEl = null;
+        }
+
+        // Stop hardware media tracks
+        if (screenCaptureStream) {
+          screenCaptureStream.getTracks().forEach((t) => t.stop());
+          screenCaptureStream = null;
+        }
+        if (micAudioStream) {
+          micAudioStream.getTracks().forEach((t) => t.stop());
+          micAudioStream = null;
+        }
+        if (audioContext && audioContext.state !== 'closed') {
+          audioContext.close();
+          audioContext = null;
+        }
+
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+          mediaRecorder.onstop = () => {
+            if (shouldDownload && recordedChunks.length > 0) {
+              const blob = new Blob(recordedChunks, { type: 'video/webm' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              const safeTitle = (getEffectiveChapterTitle() || 'Math_Class').replace(/[^a-z0-9\u0980-\u09FF_-]+/gi, '_');
+              a.href = url;
+              a.download = `${safeTitle}_1080p_Recording.webm`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+              showToast('✅ ১০৮০p ক্লাস রেকর্ডিং ডাউনলোড সম্পন্ন!', 'success');
+            } else if (!shouldDownload) {
+              showToast('🗑️ রেকর্ডিং বাতিল ও মুছে ফেলা হয়েছে।', 'info');
+            }
+            recordedChunks = [];
+            mediaRecorder = null;
+            recordingState = 'idle';
+            updateRecordUI();
+          };
+          mediaRecorder.stop();
+        } else {
+          recordedChunks = [];
+          mediaRecorder = null;
+          recordingState = 'idle';
+          updateRecordUI();
+        }
+      }
+
+      /* -------------------------------------------------------------------
+       * 6. HELPER FUNCTIONS
        * ------------------------------------------------------------------- */
       function generateId(prefix = 'id') {
         return `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
@@ -741,29 +1372,20 @@
         });
       }
 
-      function readImageFileAsDataURL(file, maxWidth = 1400) {
+      function getEffectiveChapterTitle() {
+        if (currentProject && currentProject.slides && currentProject.slides.length > 0) {
+          const first = currentProject.slides[0];
+          if (first.type === 'title' && first.title && first.title.trim()) {
+            return first.title.trim();
+          }
+        }
+        return (currentProject && currentProject.title) || 'Math Studio';
+      }
+
+      function readImageFileAsDataURL(file) {
         return new Promise((resolve, reject) => {
           const reader = new FileReader();
-          reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-              // Resize only if huge so IndexedDB & JSON export stay ultra-fast
-              let w = img.width;
-              let h = img.height;
-              if (w > maxWidth) {
-                h = Math.round((h * maxWidth) / w);
-                w = maxWidth;
-              }
-              const offCanvas = document.createElement('canvas');
-              offCanvas.width = w;
-              offCanvas.height = h;
-              const ctx = offCanvas.getContext('2d');
-              ctx.drawImage(img, 0, 0, w, h);
-              resolve(offCanvas.toDataURL('image/png', 0.92));
-            };
-            img.onerror = reject;
-            img.src = e.target.result;
-          };
+          reader.onload = (e) => resolve(e.target.result);
           reader.onerror = reject;
           reader.readAsDataURL(file);
         });
@@ -802,19 +1424,18 @@
           removeBtn.classList.add('hidden');
         }
 
-        // Presentation floating logo
-        const presWrap = document.getElementById('presLogoContainer');
-        const presImg = document.getElementById('presLogoImg');
+        // Presentation top header logo
+        const presHeaderImg = document.getElementById('presHeaderLogoImg');
         if (effectiveLogo) {
-          presImg.src = effectiveLogo;
-          presWrap.classList.remove('hidden');
+          presHeaderImg.src = effectiveLogo;
+          presHeaderImg.classList.remove('hidden');
         } else {
-          presWrap.classList.add('hidden');
+          presHeaderImg.classList.add('hidden');
         }
       }
 
       /* -------------------------------------------------------------------
-       * 5. VIEW SWITCHING & DASHBOARD RENDERING
+       * 7. VIEW SWITCHING & DASHBOARD RENDERING
        * ------------------------------------------------------------------- */
       const dashboardView = document.getElementById('dashboardView');
       const editorView = document.getElementById('editorView');
@@ -825,6 +1446,7 @@
         editorView.classList.add('hidden');
         editorView.classList.remove('flex');
         presentationView.classList.add('hidden');
+        presentationView.classList.remove('flex');
         dashboardView.classList.remove('hidden');
         dashboardView.classList.add('flex');
         renderDashboard();
@@ -832,6 +1454,9 @@
 
       function showEditorView(project) {
         currentProject = project;
+        if (!currentProject.fontSize) {
+          currentProject.fontSize = 24;
+        }
         if (!currentProject.slides || currentProject.slides.length === 0) {
           currentProject.slides = [createDefaultTitleSlide(currentProject.title)];
         }
@@ -840,21 +1465,23 @@
         dashboardView.classList.add('hidden');
         dashboardView.classList.remove('flex');
         presentationView.classList.add('hidden');
+        presentationView.classList.remove('flex');
         editorView.classList.remove('hidden');
         editorView.classList.add('flex');
 
         document.getElementById('editorProjectTitle').value = currentProject.title;
+        document.getElementById('projectFontSizeInput').value = currentProject.fontSize;
         updateLogoUI();
         renderEditorSidebar();
         renderActiveSlideForm();
       }
 
-      function createDefaultTitleSlide(chapterName = 'Chapter 1: Mathematics') {
+      function createDefaultTitleSlide(chapterName = 'অধ্যায় ১: গণিত') {
         return {
           id: generateId('slide'),
           type: 'title',
           title: chapterName,
-          subtitle: 'Important Questions & Live Solutions',
+          subtitle: 'গুরুত্বপূর্ণ বিগত বছরের MCQ ও লাইভ সমাধান',
           strokes: []
         };
       }
@@ -864,6 +1491,8 @@
           id: generateId('slide'),
           type: 'math',
           question: '',
+          year: '',
+          rawImage: '',
           image: '',
           options: { A: '', B: '', C: '', D: '' },
           strokes: []
@@ -904,6 +1533,11 @@
                   </svg>
                 </div>
                 <div class="flex items-center gap-1">
+                  <button data-action="pdf" class="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="Export PDF Notes">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                  </button>
                   <button data-action="export" class="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition" title="Export JSON Backup">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -933,6 +1567,7 @@
           `;
 
           card.querySelector('[data-action="open"]').onclick = () => showEditorView(proj);
+          card.querySelector('[data-action="pdf"]').onclick = () => exportProjectToPDF(proj);
           card.querySelector('[data-action="export"]').onclick = () => exportProjectJSON(proj);
           card.querySelector('[data-action="delete"]').onclick = async () => {
             const confirmed = await openCustomModal({
@@ -975,6 +1610,7 @@
           id: generateId('proj'),
           title: name,
           logo: null,
+          fontSize: 24,
           updatedAt: Date.now(),
           slides: [createDefaultTitleSlide(name)]
         };
@@ -987,7 +1623,7 @@
       function exportProjectJSON(proj) {
         const exportPayload = {
           app: 'MathStudioWhiteboard',
-          version: 1,
+          version: 5,
           exportedAt: new Date().toISOString(),
           project: proj
         };
@@ -1005,20 +1641,241 @@
       }
 
       /* -------------------------------------------------------------------
-       * 6. EDITOR VIEW LOGIC (SIDEBAR, FORMS, CLIPBOARD IMAGE PASTE)
+       * 8. HIGH-RESOLUTION 16:9 PDF EXPORT ENGINE
+       * ------------------------------------------------------------------- */
+      async function exportProjectToPDF(proj) {
+        if (!proj || !proj.slides || proj.slides.length === 0) {
+          showToast('No slides to export in this project.', 'error');
+          return;
+        }
+
+        showToast('Generating 16:9 PDF Notes...', 'info');
+
+        try {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF({
+            orientation: 'landscape',
+            unit: 'px',
+            format: [1920, 1080],
+            compress: true
+          });
+
+          const chapterTitle = proj.slides[0]?.type === 'title' && proj.slides[0]?.title ? proj.slides[0].title : proj.title || 'Math Lecture';
+          const logoData = proj.logo || globalBrandLogo;
+          const baseSize = proj.fontSize || 24;
+
+          function preloadImg(src) {
+            return new Promise((resolve) => {
+              if (!src) return resolve(null);
+              const img = new Image();
+              img.crossOrigin = 'anonymous';
+              img.onload = () => resolve(img);
+              img.onerror = () => resolve(null);
+              img.src = src;
+            });
+          }
+
+          const loadedLogo = await preloadImg(logoData);
+
+          for (let i = 0; i < proj.slides.length; i++) {
+            const slide = proj.slides[i];
+            const canvasOff = document.createElement('canvas');
+            canvasOff.width = 1920;
+            canvasOff.height = 1080;
+            const c = canvasOff.getContext('2d');
+
+            // 1. Background
+            c.fillStyle = '#ffffff';
+            c.fillRect(0, 0, 1920, 1080);
+
+            // 2. Whiteboard Dot Grid
+            c.fillStyle = '#cbd5e1';
+            const dotGap = 36;
+            for (let x = dotGap; x < 1920; x += dotGap) {
+              for (let y = 100; y < 1080; y += dotGap) {
+                c.beginPath();
+                c.arc(x, y, 1.6, 0, Math.PI * 2);
+                c.fill();
+              }
+            }
+
+            // 3. Top Header Bar
+            c.fillStyle = '#f1f5f9';
+            c.fillRect(0, 0, 1920, 80);
+            c.strokeStyle = '#e2e8f0';
+            c.lineWidth = 2;
+            c.beginPath();
+            c.moveTo(0, 80);
+            c.lineTo(1920, 80);
+            c.stroke();
+
+            // Chapter Title Left
+            c.fillStyle = '#4f46e5';
+            c.beginPath();
+            c.arc(50, 40, 7, 0, Math.PI * 2);
+            c.fill();
+
+            c.fillStyle = '#1e293b';
+            c.font = 'bold 30px Hind Siliguri, Inter, sans-serif';
+            c.textAlign = 'left';
+            c.textBaseline = 'middle';
+            c.fillText(chapterTitle, 75, 41);
+
+            // Logo Right
+            if (loadedLogo) {
+              const aspect = loadedLogo.width / loadedLogo.height;
+              const logoH = 46;
+              const logoW = logoH * aspect;
+              c.drawImage(loadedLogo, 1920 - logoW - 50, 17, logoW, logoH);
+            }
+
+            // 4. Slide Content
+            if (slide.type === 'title') {
+              c.textAlign = 'center';
+              c.fillStyle = '#4f46e5';
+              c.font = 'bold 24px Inter, sans-serif';
+              c.fillText('MATH CLASS', 960, 420);
+
+              c.fillStyle = '#0f172a';
+              c.font = 'bold 64px Hind Siliguri, Inter, sans-serif';
+              c.fillText(slide.title || chapterTitle, 960, 500);
+
+              if (slide.subtitle) {
+                c.fillStyle = '#475569';
+                c.font = '500 32px Hind Siliguri, Inter, sans-serif';
+                c.fillText(slide.subtitle, 960, 580);
+              }
+            } else {
+              let qNum = 0;
+              for (let k = 0; k <= i; k++) {
+                if (proj.slides[k].type === 'math') qNum++;
+              }
+
+              const uniformPx = Math.round((baseSize / 1280) * 1920);
+              const yearPx = Math.round(uniformPx * 0.62);
+
+              // Question Badge Q. Num
+              c.fillStyle = '#4338ca';
+              c.font = `bold ${uniformPx}px Hind Siliguri, Inter, sans-serif`;
+              c.textAlign = 'left';
+              c.textBaseline = 'top';
+              c.fillText(`Q. ${qNum}`, 60, 115);
+
+              const hasImage = !!(slide.image && slide.image.trim());
+              if (hasImage) {
+                const qImg = await preloadImg(slide.image);
+                if (qImg) {
+                  const ar = qImg.width / qImg.height;
+                  let maxW = 1800;
+                  let maxH = 550;
+                  let renderW = maxW;
+                  let renderH = maxW / ar;
+                  if (renderH > maxH) {
+                    renderH = maxH;
+                    renderW = maxH * ar;
+                  }
+                  c.drawImage(qImg, 60, 175, renderW, renderH);
+                }
+              } else {
+                const badgeWidth = c.measureText(`Q. ${qNum} `).width;
+                c.fillStyle = '#0f172a';
+                wrapText(c, slide.question || 'Question Text', 60 + badgeWidth + 10, 115, 1700 - badgeWidth, uniformPx * 1.4);
+
+                let currentY = 180;
+                if (slide.year && slide.year.trim()) {
+                  c.fillStyle = '#92400e';
+                  c.font = `bold ${yearPx}px Hind Siliguri, Inter, sans-serif`;
+                  c.fillText(`📅 ${slide.year.trim()}`, 60, currentY);
+                  currentY += yearPx + 20;
+                }
+
+                const opts = slide.options || {};
+                currentY = Math.max(currentY, 210);
+                ['A', 'B', 'C', 'D'].forEach((key) => {
+                  const val = (opts[key] || '').trim();
+                  if (!val) return;
+
+                  c.fillStyle = '#4338ca';
+                  c.font = `bold ${uniformPx}px Hind Siliguri, Inter, sans-serif`;
+                  c.fillText(`(${key})`, 80, currentY);
+
+                  c.fillStyle = '#1e293b';
+                  c.font = `500 ${uniformPx}px Hind Siliguri, Inter, sans-serif`;
+                  c.fillText(val, 135, currentY);
+
+                  currentY += uniformPx * 1.5 + 8;
+                });
+              }
+            }
+
+            // 5. Draw Handwritten Vector Whiteboard Strokes
+            const strokes = slide.strokes || [];
+            c.lineCap = 'round';
+            c.lineJoin = 'round';
+            for (const stroke of strokes) {
+              if (!stroke.points || stroke.points.length === 0) continue;
+              c.strokeStyle = stroke.color;
+              c.lineWidth = (stroke.width || 3.2) * 1.5;
+              c.beginPath();
+              const p0 = stroke.points[0];
+              c.moveTo(p0.x * 1920, p0.y * 1080);
+              if (stroke.points.length === 1) {
+                c.lineTo(p0.x * 1920 + 0.1, p0.y * 1080 + 0.1);
+              } else {
+                for (let ptIdx = 1; ptIdx < stroke.points.length; ptIdx++) {
+                  const pt = stroke.points[ptIdx];
+                  c.lineTo(pt.x * 1920, pt.y * 1080);
+                }
+              }
+              c.stroke();
+            }
+
+            const imgData = canvasOff.toDataURL('image/jpeg', 0.92);
+            if (i > 0) doc.addPage([1920, 1080], 'landscape');
+            doc.addImage(imgData, 'JPEG', 0, 0, 1920, 1080);
+          }
+
+          const safeTitle = (chapterTitle || 'Math_Class_Notes').replace(/[^a-z0-9\u0980-\u09FF_-]+/gi, '_');
+          doc.save(`${safeTitle}_Class_Notes.pdf`);
+          showToast('Complete PDF Notes Downloaded!', 'success');
+        } catch (err) {
+          console.error('PDF generation error:', err);
+          showToast('Failed to generate PDF.', 'error');
+        }
+      }
+
+      function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+        const words = (text || '').split(' ');
+        let line = '';
+        for (let n = 0; n < words.length; n++) {
+          const testLine = line + words[n] + ' ';
+          const metrics = ctx.measureText(testLine);
+          if (metrics.width > maxWidth && n > 0) {
+            ctx.fillText(line, x, y);
+            line = words[n] + ' ';
+            y += lineHeight;
+          } else {
+            line = testLine;
+          }
+        }
+        ctx.fillText(line, x, y);
+      }
+
+      /* -------------------------------------------------------------------
+       * 9. EDITOR VIEW LOGIC
        * ------------------------------------------------------------------- */
       let autoSaveTimer = null;
       function triggerAutoSave() {
         const indicator = document.getElementById('saveIndicator');
         indicator.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Saving...`;
-        indicator.className = 'hidden sm:inline-flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full shrink-0';
+        indicator.className = 'hidden md:inline-flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full shrink-0';
 
         clearTimeout(autoSaveTimer);
         autoSaveTimer = setTimeout(async () => {
           if (!currentProject) return;
           await saveProjectToDB(currentProject);
           indicator.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Saved`;
-          indicator.className = 'hidden sm:inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full shrink-0';
+          indicator.className = 'hidden md:inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full shrink-0';
         }, 250);
       }
 
@@ -1030,8 +1887,8 @@
           const isActive = idx === activeSlideIndex;
           const isTitle = slide.type === 'title';
           const previewLabel = isTitle
-            ? (slide.title || 'Untitled Cover / Thank You')
-            : (slide.question || (slide.image ? '[Image Math Problem]' : 'Empty Math Question'));
+            ? (slide.title || 'Untitled Cover / Chapter')
+            : (slide.image ? '[Cropped 100% Image]' : (slide.question || 'Empty Math Question'));
 
           const hasInk = slide.strokes && slide.strokes.length > 0;
 
@@ -1056,15 +1913,15 @@
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-1.5">
                   <span class="text-[10px] font-bold uppercase tracking-wider ${isTitle ? 'text-amber-600' : 'text-indigo-600'}">
-                    ${isTitle ? 'Title / End' : 'Math'}
+                    ${isTitle ? 'Title / Chapter' : (slide.image ? 'Image Question' : 'Math Question')}
                   </span>
+                  ${slide.year ? `<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 truncate">${escapeHTML(slide.year)}</span>` : ''}
                   ${hasInk ? '<span class="w-2 h-2 rounded-full bg-emerald-500" title="Has saved whiteboard ink"></span>' : ''}
                 </div>
                 <p class="text-xs font-semibold text-slate-800 truncate">${escapeHTML(previewLabel)}</p>
               </div>
             </div>
 
-            <!-- Reorder & Delete Slide Controls -->
             <div class="flex items-center gap-0.5 opacity-80 group-hover:opacity-100 shrink-0">
               <button data-move="up" class="p-1 rounded hover:bg-slate-200/70 text-slate-500 disabled:opacity-30" ${idx === 0 ? 'disabled' : ''} title="Move Up">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
@@ -1144,6 +2001,7 @@
           mathForm.classList.remove('hidden');
           document.getElementById('mathSlideNumberBadge').textContent = `Slide #${activeSlideIndex + 1}`;
           document.getElementById('inputMathQuestion').value = slide.question || '';
+          document.getElementById('inputMathYear').value = slide.year || '';
           document.getElementById('inputOptA').value = (slide.options && slide.options.A) || '';
           document.getElementById('inputOptB').value = (slide.options && slide.options.B) || '';
           document.getElementById('inputOptC').value = (slide.options && slide.options.C) || '';
@@ -1177,15 +2035,20 @@
       }
 
       /* -------------------------------------------------------------------
-       * 7. FULLSCREEN PRESENTATION & WHITEBOARD CANVAS ENGINE
+       * 10. FULLSCREEN 16:9 PRESENTATION & WHITEBOARD CANVAS ENGINE
        * ------------------------------------------------------------------- */
       const canvas = document.getElementById('drawingCanvas');
       const ctx = canvas.getContext('2d');
 
       function resizeDrawingCanvas() {
         const dpr = window.devicePixelRatio || 1;
-        const rect = presentationView.getBoundingClientRect();
+        const stage = document.getElementById('presStage');
+        const rect = stage.getBoundingClientRect();
         if (rect.width === 0 || rect.height === 0) return;
+
+        const baseNum = currentProject.fontSize || 24;
+        const computedPx = Math.max(14, Math.round((baseNum * rect.width) / 1280));
+        stage.style.setProperty('--pres-font-size', `${computedPx}px`);
 
         canvas.width = Math.round(rect.width * dpr);
         canvas.height = Math.round(rect.height * dpr);
@@ -1194,7 +2057,8 @@
       }
 
       function redrawCurrentSlideStrokes() {
-        const rect = presentationView.getBoundingClientRect();
+        const stage = document.getElementById('presStage');
+        const rect = stage.getBoundingClientRect();
         ctx.clearRect(0, 0, rect.width, rect.height);
 
         if (!currentProject || !currentProject.slides[activeSlideIndex]) return;
@@ -1235,8 +2099,13 @@
         const slide = currentProject.slides[activeSlideIndex];
         const total = currentProject.slides.length;
 
-        // Update Navigation Controls
-        document.getElementById('presSlideCounter').textContent = `${activeSlideIndex + 1} / ${total}`;
+        // Update Top Broadcast Header
+        const chapterTitle = getEffectiveChapterTitle();
+        document.getElementById('presChapterHeaderTitle').textContent = chapterTitle;
+
+        // Update Vertical Slide Navigation Counter
+        document.getElementById('presSlideCurrent').textContent = activeSlideIndex + 1;
+        document.getElementById('presSlideTotal').textContent = total;
         document.getElementById('presPrevBtn').disabled = activeSlideIndex === 0;
         document.getElementById('presNextBtn').disabled = activeSlideIndex === total - 1;
 
@@ -1246,7 +2115,7 @@
         if (slide.type === 'title') {
           mathLayout.classList.add('hidden');
           titleLayout.classList.remove('hidden');
-          document.getElementById('presMainTitle').textContent = slide.title || currentProject.title;
+          document.getElementById('presMainTitle').textContent = slide.title || chapterTitle;
           const subEl = document.getElementById('presSubTitle');
           if (slide.subtitle && slide.subtitle.trim()) {
             subEl.textContent = slide.subtitle;
@@ -1258,45 +2127,73 @@
           titleLayout.classList.add('hidden');
           mathLayout.classList.remove('hidden');
 
-          // Compute Math Question Number (counting only math slides up to current)
           let mathNum = 0;
           for (let i = 0; i <= activeSlideIndex; i++) {
             if (currentProject.slides[i].type === 'math') mathNum++;
           }
-          document.getElementById('presQuestionBadge').textContent = `Question ${mathNum}`;
+          document.getElementById('presQuestionBadge').textContent = `Q. ${mathNum}`;
 
           const qTextEl = document.getElementById('presQuestionText');
-          if (slide.question && slide.question.trim()) {
-            qTextEl.textContent = slide.question;
-            qTextEl.classList.remove('hidden');
-          } else {
-            qTextEl.classList.add('hidden');
-          }
-
+          const yearWrap = document.getElementById('presQuestionYearWrapper');
+          const optWrapper = document.getElementById('presOptionsWrapper');
           const imgWrap = document.getElementById('presQuestionImageWrapper');
           const imgEl = document.getElementById('presQuestionImage');
-          if (slide.image) {
+
+          const hasImage = !!(slide.image && slide.image.trim());
+
+          if (hasImage) {
+            // IMAGE MODE:
+            // Only Question Badge (Q. 1) stays visible.
+            // Question Text, Year, and Options are completely hidden!
+            qTextEl.classList.add('hidden');
+            yearWrap.classList.add('hidden');
+            optWrapper.classList.add('hidden');
+
             imgEl.src = slide.image;
             imgWrap.classList.remove('hidden');
           } else {
+            // TEXT MODE:
             imgWrap.classList.add('hidden');
-          }
 
-          // Render only filled MCQ Options
-          const optGrid = document.getElementById('presOptionsGrid');
-          optGrid.innerHTML = '';
-          const opts = slide.options || {};
-          ['A', 'B', 'C', 'D'].forEach((key) => {
-            const val = (opts[key] || '').trim();
-            if (!val) return;
-            const optCard = document.createElement('div');
-            optCard.className = 'flex items-center gap-3 bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 shadow-2xs';
-            optCard.innerHTML = `
-              <span class="w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs sm:text-sm font-bold flex items-center justify-center shrink-0">${key}</span>
-              <span class="text-sm sm:text-base font-semibold text-slate-800 leading-snug">${escapeHTML(val)}</span>
-            `;
-            optGrid.appendChild(optCard);
-          });
+            if (slide.question && slide.question.trim()) {
+              qTextEl.textContent = slide.question;
+              qTextEl.classList.remove('hidden');
+            } else {
+              qTextEl.textContent = 'Question:';
+              qTextEl.classList.remove('hidden');
+            }
+
+            if (slide.year && slide.year.trim()) {
+              document.getElementById('presQuestionYearText').textContent = slide.year.trim();
+              yearWrap.classList.remove('hidden');
+            } else {
+              yearWrap.classList.add('hidden');
+            }
+
+            const optGrid = document.getElementById('presOptionsGrid');
+            optGrid.innerHTML = '';
+            const opts = slide.options || {};
+            let hasAnyOption = false;
+
+            ['A', 'B', 'C', 'D'].forEach((key) => {
+              const val = (opts[key] || '').trim();
+              if (!val) return;
+              hasAnyOption = true;
+              const optRow = document.createElement('div');
+              optRow.className = 'flex items-baseline gap-2.5 text-slate-800';
+              optRow.innerHTML = `
+                <span class="pres-uniform-text font-bold text-indigo-700 shrink-0">(${key})</span>
+                <span class="pres-uniform-text font-medium break-words">${escapeHTML(val)}</span>
+              `;
+              optGrid.appendChild(optRow);
+            });
+
+            if (hasAnyOption) {
+              optWrapper.classList.remove('hidden');
+            } else {
+              optWrapper.classList.add('hidden');
+            }
+          }
         }
 
         redoStack = [];
@@ -1308,15 +2205,15 @@
         editorView.classList.add('hidden');
         editorView.classList.remove('flex');
         presentationView.classList.remove('hidden');
+        presentationView.classList.add('flex');
         updateLogoUI();
 
-        // Attempt true browser fullscreen (gracefully degrades if iframe restricts fullscreen)
         try {
           if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
             await document.documentElement.requestFullscreen();
           }
         } catch (err) {
-          console.warn('Native fullscreen blocked by environment, using full-viewport overlay.', err);
+          console.warn('Native fullscreen blocked, using 16:9 stage layout.', err);
         }
 
         resizeDrawingCanvas();
@@ -1324,16 +2221,20 @@
       }
 
       async function exitPresentationMode() {
+        // If recording while exiting, pause gracefully
+        if (recordingState === 'recording') {
+          pauseRecordingSession();
+        }
+
         try {
           if (document.fullscreenElement && document.exitFullscreen) {
             await document.exitFullscreen();
           }
-        } catch (err) {
-          // Ignore exit fullscreen error
-        }
+        } catch (err) {}
 
         await saveProjectToDB(currentProject);
         presentationView.classList.add('hidden');
+        presentationView.classList.remove('flex');
         editorView.classList.remove('hidden');
         editorView.classList.add('flex');
         renderEditorSidebar();
@@ -1341,7 +2242,7 @@
       }
 
       /* -------------------------------------------------------------------
-       * 8. POINTER DRAWING HANDLERS (Mouse, Touch, Stylus)
+       * 11. POINTER DRAWING HANDLERS
        * ------------------------------------------------------------------- */
       function getNormalizedCoords(e) {
         const rect = canvas.getBoundingClientRect();
@@ -1377,7 +2278,6 @@
         const prevPt = currentStroke.points[currentStroke.points.length - 1];
         currentStroke.points.push(pt);
 
-        // Incremental smooth line segment draw for zero latency
         ctx.strokeStyle = currentStroke.color;
         ctx.lineWidth = currentStroke.width;
         ctx.lineCap = 'round';
@@ -1403,24 +2303,21 @@
       canvas.addEventListener('pointercancel', finishStroke);
 
       /* -------------------------------------------------------------------
-       * 9. EVENT LISTENERS BINDING
+       * 12. EVENT LISTENERS BINDING
        * ------------------------------------------------------------------- */
-      // Dashboard Actions
       document.getElementById('createNewProjectBtn').onclick = handleCreateNewProject;
       document.getElementById('emptyCreateBtn').onclick = handleCreateNewProject;
 
-      // Global Logo Upload
       document.getElementById('globalLogoInput').onchange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        globalBrandLogo = await readImageFileAsDataURL(file, 400);
+        globalBrandLogo = await readImageFileAsDataURL(file);
         await setSetting('globalBrandLogo', globalBrandLogo);
         updateLogoUI();
         showToast('Channel logo saved!', 'success');
         e.target.value = '';
       };
 
-      // Import Project JSON
       document.getElementById('importProjectInput').onchange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -1434,6 +2331,7 @@
             }
             importedProj.id = generateId('proj');
             importedProj.title = importedProj.title || 'Imported Chapter';
+            importedProj.fontSize = importedProj.fontSize || 24;
             importedProj.updatedAt = Date.now();
             await saveProjectToDB(importedProj);
             showToast('Project imported successfully!', 'success');
@@ -1446,7 +2344,6 @@
         e.target.value = '';
       };
 
-      // Editor Header Actions
       document.getElementById('backToProjectsBtn').onclick = async () => {
         if (currentProject) await saveProjectToDB(currentProject);
         showDashboardView();
@@ -1457,10 +2354,45 @@
         triggerAutoSave();
       };
 
+      // Project Font Size Input & Dropdown Toggle
+      const fSizeInput = document.getElementById('projectFontSizeInput');
+      const fSizeDropdown = document.getElementById('fontSizeDropdown');
+
+      fSizeInput.onclick = (e) => {
+        e.stopPropagation();
+        fSizeDropdown.classList.toggle('hidden');
+      };
+
+      fSizeInput.oninput = (e) => {
+        const val = parseInt(e.target.value);
+        if (val && val >= 12 && val <= 60) {
+          currentProject.fontSize = val;
+          triggerAutoSave();
+        }
+      };
+
+      document.querySelectorAll('.fsize-preset-item').forEach((item) => {
+        item.onclick = (e) => {
+          e.stopPropagation();
+          const val = parseInt(item.getAttribute('data-val'));
+          fSizeInput.value = val;
+          currentProject.fontSize = val;
+          fSizeDropdown.classList.add('hidden');
+          triggerAutoSave();
+          showToast(`Text size set to ${val}`, 'info');
+        };
+      });
+
+      window.addEventListener('click', (e) => {
+        if (!e.target.closest('#fontSizeControlWrapper')) {
+          fSizeDropdown.classList.add('hidden');
+        }
+      });
+
       document.getElementById('editorLogoInput').onchange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        const logoData = await readImageFileAsDataURL(file, 400);
+        const logoData = await readImageFileAsDataURL(file);
         currentProject.logo = logoData;
         globalBrandLogo = logoData;
         await setSetting('globalBrandLogo', logoData);
@@ -1479,13 +2411,16 @@
         showToast('Logo removed.', 'info');
       };
 
+      document.getElementById('editorPdfBtn').onclick = () => {
+        if (currentProject) exportProjectToPDF(currentProject);
+      };
+
       document.getElementById('editorExportBtn').onclick = () => {
         if (currentProject) exportProjectJSON(currentProject);
       };
 
       document.getElementById('startPresentationBtn').onclick = enterPresentationMode;
 
-      // Add Slides
       document.getElementById('addTitleSlideBtn').onclick = () => {
         const isLast = activeSlideIndex === currentProject.slides.length - 1;
         const newSlide = createDefaultTitleSlide(isLast ? 'Thank You!' : 'New Section');
@@ -1506,7 +2441,6 @@
         renderActiveSlideForm();
       };
 
-      // Title Slide Form Inputs
       document.getElementById('inputMainTitle').oninput = (e) => {
         currentProject.slides[activeSlideIndex].title = e.target.value;
         triggerAutoSave();
@@ -1518,9 +2452,14 @@
         triggerAutoSave();
       };
 
-      // Math Slide Form Inputs
       document.getElementById('inputMathQuestion').oninput = (e) => {
         currentProject.slides[activeSlideIndex].question = e.target.value;
+        triggerAutoSave();
+        renderEditorSidebar();
+      };
+
+      document.getElementById('inputMathYear').oninput = (e) => {
+        currentProject.slides[activeSlideIndex].year = e.target.value;
         triggerAutoSave();
         renderEditorSidebar();
       };
@@ -1534,20 +2473,41 @@
         };
       });
 
-      // Math Image File Input
+      // Handle Image Selection with Automatic Cropping
       document.getElementById('mathImageInput').onchange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        const dataUrl = await readImageFileAsDataURL(file, 1400);
-        currentProject.slides[activeSlideIndex].image = dataUrl;
-        updateMathImagePreviewUI(dataUrl);
-        triggerAutoSave();
-        renderEditorSidebar();
-        showToast('Math image added!', 'success');
+        const dataUrl = await readImageFileAsDataURL(file);
+        const slide = currentProject.slides[activeSlideIndex];
+        slide.rawImage = dataUrl;
+
+        const croppedUrl = await openCropper(dataUrl);
+        if (croppedUrl) {
+          slide.image = croppedUrl;
+          updateMathImagePreviewUI(croppedUrl);
+          triggerAutoSave();
+          renderEditorSidebar();
+          showToast('Image cropped and applied!', 'success');
+        }
         e.target.value = '';
       };
 
-      // Clipboard Paste Support (Ctrl+V anywhere in Editor when Math slide is open)
+      // Re-crop button
+      document.getElementById('reCropMathImageBtn').onclick = async () => {
+        const slide = currentProject.slides[activeSlideIndex];
+        const src = slide.rawImage || slide.image;
+        if (!src) return;
+        const croppedUrl = await openCropper(src);
+        if (croppedUrl) {
+          slide.image = croppedUrl;
+          updateMathImagePreviewUI(croppedUrl);
+          triggerAutoSave();
+          renderEditorSidebar();
+          showToast('Image re-cropped!', 'success');
+        }
+      };
+
+      // Clipboard Paste with Auto Cropper
       window.addEventListener('paste', async (e) => {
         if (editorView.classList.contains('hidden')) return;
         const slide = currentProject && currentProject.slides[activeSlideIndex];
@@ -1560,22 +2520,30 @@
           if (item.type.indexOf('image') !== -1) {
             e.preventDefault();
             const blob = item.getAsFile();
-            const dataUrl = await readImageFileAsDataURL(blob, 1400);
-            slide.image = dataUrl;
-            updateMathImagePreviewUI(dataUrl);
-            triggerAutoSave();
-            renderEditorSidebar();
-            showToast('Screenshot pasted from clipboard!', 'success');
+            const dataUrl = await readImageFileAsDataURL(blob);
+            slide.rawImage = dataUrl;
+
+            const croppedUrl = await openCropper(dataUrl);
+            if (croppedUrl) {
+              slide.image = croppedUrl;
+              updateMathImagePreviewUI(croppedUrl);
+              triggerAutoSave();
+              renderEditorSidebar();
+              showToast('Pasted screenshot cropped and applied!', 'success');
+            }
             break;
           }
         }
       });
 
       document.getElementById('removeMathImageBtn').onclick = () => {
-        currentProject.slides[activeSlideIndex].image = '';
+        const slide = currentProject.slides[activeSlideIndex];
+        slide.image = '';
+        slide.rawImage = '';
         updateMathImagePreviewUI('');
         triggerAutoSave();
         renderEditorSidebar();
+        showToast('Image removed.', 'info');
       };
 
       document.getElementById('clearSlideInkEditorBtn').onclick = () => {
@@ -1663,19 +2631,46 @@
         showToast('Slide ink cleared', 'info');
       };
 
+      // 1080p Whiteboard Recorder Listeners
+      // 1. Record / Pause / Resume Button
+      document.getElementById('presRecordBtn').onclick = () => {
+        if (recordingState === 'idle') {
+          startScreenAndAudioRecording();
+        } else if (recordingState === 'recording') {
+          pauseRecordingSession();
+        } else if (recordingState === 'paused') {
+          resumeRecordingSession();
+        }
+      };
+
+      // 2. Download Button (Visible when paused)
+      document.getElementById('recDownloadBtn').onclick = (e) => {
+        e.stopPropagation();
+        stopAndFinishSession(true);
+      };
+
+      // 3. Discard / Delete Button (Visible when paused)
+      document.getElementById('recDiscardBtn').onclick = (e) => {
+        e.stopPropagation();
+        const ok = confirm('আপনি কি এই রেকর্ডিংটি বাতিল / ডিলিট করতে চান? (এটি সেভ হবে না)');
+        if (ok) {
+          stopAndFinishSession(false);
+        }
+      };
+
       document.getElementById('exitPresentationBtn').onclick = exitPresentationMode;
 
-      // Keyboard Shortcuts during Presentation (Arrow Keys, Ctrl+Z, Ctrl+Y)
+      // Keyboard Shortcuts during Presentation
       window.addEventListener('keydown', (e) => {
         if (presentationView.classList.contains('hidden')) return;
 
-        if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === 'ArrowDown') {
           e.preventDefault();
           if (activeSlideIndex < currentProject.slides.length - 1) {
             activeSlideIndex++;
             renderPresentationSlide();
           }
-        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'ArrowUp') {
           e.preventDefault();
           if (activeSlideIndex > 0) {
             activeSlideIndex--;
@@ -1691,7 +2686,6 @@
         }
       });
 
-      // Keep canvas crisp & proportional on window resize / fullscreen transitions
       window.addEventListener('resize', () => {
         if (!presentationView.classList.contains('hidden')) {
           resizeDrawingCanvas();
@@ -1705,7 +2699,7 @@
       });
 
       /* -------------------------------------------------------------------
-       * 10. INITIALIZATION
+       * 13. INITIALIZATION
        * ------------------------------------------------------------------- */
       window.addEventListener('DOMContentLoaded', async () => {
         await openDatabase();
