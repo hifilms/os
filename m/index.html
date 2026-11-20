@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduBoard Studio — Slide, Whiteboard & 1080p Recorder</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ================= HOME VIEW ================= -->
+  <div id="home-view" class="view active">
+    <header class="top-bar">
+      <div class="brand-area">
+        <span id="home-brand-logo-wrap" class="brand-logo-wrap hidden">
+          <img id="home-brand-logo" alt="Brand Logo" />
+        </span>
+        <span class="app-title">EduBoard Studio</span>
+      </div>
+      <div class="top-actions">
+        <button id="btn-open-recordings" class="btn btn-secondary" title="All Recordings">
+          <span class="icon-slot" data-icon="video"></span>
+          <span>Recordings</span>
+        </button>
+        <label class="btn btn-secondary file-btn" title="Upload Global Brand Logo">
+          <span class="icon-slot" data-icon="image"></span>
+          <span>Brand Logo</span>
+          <input type="file" id="input-global-logo" accept="image/*" hidden />
+        </label>
+        <button id="btn-import-project" class="btn btn-secondary" title="Import Project JSON">
+          <span class="icon-slot" data-icon="upload"></span>
+          <span>Import Project</span>
+        </button>
+        <input type="file" id="input-import-project" accept=".json,application/json" hidden />
+      </div>
+    </header>
+
+    <main class="home-main">
+      <section class="create-hero">
+        <button id="btn-create-project" class="btn btn-primary btn-lg">
+          <span class="icon-slot" data-icon="plus"></span>
+          <span>Create Project</span>
+        </button>
+      </section>
+
+      <section class="projects-section">
+        <div id="tag-filter-tabs" class="filter-tabs" role="tablist" aria-label="Project Tag Filters"></div>
+        <div id="projects-grid" class="projects-grid"></div>
+        <div id="projects-empty" class="empty-state hidden">No projects found in this view.</div>
+      </section>
+    </main>
+
+    <footer class="home-footer">
+      <p>For best performance and built-in 1080p recording, use modern Chrome, Edge, or Brave (Safari or older browsers may have limited recording support).</p>
+    </footer>
+  </div>
+
+  <!-- ================= WORKSPACE VIEW ================= -->
+  <div id="workspace-view" class="view">
+    <header class="workspace-header">
+      <div class="ws-left">
+        <button id="btn-back-home" class="btn btn-icon" title="Back to Home">
+          <span class="icon-slot" data-icon="back"></span>
+        </button>
+        <input type="text" id="ws-project-name" class="project-name-input" aria-label="Project Name" />
+      </div>
+      <div class="ws-right">
+        <button id="btn-ws-recordings" class="btn btn-secondary" title="All Recordings">
+          <span class="icon-slot" data-icon="video"></span>
+          <span class="hide-sm">Recordings</span>
+        </button>
+        <button id="btn-download-project" class="btn btn-secondary" title="Download Project Backup">
+          <span class="icon-slot" data-icon="download"></span>
+          <span class="hide-sm">Download Project</span>
+        </button>
+        <button id="btn-download-pdf" class="btn btn-secondary" title="Export 16:9 PDF">
+          <span class="icon-slot" data-icon="pdf"></span>
+          <span class="hide-sm">Download PDF</span>
+        </button>
+        <button id="btn-download-video" class="btn btn-success hidden" title="Download Recorded Video">
+          <span class="icon-slot" data-icon="download"></span>
+          <span>Download Video</span>
+        </button>
+        <button id="btn-delete-video" class="btn btn-danger hidden" title="Delete Recorded Video">
+          <span class="icon-slot" data-icon="trash"></span>
+          <span class="hide-sm">Delete Video</span>
+        </button>
+        <button id="btn-start-class" class="btn btn-primary" title="Open 16:9 Whiteboard">
+          <span class="icon-slot" data-icon="play"></span>
+          <span>Start Class</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="workspace-body">
+      <aside class="ws-aside">
+        <div class="aside-tabs">
+          <button id="tab-slides" class="aside-tab active" data-tab="slides">
+            <span class="icon-slot" data-icon="layers"></span>
+            <span>Slides</span>
+          </button>
+          <button id="tab-defaults" class="aside-tab" data-tab="defaults">
+            <span class="icon-slot" data-icon="settings"></span>
+            <span>Defaults</span>
+          </button>
+        </div>
+
+        <!-- TAB 1: SLIDES -->
+        <div id="panel-slides" class="aside-panel active">
+          <div class="add-slide-bar">
+            <button id="btn-add-slide" class="btn btn-primary btn-block">
+              <span class="icon-slot" data-icon="plus"></span>
+              <span>+ Add Slide</span>
+            </button>
+          </div>
+          <div id="slides-list" class="slides-list"></div>
+        </div>
+
+        <!-- TAB 2: DEFAULTS -->
+        <div id="panel-defaults" class="aside-panel">
+          <div class="defaults-form">
+            <label class="field">
+              <span>Project Tag (Optional)</span>
+              <input type="text" id="def-tag" list="tag-suggestions-list" placeholder="e.g., Physics, GK, Batch-1" />
+            </label>
+
+            <label class="field">
+              <span>Header Title</span>
+              <input type="text" id="def-header-title" placeholder="Header Title" />
+            </label>
+
+            <div class="field">
+              <span>Header Branding Logo</span>
+              <div class="row-actions">
+                <label class="btn btn-secondary btn-sm file-btn">
+                  <span class="icon-slot" data-icon="image"></span>
+                  <span>Upload Logo</span>
+                  <input type="file" id="def-logo-input" accept="image/*" hidden />
+                </label>
+                <button id="def-logo-remove" class="btn btn-danger btn-sm hidden" type="button">Remove</button>
+              </div>
+            </div>
+
+            <label class="field">
+              <span>Footer Left Text (Optional)</span>
+              <input type="text" id="def-footer-left" placeholder="Leave empty to hide" />
+            </label>
+
+            <label class="field">
+              <span>Watermark Text (Text-Only, Optional)</span>
+              <input type="text" id="def-watermark" placeholder="Leave empty for no watermark" />
+            </label>
+
+            <div class="color-grid">
+              <label class="field">
+                <span>Slide BG</span>
+                <input type="color" id="def-bg-color" value="#ffffff" />
+              </label>
+              <label class="field">
+                <span>Header Color</span>
+                <input type="color" id="def-header-color" value="#1e293b" />
+              </label>
+              <label class="field">
+                <span>Footer Color</span>
+                <input type="color" id="def-footer-color" value="#1e293b" />
+              </label>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- MAIN SLIDE EDITOR -->
+      <main class="ws-main">
+        <div class="editor-controls">
+          <div class="slide-type-selector">
+            <button class="type-btn" data-type="intro">Intro</button>
+            <button class="type-btn" data-type="theory">Theory</button>
+            <button class="type-btn" data-type="mcq">MCQ</button>
+            <button class="type-btn" data-type="outro">Outro</button>
+          </div>
+          <div id="theory-layout-selector" class="sub-selector hidden">
+            <button class="sub-btn" data-layout="full-text">Full Text</button>
+            <button class="sub-btn" data-layout="text-image">Text + Image</button>
+            <button class="sub-btn" data-layout="full-image">Full Image</button>
+          </div>
+        </div>
+
+        <div class="editor-Split">
+          <div id="slide-form-container" class="slide-form-card"></div>
+          <div class="preview-wrapper">
+            <div class="preview-label">Live 16:9 Stage Preview</div>
+            <div id="editor-stage-host" class="stage-host"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ================= WHITEBOARD VIEW ================= -->
+  <div id="whiteboard-view" class="view">
+    <div id="wb-toolbar" class="wb-toolbar">
+      <div class="wb-group">
+        <button id="wb-prev" class="wb-btn" title="Previous Slide">
+          <span class="icon-slot" data-icon="prev"></span>
+        </button>
+        <span id="wb-counter" class="wb-counter">1 / 1</span>
+        <button id="wb-next" class="wb-btn" title="Next Slide">
+          <span class="icon-slot" data-icon="next"></span>
+        </button>
+        <button id="wb-blank-slide" class="wb-btn wb-btn-text" title="Add Blank Slide">
+          <span class="icon-slot" data-icon="plus"></span>
+          <span>Blank Slide</span>
+        </button>
+      </div>
+
+      <div class="wb-group">
+        <label class="wb-color-wrap" title="Pen Color">
+          <span class="icon-slot" data-icon="pen"></span>
+          <input type="color" id="wb-pen-color" value="#dc2626" />
+        </label>
+        <select id="wb-pen-size" class="wb-select" title="Pen Size">
+          <option value="3">Thin</option>
+          <option value="5" selected>Medium</option>
+          <option value="9">Thick</option>
+          <option value="16">Marker</option>
+        </select>
+        <button id="wb-eraser" class="wb-btn" title="Eraser">
+          <span class="icon-slot" data-icon="eraser"></span>
+        </button>
+        <button id="wb-undo" class="wb-btn" title="Undo">
+          <span class="icon-slot" data-icon="undo"></span>
+        </button>
+        <button id="wb-redo" class="wb-btn" title="Redo">
+          <span class="icon-slot" data-icon="redo"></span>
+        </button>
+        <button id="wb-clear" class="wb-btn" title="Clear Current Slide Strokes">
+          <span class="icon-slot" data-icon="clear"></span>
+        </button>
+      </div>
+
+      <div class="wb-group">
+        <button id="wb-fullscreen" class="wb-btn" title="Toggle Fullscreen">
+          <span id="wb-fs-icon" class="icon-slot" data-icon="fullscreen"></span>
+        </button>
+        <button id="wb-record" class="wb-btn wb-rec-btn" title="Record / Pause / Resume">
+          <span class="icon-slot" data-icon="record"></span>
+          <span id="wb-rec-timer">Record</span>
+        </button>
+        <button id="wb-exit" class="wb-btn wb-exit-btn" title="Exit Whiteboard">
+          <span class="icon-slot" data-icon="exit"></span>
+          <span>Exit</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="wb-stage-host" class="wb-stage-host"></div>
+  </div>
+
+  <!-- ================= CREATE PROJECT MODAL ================= -->
+  <div id="create-project-modal" class="modal-backdrop hidden">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="cp-title">
+      <h3 id="cp-title">Create New Project</h3>
+      <label class="field">
+        <span>Project Name</span>
+        <input type="text" id="cp-name" placeholder="Enter presentation or class title" />
+      </label>
+      <label class="field">
+        <span>Tag (Optional — leave blank if not needed)</span>
+        <input type="text" id="cp-tag" list="tag-suggestions-list" placeholder="Optional tag (e.g., Science, MCQ)" />
+      </label>
+      <div id="cp-tag-chips" class="tag-chips"></div>
+      <div class="modal-actions">
+        <button id="cp-cancel" class="btn btn-secondary">Cancel</button>
+        <button id="cp-confirm" class="btn btn-primary">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ALL RECORDINGS MANAGER MODAL ================= -->
+  <div id="recordings-modal" class="modal-backdrop hidden">
+    <div class="modal-box modal-lg" role="dialog" aria-modal="true" aria-labelledby="rec-mgr-title">
+      <div class="modal-head">
+        <h3 id="rec-mgr-title">All Projects Recordings</h3>
+        <button id="rec-mgr-close" class="btn btn-icon" title="Close">
+          <span class="icon-slot" data-icon="close"></span>
+        </button>
+      </div>
+      <div id="storage-usage-bar" class="storage-bar"></div>
+      <div id="recordings-list" class="recordings-list"></div>
+    </div>
+  </div>
+
+  <!-- ================= CRITICAL-MOMENT BLOCKING MESSAGE BOX ================= -->
+  <div id="critical-modal" class="modal-backdrop critical-backdrop hidden">
+    <div class="modal-box critical-box" role="alertdialog" aria-modal="true" aria-labelledby="crit-title">
+      <div class="crit-header">
+        <span class="icon-slot crit-icon" data-icon="warning"></span>
+        <h3 id="crit-title">Important Notice</h3>
+      </div>
+      <p id="crit-message" class="crit-message"></p>
+      <div id="crit-actions" class="modal-actions"></div>
+    </div>
+  </div>
+
+  <datalist id="tag-suggestions-list"></datalist>
+
+  <script src="js/icons.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/whiteboard.js"></script>
+  <script src="js/recorder.js"></script>
+  <script src="js/slides.js"></script>
+  <script src="js/pdf.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
